@@ -1,0 +1,42 @@
+@namespace GISORA.Shared.Maps.Components
+@implements IDisposable
+@using System.Globalization
+
+@if (_coordinate is { } coordinate)
+{
+    <span class="gisora-map-coordinate">
+        @coordinate.Latitude.ToString("F5", CultureInfo.InvariantCulture),
+        @coordinate.Longitude.ToString("F5", CultureInfo.InvariantCulture)
+    </span>
+}
+
+@code {
+    private MapCoordinate? _coordinate;
+
+    [CascadingParameter]
+    private MapView? Map { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (Map is null)
+        {
+            return;
+        }
+
+        Map.CoordinateChanged += OnCoordinateChanged;
+    }
+
+    public void Dispose()
+    {
+        if (Map is not null)
+        {
+            Map.CoordinateChanged -= OnCoordinateChanged;
+        }
+    }
+
+    private void OnCoordinateChanged(MapCoordinate coordinate)
+    {
+        _coordinate = coordinate;
+        _ = InvokeAsync(StateHasChanged);
+    }
+}

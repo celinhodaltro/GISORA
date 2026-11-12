@@ -1,0 +1,24 @@
+.gisora-map-toolbar {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    z-index: 500;
+}
+
+.gisora-map-toolbar button {
+    min-width: 2rem;
+    padding: 0.35rem 0.5rem;
+    border: 1px solid var(--gisora-color-border, #d9e0dc);
+    border-radius: var(--gisora-radius-sm, 4px);
+    background: var(--gisora-color-surface, #ffffff);
+    color: var(--gisora-color-text, #1d2521);
+    font: inherit;
+    cursor: pointer;
+}
+
+.gisora-map-toolbar button:hover {
+    background: var(--gisora-color-surface-muted, #f4f6f5);
+}

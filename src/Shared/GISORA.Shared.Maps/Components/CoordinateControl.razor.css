@@ -1,0 +1,12 @@
+.gisora-map-coordinate {
+    position: absolute;
+    bottom: 0.5rem;
+    left: 0.5rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: var(--gisora-radius-sm, 4px);
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--gisora-color-text-muted, #5d6b64);
+    font-family: ui-monospace, "Cascadia Mono", monospace;
+    font-size: 0.75rem;
+    z-index: 500;
+}

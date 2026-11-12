@@ -1,0 +1,26 @@
+@namespace GISORA.Shared.Maps.Components
+
+@if (Feature is null)
+{
+    return;
+}
+
+<section class="gisora-feature-inspector" aria-label="Atributos da feicao">
+    <h3 class="gisora-feature-inspector__title">@Title</h3>
+
+    <dl class="gisora-feature-inspector__list">
+        @foreach (var entry in Feature.Properties)
+        {
+            <dt>@entry.Key</dt>
+            <dd>@entry.Value</dd>
+        }
+    </dl>
+</section>
+
+@code {
+    [Parameter]
+    public string Title { get; set; } = "Atributos";
+
+    [Parameter]
+    public MapFeature? Feature { get; set; }
+}

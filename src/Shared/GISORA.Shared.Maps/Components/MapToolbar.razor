@@ -1,0 +1,18 @@
+@namespace GISORA.Shared.Maps.Components
+
+<div class="gisora-map-toolbar" role="toolbar" aria-label="Controles do mapa">
+    <button type="button" @onclick="ZoomInAsync" aria-label="Aproximar">+</button>
+    <button type="button" @onclick="ZoomOutAsync" aria-label="Afastar">-</button>
+    <button type="button" @onclick="FitAsync" aria-label="Enquadrar camadas">Enquadrar</button>
+</div>
+
+@code {
+    [CascadingParameter]
+    private MapView? Map { get; set; }
+
+    private Task ZoomInAsync() => Map?.ZoomInAsync() ?? Task.CompletedTask;
+
+    private Task ZoomOutAsync() => Map?.ZoomOutAsync() ?? Task.CompletedTask;
+
+    private Task FitAsync() => Map?.FitBoundsAsync() ?? Task.CompletedTask;
+}

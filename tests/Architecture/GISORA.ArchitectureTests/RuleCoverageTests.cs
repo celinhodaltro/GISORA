@@ -25,6 +25,7 @@ public class RuleCoverageTests
             "GISORA.Infrastructure.LocalStorage",
             "GISORA.Infrastructure.Geospatial",
             "GISORA.Shared.DesignSystem",
+            "GISORA.Shared.Maps",
             "GISORA.Web",
         ];
 

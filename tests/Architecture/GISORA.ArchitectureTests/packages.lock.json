@@ -445,6 +445,12 @@
           "Radzen.Blazor": "[13.0.0, )"
         }
       },
+      "gisora.shared.maps": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.AspNetCore.Components.Web": "[10.0.15, )"
+        }
+      },
       "gisora.territory.application": {
         "type": "Project",
         "dependencies": {
@@ -467,6 +473,7 @@
           "GISORA.Infrastructure.LocalStorage": "[0.1.0, )",
           "GISORA.Properties.Application": "[0.1.0, )",
           "GISORA.Shared.DesignSystem": "[0.1.0, )",
+          "GISORA.Shared.Maps": "[0.1.0, )",
           "GISORA.Territory.Application": "[0.1.0, )",
           "Microsoft.AspNetCore.Components.WebAssembly": "[10.0.15, )"
         }
