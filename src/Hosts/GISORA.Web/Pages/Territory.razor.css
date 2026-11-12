@@ -121,3 +121,7 @@
     color: var(--gisora-muted, #5a6b7b);
     font-size: 0.78rem;
 }
+
+.territory-field--parent {
+    width: 14rem;
+}

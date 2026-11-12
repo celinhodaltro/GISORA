@@ -90,14 +90,22 @@
     <RadzenCard>
         <h2 class="territory-grid__title">Distrito</h2>
 
-        <div class="gisora-toolbar">
-            <select class="territory-select" @bind="_municipalityId" @bind:after="ReloadAsync" aria-label="Municipio">
-                @foreach (var municipality in _municipalities)
-                {
-                    <option value="@municipality.Id.Value">@municipality.Name</option>
-                }
-            </select>
-            <RadzenTextBox @bind-Value="_districtName" Placeholder="Nome do distrito" />
+        <div class="territory-form">
+            <label class="territory-field territory-field--parent">
+                <span>Municipio</span>
+                <select class="territory-select" @bind="_municipalityId" @bind:after="ReloadAsync" aria-label="Municipio">
+                    @foreach (var municipality in _municipalities)
+                    {
+                        <option value="@municipality.Id.Value">@municipality.Name</option>
+                    }
+                </select>
+            </label>
+
+            <label class="territory-field territory-field--search" for="district-name">
+                <span>Nome do distrito</span>
+                <input id="district-name" class="territory-input" placeholder="Nome do distrito" @bind="_districtName" />
+            </label>
+
             <RadzenButton Icon="add" aria-label="Adicionar distrito" title="Adicionar distrito" ButtonStyle="ButtonStyle.Primary" Click="CreateDistrictAsync" />
         </div>
 
@@ -111,14 +119,22 @@
     <RadzenCard>
         <h2 class="territory-grid__title">Bairro</h2>
 
-        <div class="gisora-toolbar">
-            <select class="territory-select" @bind="_districtId" @bind:after="ReloadNeighborhoodsAsync" aria-label="Distrito">
-                @foreach (var district in _districts)
-                {
-                    <option value="@district.Id.Value">@district.Name</option>
-                }
-            </select>
-            <RadzenTextBox @bind-Value="_neighborhoodName" Placeholder="Nome do bairro" />
+        <div class="territory-form">
+            <label class="territory-field territory-field--parent">
+                <span>Distrito</span>
+                <select class="territory-select" @bind="_districtId" @bind:after="ReloadNeighborhoodsAsync" aria-label="Distrito">
+                    @foreach (var district in _districts)
+                    {
+                        <option value="@district.Id.Value">@district.Name</option>
+                    }
+                </select>
+            </label>
+
+            <label class="territory-field territory-field--search" for="neighborhood-name">
+                <span>Nome do bairro</span>
+                <input id="neighborhood-name" class="territory-input" placeholder="Nome do bairro" @bind="_neighborhoodName" />
+            </label>
+
             <RadzenButton Icon="add" aria-label="Adicionar bairro" title="Adicionar bairro" ButtonStyle="ButtonStyle.Primary" Click="CreateNeighborhoodAsync" />
         </div>
 
@@ -132,14 +148,22 @@
     <RadzenCard>
         <h2 class="territory-grid__title">Setor fiscal</h2>
 
-        <div class="gisora-toolbar">
-            <select class="territory-select" @bind="_sectorDistrictId" @bind:after="ReloadSectorsAsync" aria-label="Distrito do setor">
-                @foreach (var district in _districts)
-                {
-                    <option value="@district.Id.Value">@district.Name</option>
-                }
-            </select>
-            <RadzenTextBox @bind-Value="_sectorCode" Placeholder="Codigo do setor" />
+        <div class="territory-form">
+            <label class="territory-field territory-field--parent">
+                <span>Distrito</span>
+                <select class="territory-select" @bind="_sectorDistrictId" @bind:after="ReloadSectorsAsync" aria-label="Distrito do setor">
+                    @foreach (var district in _districts)
+                    {
+                        <option value="@district.Id.Value">@district.Name</option>
+                    }
+                </select>
+            </label>
+
+            <label class="territory-field territory-field--search" for="sector-code">
+                <span>Codigo do setor</span>
+                <input id="sector-code" class="territory-input" placeholder="Codigo do setor" @bind="_sectorCode" />
+            </label>
+
             <RadzenButton Icon="add" aria-label="Adicionar setor" title="Adicionar setor" ButtonStyle="ButtonStyle.Primary" Click="CreateSectorAsync" />
         </div>
 
