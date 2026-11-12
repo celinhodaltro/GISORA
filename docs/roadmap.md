@@ -25,10 +25,12 @@ Concluida.
 
 ## Fase 3 - Cadastro territorial
 
-Em andamento.
+Concluida.
 
-- Entregue: logradouros (#33), telas de territorio (#34), formulario de imovel (#35).
-- Pendente: desenho e edicao de geometria com validacao topologica (#36).
+- Logradouros (#33).
+- Telas de territorio (#34).
+- Formulario de imovel (#35).
+- Desenho e edicao de geometria com validacao topologica e area calculada (#36).
 
 ## Fase 4 - Modulos municipais
 
@@ -73,6 +75,7 @@ Nao iniciada.
 
 - Sem autenticacao real: modo demonstracao enquanto nao houver API (ADR 0007).
 - Mapa carrega todos os imoveis com geometria; exige consulta por extensao no backend.
+- Desenho suporta apenas poligono simples pela interface; buracos exigem importacao.
 - `localStorage` limitado a cerca de 5 MB e sem transacao.
 - Sem sincronizacao entre abas ou dispositivos.
 - Dados oficiais de Passira ainda nao incorporados.
