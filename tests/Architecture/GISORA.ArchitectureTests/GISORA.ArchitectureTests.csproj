@@ -30,6 +30,7 @@
     <ProjectReference Include="..\..\..\src\Modules\Properties\GISORA.Properties.Domain\GISORA.Properties.Domain.csproj" />
     <ProjectReference Include="..\..\..\src\Modules\Properties\GISORA.Properties.Application\GISORA.Properties.Application.csproj" />
     <ProjectReference Include="..\..\..\src\Infrastructure\GISORA.Infrastructure.LocalStorage\GISORA.Infrastructure.LocalStorage.csproj" />
+    <ProjectReference Include="..\..\..\src\Infrastructure\GISORA.Infrastructure.Geospatial\GISORA.Infrastructure.Geospatial.csproj" />
     <ProjectReference Include="..\..\..\src\Shared\GISORA.Shared.DesignSystem\GISORA.Shared.DesignSystem.csproj" />
     <ProjectReference Include="..\..\..\src\Hosts\GISORA.Web\GISORA.Web.csproj" />
   </ItemGroup>

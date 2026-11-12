@@ -8,6 +8,7 @@
     <Project Path="src/Hosts/GISORA.Web/GISORA.Web.csproj" />
   </Folder>
   <Folder Name="/src/Infrastructure/">
+    <Project Path="src/Infrastructure/GISORA.Infrastructure.Geospatial/GISORA.Infrastructure.Geospatial.csproj" />
     <Project Path="src/Infrastructure/GISORA.Infrastructure.LocalStorage/GISORA.Infrastructure.LocalStorage.csproj" />
   </Folder>
   <Folder Name="/src/Modules/" />
@@ -36,6 +37,7 @@
   <Folder Name="/tests/Unit/">
     <Project Path="tests/Unit/GISORA.BuildingBlocks.UnitTests/GISORA.BuildingBlocks.UnitTests.csproj" />
     <Project Path="tests/Unit/GISORA.Geospatial.UnitTests/GISORA.Geospatial.UnitTests.csproj" />
+    <Project Path="tests/Unit/GISORA.Infrastructure.Geospatial.UnitTests/GISORA.Infrastructure.Geospatial.UnitTests.csproj" />
     <Project Path="tests/Unit/GISORA.Infrastructure.LocalStorage.UnitTests/GISORA.Infrastructure.LocalStorage.UnitTests.csproj" />
     <Project Path="tests/Unit/GISORA.Properties.UnitTests/GISORA.Properties.UnitTests.csproj" />
     <Project Path="tests/Unit/GISORA.Territory.UnitTests/GISORA.Territory.UnitTests.csproj" />

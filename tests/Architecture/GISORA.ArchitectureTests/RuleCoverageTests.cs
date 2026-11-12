@@ -23,6 +23,7 @@ public class RuleCoverageTests
             "GISORA.Properties.Domain",
             "GISORA.Properties.Application",
             "GISORA.Infrastructure.LocalStorage",
+            "GISORA.Infrastructure.Geospatial",
             "GISORA.Shared.DesignSystem",
             "GISORA.Web",
         ];

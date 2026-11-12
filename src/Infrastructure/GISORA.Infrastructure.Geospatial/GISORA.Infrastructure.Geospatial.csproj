@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>GISORA.Infrastructure.Geospatial</RootNamespace>
+    <Description>Implementacao das portas geograficas com Turf.js e Proj4js via JavaScript Interop.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="GISORA.Infrastructure.Geospatial.UnitTests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\BuildingBlocks\GISORA.BuildingBlocks.Domain\GISORA.BuildingBlocks.Domain.csproj" />
+    <ProjectReference Include="..\..\Modules\Geospatial\GISORA.Geospatial.Domain\GISORA.Geospatial.Domain.csproj" />
+    <ProjectReference Include="..\..\Modules\Geospatial\GISORA.Geospatial.Application\GISORA.Geospatial.Application.csproj" />
+  </ItemGroup>
+
+</Project>
