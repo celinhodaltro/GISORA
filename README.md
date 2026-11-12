@@ -79,6 +79,7 @@ Aviso: enquanto nao houver autenticacao e API, a aplicacao opera em modo demonst
 ## Documentacao
 
 - [Arquitetura](docs/architecture.md)
+- [Guia da POC](docs/poc.md)
 - [Roadmap](docs/roadmap.md)
 - [Bounded contexts](docs/bounded-contexts.md)
 - [Regras de dependencia](docs/dependency-rules.md)
