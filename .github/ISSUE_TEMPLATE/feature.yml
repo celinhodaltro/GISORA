@@ -1,0 +1,51 @@
+name: Feature
+description: Nova capacidade funcional
+title: "feat: "
+labels: ["feature"]
+body:
+  - type: textarea
+    id: objetivo
+    attributes:
+      label: Objetivo
+      description: Qual problema de negocio ou capacidade esta sendo entregue.
+    validations:
+      required: true
+  - type: textarea
+    id: escopo
+    attributes:
+      label: Escopo
+      description: O que esta incluido e o que esta explicitamente fora.
+    validations:
+      required: true
+  - type: textarea
+    id: aceite
+    attributes:
+      label: Criterios de aceite
+      description: Lista verificavel. Cada item deve poder virar um teste ou uma verificacao objetiva.
+      value: |
+        - [ ]
+        - [ ]
+    validations:
+      required: true
+  - type: dropdown
+    id: contexto
+    attributes:
+      label: Bounded context
+      options:
+        - Identity
+        - Territory
+        - Properties
+        - Roads
+        - PublicFacilities
+        - Cemetery
+        - Rural
+        - UrbanPlanning
+        - Licensing
+        - Inspection
+        - Imagery
+        - Geospatial
+        - Integration
+        - Reports
+        - Transversal
+    validations:
+      required: true

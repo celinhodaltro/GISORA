@@ -1,0 +1,30 @@
+name: Infraestrutura
+description: Build, repositorio, CI/CD ou ambiente
+title: "infra: "
+labels: ["infrastructure"]
+body:
+  - type: textarea
+    id: objetivo
+    attributes:
+      label: Objetivo
+    validations:
+      required: true
+  - type: textarea
+    id: escopo
+    attributes:
+      label: Escopo
+    validations:
+      required: true
+  - type: textarea
+    id: aceite
+    attributes:
+      label: Criterios de aceite
+      value: |
+        - [ ]
+    validations:
+      required: true
+  - type: textarea
+    id: riscos
+    attributes:
+      label: Impacto e riscos
+      description: O que quebra se isso falhar; como reverter.

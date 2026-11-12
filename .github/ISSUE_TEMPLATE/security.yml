@@ -1,0 +1,36 @@
+name: Seguranca
+description: Vulnerabilidade, privacidade ou controle de acesso
+title: "security: "
+labels: ["security"]
+body:
+  - type: textarea
+    id: descricao
+    attributes:
+      label: Descricao
+      description: Nao inclua dados pessoais reais nem segredos nesta issue.
+    validations:
+      required: true
+  - type: dropdown
+    id: categoria
+    attributes:
+      label: Categoria
+      options:
+        - Exposicao de dado pessoal
+        - Controle de acesso / permissao
+        - Armazenamento de segredo
+        - Validacao de entrada
+        - Dependencia vulneravel
+        - Outro
+    validations:
+      required: true
+  - type: textarea
+    id: impacto
+    attributes:
+      label: Impacto
+      description: Quem e afetado e qual a severidade.
+    validations:
+      required: true
+  - type: textarea
+    id: mitigacao
+    attributes:
+      label: Mitigacao proposta

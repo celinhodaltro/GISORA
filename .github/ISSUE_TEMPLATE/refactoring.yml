@@ -1,0 +1,33 @@
+name: Refatoracao
+description: Reestruturacao interna sem mudanca de comportamento
+title: "refactor: "
+labels: ["refactoring"]
+body:
+  - type: textarea
+    id: problema
+    attributes:
+      label: Problema atual
+      description: Qual complexidade, acoplamento ou duplicacao justifica a mudanca.
+    validations:
+      required: true
+  - type: textarea
+    id: proposta
+    attributes:
+      label: Proposta
+      description: O que muda e qual beneficio concreto.
+    validations:
+      required: true
+  - type: textarea
+    id: aceite
+    attributes:
+      label: Criterios de aceite
+      value: |
+        - [ ] Comportamento preservado (testes existentes passando)
+        - [ ]
+    validations:
+      required: true
+  - type: textarea
+    id: riscos
+    attributes:
+      label: Riscos
+      description: O que pode quebrar e como detectar.

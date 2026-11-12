@@ -1,0 +1,27 @@
+name: Documentacao
+description: ADR, guia tecnico ou matriz de rastreabilidade
+title: "docs: "
+labels: ["documentation"]
+body:
+  - type: textarea
+    id: objetivo
+    attributes:
+      label: Objetivo
+    validations:
+      required: true
+  - type: textarea
+    id: conteudo
+    attributes:
+      label: Conteudo esperado
+      description: Documentos e secoes a criar ou atualizar.
+    validations:
+      required: true
+  - type: textarea
+    id: aceite
+    attributes:
+      label: Criterios de aceite
+      value: |
+        - [ ] Documento publicado em docs/
+        - [ ] Referencias e versoes verificadas
+    validations:
+      required: true
