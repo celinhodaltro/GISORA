@@ -38,6 +38,8 @@ public class CemeteryTests(WebAppFixture fixture)
         ArgumentNullException.ThrowIfNull(box);
         await page.Mouse.ClickAsync(box.X + (box.Width / 2), box.Y + (box.Height / 2));
 
+        await Expect(page.Locator(".cemetery-coordinate")).ToBeVisibleAsync();
+
         await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Adicionar jazigo" }).ClickAsync();
         await Expect(page.GetByText("Jazigo cadastrado.")).ToBeVisibleAsync();
 
