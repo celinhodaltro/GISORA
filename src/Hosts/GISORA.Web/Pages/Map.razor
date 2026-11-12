@@ -1,0 +1,74 @@
+@page "/map"
+@using GISORA.Geospatial.Application
+@using GISORA.Properties.Application
+@using GISORA.Shared.Maps
+@using GISORA.Shared.Maps.Components
+@using GISORA.Web.Maps
+@inject IPropertyMapQueries MapQueries
+@inject IGeoJsonSerializer Serializer
+
+<PageHeader Title="Mapa" Description="Imoveis com geometria cadastrada neste dispositivo." />
+
+@if (_loading)
+{
+    <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+}
+else if (_items.Count == 0)
+{
+    <EmptyState Title="Nenhum imovel com geometria"
+                Description="Cadastre a geometria do lote para visualizar o imovel no mapa." />
+}
+else
+{
+    <div class="map-page">
+        <MapView @ref="_map" CenterLatitude="-7.97" CenterLongitude="-35.24" Zoom="13">
+            <MapToolbar />
+            <CoordinateControl />
+            <FeatureSelector OnSelected="Select" />
+        </MapView>
+    </div>
+
+    @if (_selected is null)
+    {
+        <p class="map-page__hint">Selecione um imovel no mapa para ver os atributos.</p>
+    }
+    else
+    {
+        <FeatureInspector Title="Imovel selecionado" Feature="_selected" />
+    }
+}
+
+@code {
+    private MapView? _map;
+    private IReadOnlyList<PropertyMapItem> _items = [];
+    private MapFeature? _selected;
+    private bool _loading = true;
+    private bool _layerApplied;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _items = await MapQueries.GetMapItemsAsync();
+        _loading = false;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_loading || _layerApplied || _items.Count == 0 || _map is null)
+        {
+            return;
+        }
+
+        _layerApplied = true;
+
+        var geoJson = PropertyMapProjector.ToFeatureCollection(_items, Serializer);
+
+        await _map.SetLayerAsync(new MapLayer("properties", "Imoveis", geoJson));
+        await _map.FitBoundsAsync();
+    }
+
+    private void Select(MapFeature feature)
+    {
+        _selected = feature;
+        StateHasChanged();
+    }
+}
