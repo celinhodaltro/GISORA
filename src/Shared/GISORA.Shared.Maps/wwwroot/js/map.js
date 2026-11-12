@@ -128,12 +128,119 @@ export function invalidateSize(elementId) {
   return true;
 }
 
+const vertexIcon = L.divIcon({ className: 'gisora-map-vertex', iconSize: [12, 12] });
+
+function disableDraw(elementId) {
+  const instance = instances.get(elementId);
+  if (!instance || !instance.draw) {
+    return;
+  }
+
+  if (instance.draw.line) {
+    instance.draw.line.remove();
+  }
+
+  if (instance.draw.handles) {
+    instance.draw.handles.forEach((handle) => handle.remove());
+  }
+
+  if (instance.draw.polygon) {
+    instance.draw.polygon.remove();
+  }
+
+  if (instance.draw.onMapClick) {
+    instance.map.off('click', instance.draw.onMapClick);
+  }
+
+  instance.draw = null;
+}
+
+export function enableDraw(elementId, dotNetRef) {
+  const instance = instances.get(elementId);
+  if (!instance) {
+    return false;
+  }
+
+  disableDraw(elementId);
+
+  const state = { points: [], line: null, polygon: null, handles: null, dotNetRef };
+  state.onMapClick = (event) => {
+    state.points.push(event.latlng);
+
+    if (state.line === null) {
+      state.line = L.polyline(state.points, { color: '#1f6f4a', weight: 3 }).addTo(instance.map);
+    } else {
+      state.line.setLatLngs(state.points);
+    }
+  };
+
+  instance.draw = state;
+  instance.map.on('click', state.onMapClick);
+
+  return true;
+}
+
+export function finishDraw(elementId) {
+  const instance = instances.get(elementId);
+  if (!instance || !instance.draw || instance.draw.points.length < 3) {
+    return false;
+  }
+
+  const points = instance.draw.points;
+  const dotNetRef = instance.draw.dotNetRef;
+  const ring = points.map((point) => [point.lng, point.lat]);
+  ring.push([points[0].lng, points[0].lat]);
+
+  disableDraw(elementId);
+  dotNetRef.invokeMethodAsync('HandleGeometryCompleted', JSON.stringify({ type: 'Polygon', coordinates: [ring] }));
+
+  return true;
+}
+
+export function cancelDraw(elementId) {
+  disableDraw(elementId);
+
+  return true;
+}
+
+export function enableEdit(elementId, geoJson, dotNetRef) {
+  const instance = instances.get(elementId);
+  if (!instance) {
+    return false;
+  }
+
+  disableDraw(elementId);
+
+  const geometry = JSON.parse(geoJson);
+  const outer = geometry.coordinates[0];
+  const latlngs = outer.slice(0, outer.length - 1).map(([lng, lat]) => L.latLng(lat, lng));
+  const polygon = L.polygon(latlngs, { color: '#2f7fb5', weight: 3 }).addTo(instance.map);
+
+  const handles = latlngs.map((latlng) => L.marker(latlng, { draggable: true, icon: vertexIcon }).addTo(instance.map));
+  const notify = () => {
+    const points = handles.map((handle) => handle.getLatLng());
+    polygon.setLatLngs(points);
+
+    const ring = points.map((point) => [point.lng, point.lat]);
+    ring.push([points[0].lng, points[0].lat]);
+    dotNetRef.invokeMethodAsync('HandleGeometryEdited', JSON.stringify({ type: 'Polygon', coordinates: [ring] }));
+  };
+
+  handles.forEach((handle) => handle.on('drag', notify));
+
+  instance.draw = { points: [], line: null, polygon, handles, onMapClick: null, dotNetRef };
+  instance.map.fitBounds(polygon.getBounds(), { padding: [24, 24] });
+
+  return true;
+}
+
 export function destroy(elementId) {
   const instance = instances.get(elementId);
   if (!instance) {
     return false;
   }
 
+  disableDraw(elementId);
   instance.map.remove();
   instances.delete(elementId);
 
