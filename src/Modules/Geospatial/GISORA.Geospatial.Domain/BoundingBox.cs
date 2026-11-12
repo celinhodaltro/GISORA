@@ -2,9 +2,6 @@ using GISORA.BuildingBlocks.Domain;
 
 namespace GISORA.Geospatial.Domain;
 
-/// <summary>
-/// Retangulo envolvente alinhado aos eixos do CRS informado.
-/// </summary>
 public sealed class BoundingBox : ValueObject
 {
     public BoundingBox(double minX, double minY, double maxX, double maxY, SpatialReference spatialReference)

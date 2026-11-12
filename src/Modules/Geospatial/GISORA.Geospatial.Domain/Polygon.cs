@@ -2,9 +2,6 @@ using GISORA.BuildingBlocks.Domain;
 
 namespace GISORA.Geospatial.Domain;
 
-/// <summary>
-/// Poligono com anel externo e aneis internos (buracos). Todos os aneis fechados e com o mesmo CRS.
-/// </summary>
 public sealed class Polygon : Geometry
 {
     private readonly CoordinateSequence[] _rings;
@@ -30,7 +27,6 @@ public sealed class Polygon : Geometry
 
     public IReadOnlyList<CoordinateSequence> Rings => _rings;
 
-    /// <summary>Anel externo (fronteira do poligono).</summary>
     public CoordinateSequence ExteriorRing => _rings[0];
 
     public IReadOnlyList<CoordinateSequence> InteriorRings => _rings[1..];

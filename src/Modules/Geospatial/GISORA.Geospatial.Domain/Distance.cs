@@ -2,9 +2,6 @@ using GISORA.BuildingBlocks.Domain;
 
 namespace GISORA.Geospatial.Domain;
 
-/// <summary>
-/// Distancia sempre nao negativa, expressa em metros.
-/// </summary>
 public sealed class Distance : ValueObject
 {
     private Distance(decimal meters)

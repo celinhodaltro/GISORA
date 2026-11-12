@@ -1,8 +1,5 @@
 namespace GISORA.BuildingBlocks.Domain;
 
-/// <summary>
-/// Checagens de invariante com mensagem e codigo estaveis.
-/// </summary>
 public static class Guard
 {
     public static T NotNull<T>(T? value, string parameterName)

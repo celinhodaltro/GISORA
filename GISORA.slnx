@@ -9,9 +9,14 @@
     <Project Path="src/Modules/Geospatial/GISORA.Geospatial.Application/GISORA.Geospatial.Application.csproj" />
     <Project Path="src/Modules/Geospatial/GISORA.Geospatial.Domain/GISORA.Geospatial.Domain.csproj" />
   </Folder>
+  <Folder Name="/src/Modules/Territory/">
+    <Project Path="src/Modules/Territory/GISORA.Territory.Application/GISORA.Territory.Application.csproj" />
+    <Project Path="src/Modules/Territory/GISORA.Territory.Domain/GISORA.Territory.Domain.csproj" />
+  </Folder>
   <Folder Name="/tests/" />
   <Folder Name="/tests/Unit/">
     <Project Path="tests/Unit/GISORA.BuildingBlocks.UnitTests/GISORA.BuildingBlocks.UnitTests.csproj" />
     <Project Path="tests/Unit/GISORA.Geospatial.UnitTests/GISORA.Geospatial.UnitTests.csproj" />
+    <Project Path="tests/Unit/GISORA.Territory.UnitTests/GISORA.Territory.UnitTests.csproj" />
   </Folder>
 </Solution>

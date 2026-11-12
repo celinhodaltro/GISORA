@@ -2,9 +2,6 @@ using GISORA.BuildingBlocks.Domain;
 
 namespace GISORA.Geospatial.Domain;
 
-/// <summary>
-/// Sequencia ordenada de coordenadas. Todas devem compartilhar o mesmo CRS.
-/// </summary>
 public sealed class CoordinateSequence : ValueObject
 {
     private readonly Coordinate[] _coordinates;
@@ -31,7 +28,6 @@ public sealed class CoordinateSequence : ValueObject
 
     public int Count => _coordinates.Length;
 
-    /// <summary>Anel fechado: primeira e ultima coordenadas iguais.</summary>
     public bool IsClosed => _coordinates.Length > 1 && _coordinates[0] == _coordinates[^1];
 
     protected override IEnumerable<object?> GetEqualityComponents()

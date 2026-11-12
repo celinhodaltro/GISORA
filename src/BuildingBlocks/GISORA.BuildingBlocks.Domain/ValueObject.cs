@@ -1,8 +1,5 @@
 namespace GISORA.BuildingBlocks.Domain;
 
-/// <summary>
-/// Objeto de valor: sem identidade, imutavel e comparado pelos componentes de igualdade.
-/// </summary>
 public abstract class ValueObject : IEquatable<ValueObject>
 {
     protected abstract IEnumerable<object?> GetEqualityComponents();
