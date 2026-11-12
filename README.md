@@ -59,6 +59,17 @@ dotnet build
 dotnet test
 ```
 
+Aplicacao web publicada em https://celinhodaltro.github.io/GISORA/ a cada merge na `main`.
+
+## Documentacao
+
+- [Arquitetura](docs/architecture.md)
+- [Bounded contexts](docs/bounded-contexts.md)
+- [Regras de dependencia](docs/dependency-rules.md)
+- [Convencoes de codigo](docs/conventions.md)
+- [Fontes de dados](docs/data-sources.md)
+- [ADRs](docs/adr/README.md)
+
 ## Processo
 
 Toda alteração nasce de uma issue, em uma branch exclusiva, integrada por pull request com verificações obrigatórias. Gestão via GitHub CLI.
