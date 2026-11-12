@@ -27,6 +27,9 @@
     <Project Path="src/Shared/GISORA.Shared.DesignSystem/GISORA.Shared.DesignSystem.csproj" />
   </Folder>
   <Folder Name="/tests/" />
+  <Folder Name="/tests/Architecture/">
+    <Project Path="tests/Architecture/GISORA.ArchitectureTests/GISORA.ArchitectureTests.csproj" />
+  </Folder>
   <Folder Name="/tests/Unit/">
     <Project Path="tests/Unit/GISORA.BuildingBlocks.UnitTests/GISORA.BuildingBlocks.UnitTests.csproj" />
     <Project Path="tests/Unit/GISORA.Geospatial.UnitTests/GISORA.Geospatial.UnitTests.csproj" />

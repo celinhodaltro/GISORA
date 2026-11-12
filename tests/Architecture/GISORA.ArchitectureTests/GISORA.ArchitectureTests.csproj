@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>GISORA.ArchitectureTests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="TngTech.ArchUnitNET" />
+    <PackageReference Include="TngTech.ArchUnitNET.xUnit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\BuildingBlocks\GISORA.BuildingBlocks.Domain\GISORA.BuildingBlocks.Domain.csproj" />
+    <ProjectReference Include="..\..\..\src\BuildingBlocks\GISORA.BuildingBlocks.Application\GISORA.BuildingBlocks.Application.csproj" />
+    <ProjectReference Include="..\..\..\src\Modules\Geospatial\GISORA.Geospatial.Domain\GISORA.Geospatial.Domain.csproj" />
+    <ProjectReference Include="..\..\..\src\Modules\Geospatial\GISORA.Geospatial.Application\GISORA.Geospatial.Application.csproj" />
+    <ProjectReference Include="..\..\..\src\Modules\Territory\GISORA.Territory.Domain\GISORA.Territory.Domain.csproj" />
+    <ProjectReference Include="..\..\..\src\Modules\Territory\GISORA.Territory.Application\GISORA.Territory.Application.csproj" />
+    <ProjectReference Include="..\..\..\src\Modules\Properties\GISORA.Properties.Domain\GISORA.Properties.Domain.csproj" />
+    <ProjectReference Include="..\..\..\src\Modules\Properties\GISORA.Properties.Application\GISORA.Properties.Application.csproj" />
+    <ProjectReference Include="..\..\..\src\Infrastructure\GISORA.Infrastructure.LocalStorage\GISORA.Infrastructure.LocalStorage.csproj" />
+    <ProjectReference Include="..\..\..\src\Shared\GISORA.Shared.DesignSystem\GISORA.Shared.DesignSystem.csproj" />
+    <ProjectReference Include="..\..\..\src\Hosts\GISORA.Web\GISORA.Web.csproj" />
+  </ItemGroup>
+
+</Project>
