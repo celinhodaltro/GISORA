@@ -14,6 +14,7 @@ public class VisualIdentityTests(WebAppFixture fixture)
         await page.GotoAsync(fixture.BaseUrl);
 
         await Expect(page.Locator(".app-brand")).ToContainTextAsync("GISORA");
+        await Expect(page.Locator(".app-brand__mark img")).ToBeVisibleAsync();
         await Expect(page.Locator(".app-header__env")).ToContainTextAsync("Base local");
         await Expect(page.Locator(".app-header__municipality")).ToHaveTextAsync("Nao definido");
         await Expect(page.GetByRole(AriaRole.Link, new PageGetByRoleOptions { Name = "Territorio" })).ToBeVisibleAsync();

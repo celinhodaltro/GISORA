@@ -8,6 +8,7 @@
 | [roadmap.md](roadmap.md) | Estado por fase e dividas conhecidas |
 | [data-sources.md](data-sources.md) | Proveniencia, CRS, precisao e marcação de dado demonstrativo |
 | [conventions.md](conventions.md) | Convencoes de codigo e componentizacao |
+| [brand.md](brand.md) | Marca, ativos, dimensoes e regras de aplicacao |
 | [adr/](adr/) | Decisoes arquiteturais registradas |
 
 ## ADRs
