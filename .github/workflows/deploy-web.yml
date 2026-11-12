@@ -44,7 +44,10 @@ jobs:
             nuget-${{ runner.os }}-
 
       - name: Publish
-        run: dotnet publish src/Hosts/GISORA.Web -c Release -o build/web -p:BaseHref=/GISORA/
+        run: dotnet publish src/Hosts/GISORA.Web -c Release -o build/web
+
+      - name: Set base href
+        run: sed -i 's#<base href="/" />#<base href="/GISORA/" />#' build/web/wwwroot/index.html
 
       - name: Add SPA fallback
         run: cp build/web/wwwroot/index.html build/web/wwwroot/404.html
