@@ -72,14 +72,16 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 2rem;
-    height: 2rem;
-    border-radius: 8px;
-    background: var(--gisora-blue-700);
-    color: #ffffff;
-    font-weight: 700;
-    font-size: 1rem;
-    letter-spacing: 0.02em;
+    width: 2.25rem;
+    height: 2.25rem;
+    flex: 0 0 auto;
+}
+
+.app-brand__mark img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
 }
 
 .app-brand__text {
@@ -254,14 +256,15 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 4rem;
-    height: 4rem;
-    border-radius: 14px;
-    background: var(--gisora-blue-700);
-    color: #ffffff;
-    font-size: 0.8rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
+    width: 4.5rem;
+    height: 4.5rem;
+}
+
+.app-loading__mark img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
 }
 
 .app-loading__bar {
