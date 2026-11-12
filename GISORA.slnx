@@ -4,8 +4,14 @@
     <Project Path="src/BuildingBlocks/GISORA.BuildingBlocks.Application/GISORA.BuildingBlocks.Application.csproj" />
     <Project Path="src/BuildingBlocks/GISORA.BuildingBlocks.Domain/GISORA.BuildingBlocks.Domain.csproj" />
   </Folder>
+  <Folder Name="/src/Modules/" />
+  <Folder Name="/src/Modules/Geospatial/">
+    <Project Path="src/Modules/Geospatial/GISORA.Geospatial.Application/GISORA.Geospatial.Application.csproj" />
+    <Project Path="src/Modules/Geospatial/GISORA.Geospatial.Domain/GISORA.Geospatial.Domain.csproj" />
+  </Folder>
   <Folder Name="/tests/" />
   <Folder Name="/tests/Unit/">
     <Project Path="tests/Unit/GISORA.BuildingBlocks.UnitTests/GISORA.BuildingBlocks.UnitTests.csproj" />
+    <Project Path="tests/Unit/GISORA.Geospatial.UnitTests/GISORA.Geospatial.UnitTests.csproj" />
   </Folder>
 </Solution>
