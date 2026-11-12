@@ -1,0 +1,115 @@
+@page "/streets"
+@using GISORA.Roads.Application
+@using GISORA.Roads.Application.Commands
+@using GISORA.Roads.Domain
+@inject IStreetQueries Queries
+@inject CreateStreetHandler CreateStreet
+
+<PageHeader Title="Logradouros" Description="Ruas, avenidas, travessas, rodovias e estradas rurais." />
+
+<RadzenCard>
+    <div class="gisora-toolbar">
+        <RadzenTextBox @bind-Value="_name" Placeholder="Nome do logradouro" />
+        <RadzenDropDown TValue="TypeOption" @bind-Value="_selectedType" Data="TypeOptions" TextProperty="Label" />
+        <RadzenButton Text="Cadastrar" ButtonStyle="ButtonStyle.Primary" Click="CreateAsync" />
+        <RadzenButton Text="Buscar" ButtonStyle="ButtonStyle.Light" Click="SearchAsync" />
+    </div>
+
+    @if (_error is not null)
+    {
+        <p class="streets__error" role="alert">@_error</p>
+    }
+
+    <RadzenDataGrid @ref="_grid"
+                    TItem="StreetListItem"
+                    Data="@_items"
+                    Count="@_total"
+                    LoadData="LoadAsync"
+                    AllowPaging="true"
+                    PageSize="@PageSize"
+                    Density="Density.Compact"
+                    EmptyText="Nenhum logradouro cadastrado.">
+        <Columns>
+            <RadzenDataGridColumn TItem="StreetListItem" Property="Name" Title="Nome" />
+            <RadzenDataGridColumn TItem="StreetListItem" Title="Tipo" Width="160px">
+                <Template Context="street">
+                    @TypeLabel(street.Type)
+                </Template>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+</RadzenCard>
+
+@code {
+    private const int PageSize = 10;
+
+    private sealed record TypeOption(StreetType Value, string Label);
+
+    private static readonly TypeOption[] TypeOptions =
+    [
+        new(StreetType.Street, "Rua"),
+        new(StreetType.Avenue, "Avenida"),
+        new(StreetType.Lane, "Travessa"),
+        new(StreetType.Highway, "Rodovia"),
+        new(StreetType.RuralRoad, "Estrada rural"),
+    ];
+
+    private RadzenDataGrid<StreetListItem>? _grid;
+    private IReadOnlyList<StreetListItem> _items = [];
+    private TypeOption _selectedType = TypeOptions[0];
+    private string? _name;
+    private string? _error;
+    private int _total;
+
+    private async Task LoadAsync(LoadDataArgs args)
+    {
+        var pageNumber = args.Skip is { } skip ? (skip / PageSize) + 1 : 1;
+
+        await LoadPageAsync(pageNumber);
+    }
+
+    protected override async Task OnInitializedAsync() => await LoadPageAsync(1);
+
+    private async Task LoadPageAsync(int pageNumber)
+    {
+        var page = await Queries.SearchAsync(new StreetFilter
+        {
+            NameContains = _name,
+            PageNumber = pageNumber,
+            PageSize = PageSize,
+        });
+
+        _items = page.Items;
+        _total = page.TotalCount;
+    }
+
+    private async Task CreateAsync()
+    {
+        var result = await CreateStreet.HandleAsync(new CreateStreetCommand(_name ?? string.Empty, _selectedType.Value, null));
+
+        if (result.IsFailure)
+        {
+            _error = result.Error.Message;
+
+            return;
+        }
+
+        _error = null;
+        _name = string.Empty;
+        await SearchAsync();
+    }
+
+    private async Task SearchAsync()
+    {
+        if (_grid is null)
+        {
+            return;
+        }
+
+        _grid.CurrentPage = 0;
+        await _grid.Reload();
+    }
+
+    private static string TypeLabel(StreetType type)
+        => TypeOptions.First(option => option.Value == type).Label;
+}
