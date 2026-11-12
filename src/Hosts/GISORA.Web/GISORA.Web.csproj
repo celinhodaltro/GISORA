@@ -19,6 +19,7 @@
     <ProjectReference Include="..\..\Shared\GISORA.Shared.Maps\GISORA.Shared.Maps.csproj" />
     <ProjectReference Include="..\..\Infrastructure\GISORA.Infrastructure.LocalStorage\GISORA.Infrastructure.LocalStorage.csproj" />
     <ProjectReference Include="..\..\Infrastructure\GISORA.Infrastructure.Geospatial\GISORA.Infrastructure.Geospatial.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\GISORA.Infrastructure.Integration\GISORA.Infrastructure.Integration.csproj" />
     <ProjectReference Include="..\..\Modules\Territory\GISORA.Territory.Application\GISORA.Territory.Application.csproj" />
     <ProjectReference Include="..\..\Modules\Properties\GISORA.Properties.Application\GISORA.Properties.Application.csproj" />
     <ProjectReference Include="..\..\Modules\Roads\GISORA.Roads.Application\GISORA.Roads.Application.csproj" />
