@@ -34,7 +34,7 @@ public sealed class DemoDataSeeder(
         }
 
         var municipality = Require(await createMunicipality.HandleAsync(
-            new CreateMunicipalityCommand("Passira", "2611903"), cancellationToken));
+            new CreateMunicipalityCommand("Passira", "2610509"), cancellationToken));
 
         var district = Require(await createDistrict.HandleAsync(
             new CreateDistrictCommand(municipality, "Sede"), cancellationToken));

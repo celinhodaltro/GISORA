@@ -11,7 +11,7 @@
 
 ## Municipio de referencia
 
-Passira, Pernambuco. Codigo IBGE `2611903`.
+Passira, Pernambuco. Codigo IBGE `2610509`.
 
 | Camada | Fonte esperada | Situacao |
 | --- | --- | --- |
