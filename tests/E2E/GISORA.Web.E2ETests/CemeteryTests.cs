@@ -1,5 +1,4 @@
 using Microsoft.Playwright;
-
 using static Microsoft.Playwright.Assertions;
 
 namespace GISORA.Web.E2ETests;
@@ -33,11 +32,7 @@ public class CemeteryTests(WebAppFixture fixture)
 
         await page.GetByPlaceholder("Codigo do jazigo").FillAsync("J-01");
         await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Marcar jazigo" }).ClickAsync();
-        await page.WaitForTimeoutAsync(500);
-
-        var box = await page.Locator(".gisora-map").BoundingBoxAsync();
-        ArgumentNullException.ThrowIfNull(box);
-        await page.Mouse.ClickAsync(box.X + (box.Width / 2), box.Y + (box.Height / 2));
+        await ClickMapAsync(page, 0.5, 0.5);
 
         await Expect(page.Locator(".cemetery-coordinate")).ToBeVisibleAsync();
 
@@ -59,7 +54,11 @@ public class CemeteryTests(WebAppFixture fixture)
 
     private static async Task ClickMapAsync(IPage page, double relativeX, double relativeY)
     {
-        var box = await page.Locator(".gisora-map").BoundingBoxAsync();
+        var map = page.Locator(".gisora-map");
+        await map.ScrollIntoViewIfNeededAsync();
+        await page.WaitForTimeoutAsync(250);
+
+        var box = await map.BoundingBoxAsync();
         ArgumentNullException.ThrowIfNull(box);
 
         await page.Mouse.ClickAsync(
