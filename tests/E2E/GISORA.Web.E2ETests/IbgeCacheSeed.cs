@@ -32,7 +32,7 @@ internal static class IbgeCacheSeed
     {
         await page.GetByPlaceholder("Digite o nome do municipio").FillAsync(name);
         await page.Locator(".territory-suggestions button", new PageLocatorOptions { HasTextString = name }).First.ClickAsync();
-        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Cadastrar municipio" }).ClickAsync();
+        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Adicionar municipio" }).ClickAsync();
         await Expect(page.GetByText(name, new PageGetByTextOptions { Exact = true }).First).ToBeVisibleAsync();
     }
 }
