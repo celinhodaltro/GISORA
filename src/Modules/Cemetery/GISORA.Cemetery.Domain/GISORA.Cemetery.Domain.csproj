@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>GISORA.Cemetery.Domain</RootNamespace>
+    <Description>Cemiterios, setores, jazigos e sepultamentos.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="GISORA.Cemetery.UnitTests" />
+    <InternalsVisibleTo Include="GISORA.Infrastructure.LocalStorage" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\BuildingBlocks\GISORA.BuildingBlocks.Domain\GISORA.BuildingBlocks.Domain.csproj" />
+    <ProjectReference Include="..\..\Geospatial\GISORA.Geospatial.Domain\GISORA.Geospatial.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

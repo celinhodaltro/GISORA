@@ -361,6 +361,22 @@
       "gisora.buildingblocks.domain": {
         "type": "Project"
       },
+      "gisora.cemetery.application": {
+        "type": "Project",
+        "dependencies": {
+          "GISORA.BuildingBlocks.Application": "[0.1.0, )",
+          "GISORA.Cemetery.Domain": "[0.1.0, )",
+          "GISORA.Geospatial.Application": "[0.1.0, )",
+          "GISORA.Geospatial.Domain": "[0.1.0, )"
+        }
+      },
+      "gisora.cemetery.domain": {
+        "type": "Project",
+        "dependencies": {
+          "GISORA.BuildingBlocks.Domain": "[0.1.0, )",
+          "GISORA.Geospatial.Domain": "[0.1.0, )"
+        }
+      },
       "gisora.geospatial.application": {
         "type": "Project",
         "dependencies": {
@@ -394,6 +410,8 @@
         "type": "Project",
         "dependencies": {
           "GISORA.BuildingBlocks.Domain": "[0.1.0, )",
+          "GISORA.Cemetery.Application": "[0.1.0, )",
+          "GISORA.Cemetery.Domain": "[0.1.0, )",
           "GISORA.Geospatial.Domain": "[0.1.0, )",
           "GISORA.Properties.Application": "[0.1.0, )",
           "GISORA.Properties.Domain": "[0.1.0, )",
@@ -479,6 +497,7 @@
       "gisora.web": {
         "type": "Project",
         "dependencies": {
+          "GISORA.Cemetery.Application": "[0.1.0, )",
           "GISORA.Infrastructure.Geospatial": "[0.1.0, )",
           "GISORA.Infrastructure.Integration": "[0.1.0, )",
           "GISORA.Infrastructure.LocalStorage": "[0.1.0, )",

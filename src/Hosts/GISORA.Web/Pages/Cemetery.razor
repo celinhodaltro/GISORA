@@ -1,0 +1,480 @@
+@page "/cemetery"
+@using GISORA.Cemetery.Application
+@using GISORA.Cemetery.Application.Commands
+@using GISORA.Geospatial.Application
+@using GISORA.Geospatial.Domain
+@using GISORA.Shared.Maps
+@using GISORA.Shared.Maps.Components
+@using GISORA.Web.Maps
+@inject ICemeteryQueries Queries
+@inject CreateCemeteryHandler CreateCemetery
+@inject CreateCemeterySectorHandler CreateSector
+@inject CreateGraveHandler CreateGrave
+@inject RegisterBurialHandler RegisterBurial
+@inject ExhumeBurialHandler ExhumeBurial
+@inject IGeoJsonSerializer Serializer
+@inject ISpatialOperations Spatial
+
+<PageHeader Title="Cemiterios"
+            Description="Cemiterios, setores, jazigos e sepultamentos com controle geografico."
+            Icon="account_balance" />
+
+<div class="workspace">
+    <div class="workspace__map">
+        <MapView @ref="_map"
+                 CenterLatitude="-7.95"
+                 CenterLongitude="-35.25"
+                 Zoom="16"
+                 Height="var(--map-height-map)"
+                 OnReady="ApplyLayersAsync">
+            <MapToolbar />
+            <LayerControl Layers="_layers" />
+            <CoordinateControl Crs="EPSG:4326" />
+            <DrawingTool @ref="_tool" OnCompleted="SetBoundaryAsync" OnPointPicked="SetGraveLocation" />
+        </MapView>
+    </div>
+
+    <aside class="workspace__side">
+        <MapLegend Layers="_layers" />
+
+        <RadzenCard>
+            <h2 class="workspace__panel-title">Cemiterio</h2>
+
+            <div class="cemetery-form">
+                <input class="territory-input" placeholder="Nome do cemiterio" @bind="_name" />
+
+                <div class="gisora-toolbar">
+                    <RadzenButton Text="Desenhar limite" Variant="Variant.Outlined" Click="DrawAsync" />
+                    <RadzenButton Text="Concluir desenho" Variant="Variant.Outlined" Click="FinishAsync" />
+                </div>
+
+                @if (_areaSquareMeters is { } area)
+                {
+                    <p class="cemetery-area">Area: @area.ToString("N2") m2</p>
+                }
+
+                <RadzenButton Text="Salvar cemiterio"
+                              ButtonStyle="ButtonStyle.Primary"
+                              Disabled="@(_boundary is null || string.IsNullOrWhiteSpace(_name))"
+                              Click="SaveCemeteryAsync" />
+            </div>
+        </RadzenCard>
+
+        <RadzenCard>
+            <h2 class="workspace__panel-title">Setor</h2>
+
+            <div class="gisora-toolbar">
+                <select class="territory-select" @bind="_selectedCemeteryId" @bind:after="ReloadSectorsAsync" aria-label="Cemiterio">
+                    @foreach (var cemetery in _cemeteries)
+                    {
+                        <option value="@cemetery.Id.Value">@cemetery.Name</option>
+                    }
+                </select>
+
+                <input class="territory-input cemetery-input-sm" placeholder="Codigo do setor" @bind="_sectorCode" />
+                <RadzenButton Icon="add"
+                              aria-label="Adicionar setor"
+                              title="Adicionar setor"
+                              ButtonStyle="ButtonStyle.Primary"
+                              Click="CreateSectorAsync" />
+            </div>
+        </RadzenCard>
+
+        <RadzenCard>
+            <h2 class="workspace__panel-title">Jazigo</h2>
+
+            <div class="gisora-toolbar">
+                <select class="territory-select" @bind="_selectedSectorId" @bind:after="ReloadGravesAsync" aria-label="Setor">
+                    @foreach (var sector in _sectors)
+                    {
+                        <option value="@sector.Id.Value">@sector.Code</option>
+                    }
+                </select>
+
+                <input class="territory-input cemetery-input-sm" placeholder="Codigo do jazigo" @bind="_graveCode" />
+                <RadzenButton Text="Marcar jazigo" Variant="Variant.Outlined" Click="PickGraveAsync" />
+                <RadzenButton Icon="add"
+                              aria-label="Adicionar jazigo"
+                              title="Adicionar jazigo"
+                              ButtonStyle="ButtonStyle.Primary"
+                              Click="CreateGraveAsync" />
+            </div>
+
+            @if (_graveLocation is { } location)
+            {
+                <p class="cemetery-area">@location.Latitude.ToString("F5"), @location.Longitude.ToString("F5")</p>
+            }
+        </RadzenCard>
+
+        <RadzenCard>
+            <h2 class="workspace__panel-title">Sepultamento</h2>
+
+            <div class="gisora-toolbar">
+                <select class="territory-select" @bind="_selectedGraveId" aria-label="Jazigo">
+                    @foreach (var grave in _graves)
+                    {
+                        <option value="@grave.Id.Value">@grave.Code @(grave.IsOccupied ? "(ocupado)" : string.Empty)</option>
+                    }
+                </select>
+
+                <input class="territory-input" placeholder="Nome da pessoa" @bind="_personName" />
+                <RadzenButton Text="Sepultar" ButtonStyle="ButtonStyle.Primary" Click="RegisterBurialAsync" />
+            </div>
+
+            @if (_error is not null)
+            {
+                <p class="workspace__error" role="alert">@_error</p>
+            }
+
+            @if (_message is not null)
+            {
+                <p class="workspace__message" role="status">@_message</p>
+            }
+        </RadzenCard>
+    </aside>
+</div>
+
+<RadzenCard>
+    <h2 class="workspace__panel-title">Jazigos</h2>
+
+    <RadzenDataGrid Data="@_graves" TItem="GraveListItem" Density="Density.Compact" AllowPaging="false" EmptyText="Nenhum jazigo cadastrado.">
+        <Columns>
+            <RadzenDataGridColumn TItem="GraveListItem" Property="Code" Title="Jazigo" Width="140px" />
+            <RadzenDataGridColumn TItem="GraveListItem" Title="Situacao" Width="140px">
+                <Template Context="grave">
+                    @(grave.IsOccupied ? "Ocupado" : "Livre")
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="GraveListItem" Property="ActiveBurialPerson" Title="Sepultado" />
+            <RadzenDataGridColumn TItem="GraveListItem" Title="Acoes" Width="140px">
+                <Template Context="grave">
+                    @if (grave.IsOccupied && grave.ActiveBurialId is { } burialId)
+                    {
+                        <RadzenButton Text="Exumar" Variant="Variant.Outlined" Size="ButtonSize.Small" Click="@(() => ExhumeAsync(grave.Id, burialId))" />
+                    }
+                </Template>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+</RadzenCard>
+
+@code {
+    private MapView? _map;
+    private DrawingTool? _tool;
+    private readonly List<MapLayer> _layers = [];
+
+    private IReadOnlyList<CemeteryListItem> _cemeteries = [];
+    private IReadOnlyList<CemeterySectorListItem> _sectors = [];
+    private IReadOnlyList<GraveListItem> _graves = [];
+
+    private Guid? _selectedCemeteryId;
+    private Guid? _selectedSectorId;
+    private Guid? _selectedGraveId;
+
+    private string? _name;
+    private string? _sectorCode;
+    private string? _graveCode;
+    private string? _personName;
+
+    private Polygon? _boundary;
+    private MapCoordinate? _graveLocation;
+    private decimal? _areaSquareMeters;
+    private string? _error;
+    private string? _message;
+    private bool _applied;
+
+    protected override async Task OnInitializedAsync() => await ReloadAsync();
+
+    private async Task ApplyLayersAsync()
+    {
+        if (_map is null || _applied)
+        {
+            return;
+        }
+
+        _applied = true;
+
+        foreach (var layer in _layers)
+        {
+            await _map.SetLayerAsync(layer);
+        }
+
+        await _map.FitBoundsAsync();
+    }
+
+    private async Task ReloadAsync()
+    {
+        _cemeteries = await Queries.ListCemeteriesAsync();
+
+        if (_selectedCemeteryId is null && _cemeteries.Count > 0)
+        {
+            _selectedCemeteryId = _cemeteries[0].Id.Value;
+        }
+
+        await ReloadSectorsAsync();
+    }
+
+    private async Task ReloadSectorsAsync()
+    {
+        _sectors = await Queries.ListSectorsAsync(
+            _selectedCemeteryId is { } cemeteryId ? new GISORA.Cemetery.Domain.CemeteryId(cemeteryId) : null);
+
+        if (_selectedSectorId is null && _sectors.Count > 0)
+        {
+            _selectedSectorId = _sectors[0].Id.Value;
+        }
+
+        await ReloadGravesAsync();
+    }
+
+    private async Task ReloadGravesAsync()
+    {
+        _graves = await Queries.ListGravesAsync(
+            _selectedSectorId is { } sectorId ? new GISORA.Cemetery.Domain.CemeterySectorId(sectorId) : null);
+
+        if (_selectedGraveId is null && _graves.Count > 0)
+        {
+            _selectedGraveId = _graves[0].Id.Value;
+        }
+
+        await RefreshLayersAsync();
+    }
+
+    private async Task RefreshLayersAsync()
+    {
+        var cemeteries = await Queries.GetCemeteryMapItemsAsync();
+        var graves = await Queries.GetGraveMapItemsAsync();
+
+        _layers.Clear();
+
+        if (cemeteries.Count > 0)
+        {
+            _layers.Add(new MapLayer(
+                "cemeteries",
+                "Cemiterios",
+                CemeteryMapProjector.CemeteriesToFeatureCollection(cemeteries, Serializer),
+                Color: "#17603f"));
+        }
+
+        if (graves.Count > 0)
+        {
+            _layers.Add(new MapLayer(
+                "graves",
+                "Jazigos",
+                CemeteryMapProjector.GravesToFeatureCollection(graves, Serializer),
+                Color: "#1351b4"));
+        }
+
+        _applied = false;
+
+        if (_map is not null && _map.IsReady)
+        {
+            await ApplyLayersAsync();
+        }
+    }
+
+    private async Task DrawAsync()
+    {
+        _error = null;
+        await _tool!.StartDrawingAsync();
+    }
+
+    private async Task FinishAsync()
+    {
+        var completed = await _tool!.FinishDrawingAsync();
+
+        if (completed is false)
+        {
+            _error = "Informe ao menos tres pontos para fechar o poligono.";
+        }
+    }
+
+    private async Task SetBoundaryAsync(string geoJson)
+    {
+        var geometry = Serializer.Deserialize(geoJson, SpatialReference.Wgs84);
+
+        if (geometry is not Polygon polygon)
+        {
+            _error = "Desenhe um poligono para o limite do cemiterio.";
+
+            return;
+        }
+
+        _boundary = polygon;
+        _areaSquareMeters = (await Spatial.AreaAsync(polygon)).SquareMeters;
+        _error = null;
+    }
+
+    private void SetGraveLocation(MapCoordinate coordinate)
+    {
+        _graveLocation = coordinate;
+        _error = null;
+        StateHasChanged();
+    }
+
+    private async Task PickGraveAsync()
+    {
+        _error = null;
+
+        if (_selectedSectorId is null)
+        {
+            _error = "Crie um setor antes de marcar o jazigo.";
+
+            return;
+        }
+
+        await _tool!.StartPickingPointAsync();
+    }
+
+    private async Task SaveCemeteryAsync()
+    {
+        if (_boundary is null)
+        {
+            _error = "Desenhe o limite do cemiterio.";
+
+            return;
+        }
+
+        var result = await CreateCemetery.HandleAsync(
+            new CreateCemeteryCommand(_name ?? string.Empty, _boundary, null));
+
+        if (result.IsFailure)
+        {
+            _error = result.Error.Message;
+
+            return;
+        }
+
+        _error = null;
+        _message = "Cemiterio cadastrado.";
+        _name = null;
+        _boundary = null;
+        _areaSquareMeters = null;
+        _selectedCemeteryId = result.Value.Value;
+
+        await ReloadAsync();
+    }
+
+    private async Task CreateSectorAsync()
+    {
+        if (_selectedCemeteryId is not { } cemeteryId)
+        {
+            _error = "Selecione um cemiterio.";
+
+            return;
+        }
+
+        var result = await CreateSector.HandleAsync(
+            new CreateCemeterySectorCommand(new GISORA.Cemetery.Domain.CemeteryId(cemeteryId), _sectorCode ?? string.Empty));
+
+        if (result.IsFailure)
+        {
+            _error = result.Error.Message;
+
+            return;
+        }
+
+        _error = null;
+        _message = "Setor cadastrado.";
+        _sectorCode = null;
+        _selectedSectorId = result.Value.Value;
+
+        await ReloadSectorsAsync();
+    }
+
+    private async Task CreateGraveAsync()
+    {
+        if (_selectedSectorId is not { } sectorId)
+        {
+            _error = "Crie um setor antes do jazigo.";
+
+            return;
+        }
+
+        if (_graveLocation is not { } location)
+        {
+            _error = "Marque a localizacao do jazigo no mapa.";
+
+            return;
+        }
+
+        var sector = _sectors.FirstOrDefault(item => item.Id.Value == sectorId);
+        if (sector is null)
+        {
+            _error = "Setor selecionado nao encontrado.";
+
+            return;
+        }
+
+        var point = new GISORA.Geospatial.Domain.Point(new Coordinate(location.Longitude, location.Latitude, SpatialReference.Wgs84));
+
+        var result = await CreateGrave.HandleAsync(new CreateGraveCommand(
+            sector.CemeteryId,
+            new GISORA.Cemetery.Domain.CemeterySectorId(sectorId),
+            _graveCode ?? string.Empty,
+            point));
+
+        if (result.IsFailure)
+        {
+            _error = result.Error.Message;
+
+            return;
+        }
+
+        _error = null;
+        _message = "Jazigo cadastrado.";
+        _graveCode = null;
+        _graveLocation = null;
+        _selectedGraveId = result.Value.Value;
+
+        await ReloadGravesAsync();
+    }
+
+    private async Task RegisterBurialAsync()
+    {
+        if (_selectedGraveId is not { } graveId)
+        {
+            _error = "Selecione um jazigo.";
+
+            return;
+        }
+
+        var result = await RegisterBurial.HandleAsync(new RegisterBurialCommand(
+            new GISORA.Cemetery.Domain.GraveId(graveId),
+            _personName ?? string.Empty,
+            DateOnly.FromDateTime(DateTime.UtcNow)));
+
+        if (result.IsFailure)
+        {
+            _error = result.Error.Message;
+
+            return;
+        }
+
+        _error = null;
+        _message = "Sepultamento registrado.";
+        _personName = null;
+
+        await ReloadGravesAsync();
+    }
+
+    private async Task ExhumeAsync(GISORA.Cemetery.Domain.GraveId graveId, Guid burialId)
+    {
+        var result = await ExhumeBurial.HandleAsync(new ExhumeBurialCommand(
+            graveId,
+            burialId,
+            DateOnly.FromDateTime(DateTime.UtcNow)));
+
+        if (result.IsFailure)
+        {
+            _error = result.Error.Message;
+
+            return;
+        }
+
+        _error = null;
+        _message = "Exumacao registrada.";
+
+        await ReloadGravesAsync();
+    }
+}

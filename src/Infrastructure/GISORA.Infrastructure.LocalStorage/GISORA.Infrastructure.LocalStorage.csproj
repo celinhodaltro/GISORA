@@ -25,6 +25,8 @@
     <ProjectReference Include="..\..\Modules\Roads\GISORA.Roads.Application\GISORA.Roads.Application.csproj" />
     <ProjectReference Include="..\..\Modules\PublicFacilities\GISORA.PublicFacilities.Domain\GISORA.PublicFacilities.Domain.csproj" />
     <ProjectReference Include="..\..\Modules\PublicFacilities\GISORA.PublicFacilities.Application\GISORA.PublicFacilities.Application.csproj" />
+    <ProjectReference Include="..\..\Modules\Cemetery\GISORA.Cemetery.Domain\GISORA.Cemetery.Domain.csproj" />
+    <ProjectReference Include="..\..\Modules\Cemetery\GISORA.Cemetery.Application\GISORA.Cemetery.Application.csproj" />
   </ItemGroup>
 
 </Project>

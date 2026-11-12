@@ -1,4 +1,7 @@
 using GISORA.BuildingBlocks.Application;
+using GISORA.Cemetery.Application;
+using GISORA.Cemetery.Application.Commands;
+using GISORA.Cemetery.Domain;
 using GISORA.Geospatial.Application;
 using GISORA.Infrastructure.Geospatial;
 using GISORA.Infrastructure.Integration;
@@ -53,6 +56,15 @@ builder.Services.AddScoped<CreateStreetHandler>();
 builder.Services.AddScoped<IPublicFacilityRepository, LocalStorageFacilityRepository>();
 builder.Services.AddScoped<IFacilityQueries, LocalStorageFacilityQueries>();
 builder.Services.AddScoped<CreateFacilityHandler>();
+builder.Services.AddScoped<ICemeteryRepository, LocalStorageCemeteryRepository>();
+builder.Services.AddScoped<ICemeterySectorRepository, LocalStorageCemeterySectorRepository>();
+builder.Services.AddScoped<IGraveRepository, LocalStorageGraveRepository>();
+builder.Services.AddScoped<ICemeteryQueries, LocalStorageCemeteryQueries>();
+builder.Services.AddScoped<CreateCemeteryHandler>();
+builder.Services.AddScoped<CreateCemeterySectorHandler>();
+builder.Services.AddScoped<CreateGraveHandler>();
+builder.Services.AddScoped<RegisterBurialHandler>();
+builder.Services.AddScoped<ExhumeBurialHandler>();
 builder.Services.AddScoped<IDemoDataSeeder, DemoDataSeeder>();
 builder.Services.AddScoped<GISORA.Web.Layout.MunicipalityState>();
 
