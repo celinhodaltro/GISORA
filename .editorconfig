@@ -388,8 +388,6 @@ dotnet_naming_style.s_camelcase.word_separator =
 dotnet_naming_style.s_camelcase.capitalization = camel_case
 
 
-# --- GISORA conventions ---
-
 [*.{cs,csx}]
 dotnet_sort_system_directives_first = true
 dotnet_style_namespace_match_folder = true:warning
@@ -399,12 +397,8 @@ csharp_style_var_when_type_is_apparent = true:suggestion
 csharp_prefer_braces = true:warning
 dotnet_style_readonly_field = true:warning
 dotnet_diagnostic.IDE0005.severity = warning
+dotnet_diagnostic.CA1716.severity = none
 
 [*.{razor,cshtml}]
 dotnet_diagnostic.RZ1000.severity = warning
 dotnet_diagnostic.RZ1002.severity = warning
-
-# Tipo Error segue a convencao do padrao Result. Nao temos consumidores VB
-# no escopo do produto, entao a regra de compatibilidade CA1716 nao se aplica.
-[src/BuildingBlocks/GISORA.BuildingBlocks.Application/Error.cs]
-dotnet_diagnostic.CA1716.severity = none
