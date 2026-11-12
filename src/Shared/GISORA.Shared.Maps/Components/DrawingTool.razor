@@ -16,6 +16,9 @@
     [Parameter]
     public EventCallback<string> OnEdited { get; set; }
 
+    [Parameter]
+    public EventCallback<MapCoordinate> OnPointPicked { get; set; }
+
     [Inject]
     private IJSRuntime Js { get; set; } = default!;
 
@@ -32,6 +35,14 @@
         var module = await ModuleAsync();
 
         return await module.InvokeAsync<bool>("finishDraw", Map!.ElementId);
+    }
+
+    public async Task StartPickingPointAsync()
+    {
+        var module = await ModuleAsync();
+        _reference ??= DotNetObjectReference.Create(this);
+
+        await module.InvokeVoidAsync("enablePointPick", Map!.ElementId, _reference);
     }
 
     public async Task StartEditingAsync(string geoJson)
@@ -57,6 +68,10 @@
 
     [JSInvokable]
     public async Task HandleGeometryEdited(string geoJson) => await OnEdited.InvokeAsync(geoJson);
+
+    [JSInvokable]
+    public async Task HandlePointPicked(double latitude, double longitude)
+        => await OnPointPicked.InvokeAsync(new MapCoordinate(latitude, longitude));
 
     public async ValueTask DisposeAsync()
     {
