@@ -2,7 +2,7 @@
 
 | Contexto | Responsabilidade | Onda |
 | --- | --- | --- |
-| Identity | Usuarios, perfis, permissoes, autenticacao | 1 (estrutura) |
+| Identity | Usuarios, perfis, permissoes, autenticacao | 8 (#51, ADR 0007) |
 | Geospatial | Kernel: geometrias, CRS, coordenadas, operacoes espaciais | 1 |
 | Territory | Municipio, distritos, bairros, setores fiscais, quadras | 1 |
 | Properties | Imoveis, lotes, edificacoes, unidades, contribuintes, titularidade | 1 |
