@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>GISORA.Shared.DesignSystem</RootNamespace>
+    <Description>Design system compartilhado entre os hosts web e mobile.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Radzen.Blazor" />
+  </ItemGroup>
+
+</Project>

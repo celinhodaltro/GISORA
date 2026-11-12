@@ -1,0 +1,50 @@
+:root {
+    --gisora-color-primary: #1f6f4a;
+    --gisora-color-primary-strong: #17583b;
+    --gisora-color-accent: #2f7fb5;
+    --gisora-color-text: #1d2521;
+    --gisora-color-text-muted: #5d6b64;
+    --gisora-color-surface: #ffffff;
+    --gisora-color-surface-muted: #f4f6f5;
+    --gisora-color-border: #d9e0dc;
+    --gisora-color-danger: #b3261e;
+    --gisora-space-1: 0.25rem;
+    --gisora-space-2: 0.5rem;
+    --gisora-space-3: 0.75rem;
+    --gisora-space-4: 1rem;
+    --gisora-space-6: 1.5rem;
+    --gisora-space-8: 2rem;
+    --gisora-radius-sm: 4px;
+    --gisora-radius-md: 8px;
+    --gisora-shadow-sm: 0 1px 2px rgba(29, 37, 33, 0.08);
+    --gisora-font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    font-family: var(--gisora-font-family);
+    color: var(--gisora-color-text);
+    background: var(--gisora-color-surface-muted);
+}
+
+.gisora-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+    gap: var(--gisora-space-4);
+}
+
+.gisora-stack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gisora-space-4);
+}
+
+.gisora-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--gisora-space-2);
+    align-items: center;
+    margin-bottom: var(--gisora-space-4);
+}
