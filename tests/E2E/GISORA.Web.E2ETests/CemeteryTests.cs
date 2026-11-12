@@ -1,4 +1,5 @@
 using Microsoft.Playwright;
+
 using static Microsoft.Playwright.Assertions;
 
 namespace GISORA.Web.E2ETests;
