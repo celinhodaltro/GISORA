@@ -1,9 +1,18 @@
 ﻿@page "/"
+@using GISORA.BuildingBlocks.Application
+@using GISORA.PublicFacilities.Application
+@using GISORA.Roads.Application
 @inject IPropertyQueries PropertyQueries
 @inject IUrbanBlockQueries UrbanBlockQueries
+@inject IStreetQueries StreetQueries
+@inject IFacilityQueries FacilityQueries
+@inject IDemoDataSeeder DemoSeeder
 
-<PageHeader Title="Visao geral"
-            Description="Situacao atual do cadastro territorial armazenado neste dispositivo." />
+<PageHeader Title="Visao geral" Description="POC de gestao territorial com dados no proprio dispositivo." />
+
+<div class="poc-banner" role="note">
+    POC local · sem autenticacao · dados neste navegador
+</div>
 
 @if (_loading)
 {
@@ -12,24 +21,83 @@
 else
 {
     <div class="gisora-grid">
-        <StatCard Label="Imoveis" Value="@_propertyCount.ToString("N0")" Hint="Imoveis cadastrados" />
-        <StatCard Label="Quadras" Value="@_urbanBlockCount.ToString("N0")" Hint="Quadras fiscais cadastradas" />
-        <StatCard Label="Armazenamento" Value="Local" Hint="Dados no navegador deste dispositivo" />
+        <StatCard Label="Imoveis" Value="@_properties.ToString("N0")" Hint="Cadastro imobiliario" />
+        <StatCard Label="Quadras" Value="@_urbanBlocks.ToString("N0")" Hint="Quadras fiscais" />
+        <StatCard Label="Logradouros" Value="@_streets.ToString("N0")" Hint="Ruas e avenidas" />
+        <StatCard Label="Equipamentos" Value="@_facilities.ToString("N0")" Hint="Escolas, saude, pracas" />
     </div>
+
+    <div class="poc-actions">
+        <RadzenButton Text="Carregar dados de demonstracao"
+                      ButtonStyle="ButtonStyle.Primary"
+                      Disabled="@_seeding"
+                      Click="SeedAsync" />
+
+        @if (_message is not null)
+        {
+            <p class="poc-actions__message" role="status">@_message</p>
+        }
+
+        @if (_error is not null)
+        {
+            <p class="poc-actions__error" role="alert">@_error</p>
+        }
+    </div>
+
+    <p class="poc-hint">
+        Dados demonstrativos usam o municipio de Passira (IBGE 2611903) e nao substituem base oficial.
+    </p>
 }
 
 @code {
     private bool _loading = true;
-    private int _propertyCount;
-    private int _urbanBlockCount;
+    private bool _seeding;
+    private int _properties;
+    private int _urbanBlocks;
+    private int _streets;
+    private int _facilities;
+    private string? _message;
+    private string? _error;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync() => await LoadCountsAsync();
+
+    private async Task LoadCountsAsync()
     {
         var properties = await PropertyQueries.SearchAsync(new PropertyFilter { PageSize = 1 });
         var urbanBlocks = await UrbanBlockQueries.SearchAsync(new UrbanBlockFilter { PageSize = 1 });
+        var streets = await StreetQueries.SearchAsync(new StreetFilter { PageSize = 1 });
+        var facilities = await FacilityQueries.SearchAsync(new FacilityFilter { PageSize = 1 });
 
-        _propertyCount = properties.TotalCount;
-        _urbanBlockCount = urbanBlocks.TotalCount;
+        _properties = properties.TotalCount;
+        _urbanBlocks = urbanBlocks.TotalCount;
+        _streets = streets.TotalCount;
+        _facilities = facilities.TotalCount;
         _loading = false;
+    }
+
+    private async Task SeedAsync()
+    {
+        _seeding = true;
+        _error = null;
+        _message = null;
+
+        try
+        {
+            var result = await DemoSeeder.SeedAsync();
+
+            _message = result.AlreadySeeded
+                ? "Base demonstrativa ja estava carregada."
+                : $"Dados demonstrativos carregados: {result.Properties} imoveis, {result.Streets} logradouros, {result.Facilities} equipamentos.";
+
+            await LoadCountsAsync();
+        }
+        catch (InvalidOperationException exception)
+        {
+            _error = exception.Message;
+        }
+        finally
+        {
+            _seeding = false;
+        }
     }
 }

@@ -1,6 +1,8 @@
+using GISORA.BuildingBlocks.Application;
 using GISORA.Geospatial.Application;
 using GISORA.Infrastructure.Geospatial;
 using GISORA.Infrastructure.LocalStorage;
+using GISORA.Infrastructure.LocalStorage.Demo;
 using GISORA.Infrastructure.LocalStorage.Repositories;
 using GISORA.Properties.Application;
 using GISORA.Properties.Application.Commands;
@@ -50,6 +52,7 @@ builder.Services.AddScoped<CreateStreetHandler>();
 builder.Services.AddScoped<IPublicFacilityRepository, LocalStorageFacilityRepository>();
 builder.Services.AddScoped<IFacilityQueries, LocalStorageFacilityQueries>();
 builder.Services.AddScoped<CreateFacilityHandler>();
+builder.Services.AddScoped<IDemoDataSeeder, DemoDataSeeder>();
 builder.Services.AddScoped<IPropertyMapQueries, LocalStoragePropertyMapQueries>();
 builder.Services.AddSingleton<IGeoJsonSerializer, GeoJsonSerializer>();
 
