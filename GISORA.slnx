@@ -30,6 +30,9 @@
   <Folder Name="/tests/Architecture/">
     <Project Path="tests/Architecture/GISORA.ArchitectureTests/GISORA.ArchitectureTests.csproj" />
   </Folder>
+  <Folder Name="/tests/E2E/">
+    <Project Path="tests/E2E/GISORA.Web.E2ETests/GISORA.Web.E2ETests.csproj" />
+  </Folder>
   <Folder Name="/tests/Unit/">
     <Project Path="tests/Unit/GISORA.BuildingBlocks.UnitTests/GISORA.BuildingBlocks.UnitTests.csproj" />
     <Project Path="tests/Unit/GISORA.Geospatial.UnitTests/GISORA.Geospatial.UnitTests.csproj" />

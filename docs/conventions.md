@@ -41,3 +41,15 @@ Excecoes: nenhuma no codigo. Decisoes vao para `docs/adr/`; regras vao para test
 - Nome do teste descreve o comportamento, sem comentario.
 - Teste de dominio nao toca infraestrutura.
 - Um comportamento por teste.
+
+## E2E
+
+`tests/E2E/GISORA.Web.E2ETests` usa Playwright contra o host real.
+
+```bash
+dotnet build GISORA.slnx -c Release
+pwsh tests/E2E/GISORA.Web.E2ETests/bin/Release/net10.0/playwright.ps1 install chromium
+dotnet test tests/E2E/GISORA.Web.E2ETests -c Release --no-build
+```
+
+O fixture inicia o host em porta dedicada e encerra ao final. E2E valida boot, DI, migracao de schema e navegacao; nao valida aparencia.
