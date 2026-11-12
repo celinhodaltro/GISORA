@@ -1,0 +1,36 @@
+.property-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+    gap: var(--gisora-space-4, 1rem);
+    max-width: 56rem;
+    margin-bottom: var(--gisora-space-4, 1rem);
+}
+
+.property-form__field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gisora-space-1, 0.25rem);
+    font-size: 0.875rem;
+}
+
+.property-form__select {
+    padding: 0.4rem 0.5rem;
+    border: 1px solid var(--gisora-color-border, #d9e0dc);
+    border-radius: var(--gisora-radius-sm, 4px);
+    font: inherit;
+    background: var(--gisora-color-surface, #ffffff);
+}
+
+.property-form__actions {
+    display: flex;
+    gap: var(--gisora-space-2, 0.5rem);
+}
+
+.property-form__error {
+    margin: 0 0 var(--gisora-space-4, 1rem);
+    padding: var(--gisora-space-2, 0.5rem) var(--gisora-space-3, 0.75rem);
+    border-radius: var(--gisora-radius-sm, 4px);
+    background: #fdecea;
+    color: var(--gisora-color-danger, #b3261e);
+    font-size: 0.875rem;
+}

@@ -1,7 +1,12 @@
 @page "/properties"
 @inject IPropertyQueries Queries
+@inject NavigationManager Navigation
 
-<PageHeader Title="Imoveis" Description="Consulta ao cadastro imobiliario." />
+<PageHeader Title="Imoveis" Description="Consulta ao cadastro imobiliario.">
+    <Actions>
+        <RadzenButton Text="Novo imovel" ButtonStyle="ButtonStyle.Primary" Click="NewProperty" />
+    </Actions>
+</PageHeader>
 
 <RadzenCard>
     <div class="gisora-toolbar">
@@ -30,6 +35,8 @@
 
 @code {
     private const int PageSize = 10;
+
+    private void NewProperty() => Navigation.NavigateTo("/properties/new");
 
     private RadzenDataGrid<PropertyListItem>? _grid;
     private IReadOnlyList<PropertyListItem> _items = [];
