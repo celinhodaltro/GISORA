@@ -26,3 +26,98 @@
     color: var(--gisora-color-danger, #b3261e);
     font-size: 0.875rem;
 }
+
+.territory-form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 0.6rem;
+    margin-bottom: 0.75rem;
+}
+
+.territory-field {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.72rem;
+    color: var(--gisora-muted, #5a6b7b);
+}
+
+.territory-field--uf {
+    width: 10rem;
+}
+
+.territory-field--search {
+    flex: 1 1 15rem;
+    min-width: 12rem;
+}
+
+.territory-field--code {
+    width: 9rem;
+}
+
+.territory-input {
+    height: 2.5rem;
+    padding: 0 0.75rem;
+    border: 1px solid var(--gisora-border-strong, #c5d0dc);
+    border-radius: var(--gisora-radius-md, 10px);
+    background: var(--gisora-surface, #ffffff);
+    color: var(--gisora-ink, #12212f);
+    font: inherit;
+    font-size: 0.875rem;
+}
+
+.territory-input[readonly] {
+    background: #f1f5f9;
+    color: var(--gisora-muted, #5a6b7b);
+    font-family: var(--gisora-font-mono);
+}
+
+.territory-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 40;
+    margin: 0.25rem 0 0;
+    padding: 0.25rem;
+    max-height: 14rem;
+    overflow-y: auto;
+    list-style: none;
+    background: #ffffff;
+    border: 1px solid var(--gisora-border, #dde4ec);
+    border-radius: var(--gisora-radius-md, 10px);
+    box-shadow: 0 8px 20px rgba(18, 33, 47, 0.12);
+}
+
+.territory-suggestions button {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    width: 100%;
+    padding: 0.45rem 0.6rem;
+    border: none;
+    border-radius: var(--gisora-radius-sm, 6px);
+    background: transparent;
+    color: var(--gisora-ink, #12212f);
+    font: inherit;
+    font-size: 0.85rem;
+    text-align: left;
+    cursor: pointer;
+}
+
+.territory-suggestions button:hover {
+    background: var(--gisora-blue-50, #f3f7fd);
+}
+
+.territory-suggestions small {
+    color: var(--gisora-muted, #5a6b7b);
+    font-family: var(--gisora-font-mono);
+}
+
+.territory__hint {
+    margin: 0 0 0.5rem;
+    color: var(--gisora-muted, #5a6b7b);
+    font-size: 0.78rem;
+}

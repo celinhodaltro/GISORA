@@ -9,6 +9,7 @@
   </Folder>
   <Folder Name="/src/Infrastructure/">
     <Project Path="src/Infrastructure/GISORA.Infrastructure.Geospatial/GISORA.Infrastructure.Geospatial.csproj" />
+    <Project Path="src/Infrastructure/GISORA.Infrastructure.Integration/GISORA.Infrastructure.Integration.csproj" />
     <Project Path="src/Infrastructure/GISORA.Infrastructure.LocalStorage/GISORA.Infrastructure.LocalStorage.csproj" />
   </Folder>
   <Folder Name="/src/Modules/" />

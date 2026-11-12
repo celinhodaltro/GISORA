@@ -1,6 +1,7 @@
 using GISORA.BuildingBlocks.Application;
 using GISORA.Geospatial.Application;
 using GISORA.Infrastructure.Geospatial;
+using GISORA.Infrastructure.Integration;
 using GISORA.Infrastructure.LocalStorage;
 using GISORA.Infrastructure.LocalStorage.Demo;
 using GISORA.Infrastructure.LocalStorage.Repositories;
@@ -54,6 +55,9 @@ builder.Services.AddScoped<IFacilityQueries, LocalStorageFacilityQueries>();
 builder.Services.AddScoped<CreateFacilityHandler>();
 builder.Services.AddScoped<IDemoDataSeeder, DemoDataSeeder>();
 builder.Services.AddScoped<GISORA.Web.Layout.MunicipalityState>();
+
+builder.Services.AddSingleton(new HttpClient { BaseAddress = new Uri("https://servicodados.ibge.gov.br/") });
+builder.Services.AddScoped<IMunicipalityCatalog, IbgeMunicipalityCatalog>();
 builder.Services.AddScoped<IPropertyMapQueries, LocalStoragePropertyMapQueries>();
 builder.Services.AddSingleton<IGeoJsonSerializer, GeoJsonSerializer>();
 

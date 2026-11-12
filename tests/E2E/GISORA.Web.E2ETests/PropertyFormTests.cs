@@ -69,11 +69,9 @@ public class PropertyFormTests(WebAppFixture fixture)
 
     private async Task SeedTerritoryAsync(IPage page)
     {
+        await IbgeCacheSeed.SeedAsync(page, fixture.BaseUrl);
         await page.GotoAsync($"{fixture.BaseUrl}/territory");
-        await page.GetByPlaceholder("Nome do municipio").FillAsync("Passira");
-        await page.GetByPlaceholder("Codigo IBGE").FillAsync("2610509");
-        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Cadastrar municipio" }).ClickAsync();
-        await Expect(page.GetByText("Passira", new PageGetByTextOptions { Exact = true }).First).ToBeVisibleAsync();
+        await IbgeCacheSeed.CreateMunicipalityAsync(page);
 
         await page.GetByPlaceholder("Nome do distrito").FillAsync("Sede");
         await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Cadastrar distrito" }).ClickAsync();

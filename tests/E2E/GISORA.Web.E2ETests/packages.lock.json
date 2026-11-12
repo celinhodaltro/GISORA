@@ -383,6 +383,13 @@
           "Microsoft.AspNetCore.Components.Web": "[10.0.15, )"
         }
       },
+      "gisora.infrastructure.integration": {
+        "type": "Project",
+        "dependencies": {
+          "GISORA.Infrastructure.LocalStorage": "[0.1.0, )",
+          "GISORA.Territory.Application": "[0.1.0, )"
+        }
+      },
       "gisora.infrastructure.localstorage": {
         "type": "Project",
         "dependencies": {
@@ -473,6 +480,7 @@
         "type": "Project",
         "dependencies": {
           "GISORA.Infrastructure.Geospatial": "[0.1.0, )",
+          "GISORA.Infrastructure.Integration": "[0.1.0, )",
           "GISORA.Infrastructure.LocalStorage": "[0.1.0, )",
           "GISORA.Properties.Application": "[0.1.0, )",
           "GISORA.PublicFacilities.Application": "[0.1.0, )",

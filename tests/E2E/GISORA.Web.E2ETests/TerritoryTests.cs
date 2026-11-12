@@ -11,12 +11,10 @@ public class TerritoryTests(WebAppFixture fixture)
     public async Task CreatesFullTerritoryHierarchyAndKeepsItAfterReload()
     {
         var page = await fixture.NewPageAsync();
+        await IbgeCacheSeed.SeedAsync(page, fixture.BaseUrl);
         await page.GotoAsync($"{fixture.BaseUrl}/territory");
 
-        await page.GetByPlaceholder("Nome do municipio").FillAsync("Passira");
-        await page.GetByPlaceholder("Codigo IBGE").FillAsync("2610509");
-        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Cadastrar municipio" }).ClickAsync();
-        await Expect(page.GetByText("Passira", new PageGetByTextOptions { Exact = true }).First).ToBeVisibleAsync();
+        await IbgeCacheSeed.CreateMunicipalityAsync(page);
 
         await page.GetByPlaceholder("Nome do distrito").FillAsync("Sede");
         await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Cadastrar distrito" }).ClickAsync();
@@ -38,15 +36,28 @@ public class TerritoryTests(WebAppFixture fixture)
     }
 
     [Fact]
-    public async Task RejectsInvalidIbgeCode()
+    public async Task MunicipalityRequiresSelectionFromCatalog()
     {
         var page = await fixture.NewPageAsync();
+        await IbgeCacheSeed.SeedAsync(page, fixture.BaseUrl);
         await page.GotoAsync($"{fixture.BaseUrl}/territory");
 
-        await page.GetByPlaceholder("Nome do municipio").FillAsync("Invalido");
-        await page.GetByPlaceholder("Codigo IBGE").FillAsync("123");
-        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Cadastrar municipio" }).ClickAsync();
+        await page.GetByPlaceholder("Digite o nome do municipio").FillAsync("Municipio Inexistente");
 
-        await Expect(page.GetByRole(AriaRole.Alert)).ToContainTextAsync("Codigo IBGE deve conter exatamente 7 digitos.");
+        await Expect(page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Cadastrar municipio" })).ToBeDisabledAsync();
+        await Expect(page.GetByText("Municipio Inexistente", new PageGetByTextOptions { Exact = true })).ToHaveCountAsync(0);
+    }
+
+    [Fact]
+    public async Task AutocompleteFiltersByPartialNameIgnoringCaseAndAccents()
+    {
+        var page = await fixture.NewPageAsync();
+        await IbgeCacheSeed.SeedAsync(page, fixture.BaseUrl);
+        await page.GotoAsync($"{fixture.BaseUrl}/territory");
+
+        await page.GetByPlaceholder("Digite o nome do municipio").FillAsync("pass");
+
+        await Expect(page.Locator(".territory-suggestions button", new PageLocatorOptions { HasTextString = "Passira" })).ToBeVisibleAsync();
+        await Expect(page.Locator(".territory-suggestions button", new PageLocatorOptions { HasTextString = "Afogados" })).ToHaveCountAsync(0);
     }
 }
