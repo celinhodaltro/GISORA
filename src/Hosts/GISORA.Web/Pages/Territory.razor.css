@@ -1,0 +1,28 @@
+.territory-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(22rem, 1fr));
+    gap: var(--gisora-space-4, 1rem);
+}
+
+.territory-grid__title {
+    margin: 0 0 var(--gisora-space-3, 0.75rem);
+    font-size: 1rem;
+}
+
+.territory-select {
+    min-width: 12rem;
+    padding: 0.35rem 0.5rem;
+    border: 1px solid var(--gisora-color-border, #d9e0dc);
+    border-radius: var(--gisora-radius-sm, 4px);
+    font: inherit;
+    background: var(--gisora-color-surface, #ffffff);
+}
+
+.territory__error {
+    margin: 0 0 var(--gisora-space-4, 1rem);
+    padding: var(--gisora-space-2, 0.5rem) var(--gisora-space-3, 0.75rem);
+    border-radius: var(--gisora-radius-sm, 4px);
+    background: #fdecea;
+    color: var(--gisora-color-danger, #b3261e);
+    font-size: 0.875rem;
+}
