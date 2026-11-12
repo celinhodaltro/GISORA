@@ -1,70 +1,97 @@
 @page "/map"
 @using GISORA.Geospatial.Application
 @using GISORA.Properties.Application
+@using GISORA.PublicFacilities.Application
 @using GISORA.Shared.Maps
 @using GISORA.Shared.Maps.Components
 @using GISORA.Web.Maps
-@inject IPropertyMapQueries MapQueries
+@inject IPropertyMapQueries PropertyMapQueries
+@inject IFacilityQueries FacilityQueries
 @inject IGeoJsonSerializer Serializer
 
-<PageHeader Title="Mapa" Description="Imoveis com geometria cadastrada neste dispositivo." Icon="map" />
+<PageHeader Title="Mapa"
+            Description="Ambiente cartografico: camadas, legenda, selecao e atributos."
+            Icon="map" />
 
-@if (_loading)
-{
-    <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
-}
-else if (_items.Count == 0)
-{
-    <EmptyState Title="Nenhum imovel com geometria"
-                Description="Cadastre a geometria do lote para visualizar o imovel no mapa." />
-}
-else
-{
-    <div class="map-page">
-        <MapView @ref="_map" CenterLatitude="-7.97" CenterLongitude="-35.24" Zoom="13" Height="clamp(24rem, calc(100vh - 20rem), 42rem)">
+<div class="workspace workspace--map">
+    <div class="workspace__map">
+        <MapView @ref="_map"
+                 CenterLatitude="-7.95"
+                 CenterLongitude="-35.25"
+                 Zoom="12"
+                 Height="var(--map-height-map)"
+                 OnReady="ApplyLayersAsync">
             <MapToolbar />
-            <CoordinateControl />
+            <LayerControl Layers="_layers" />
+            <CoordinateControl Crs="EPSG:4326" />
             <FeatureSelector OnSelected="Select" />
         </MapView>
     </div>
 
-    <RadzenCard>
-        @if (_selected is null)
-        {
-            <p class="map-page__hint">Selecione um imovel no mapa para ver os atributos.</p>
-        }
-        else
-        {
-            <FeatureInspector Title="Imovel selecionado" Feature="_selected" />
-        }
-    </RadzenCard>
-}
+    <aside class="workspace__side">
+        <MapLegend Layers="_layers" />
+
+        <RadzenCard class="workspace__panel">
+            <h2 class="workspace__panel-title">Feicao selecionada</h2>
+
+            @if (_selected is null)
+            {
+                <p class="workspace__panel-text">
+                    Clique em um imovel ou equipamento no mapa para ver os atributos.
+                </p>
+            }
+            else
+            {
+                <FeatureInspector Feature="_selected" Title="Atributos" />
+            }
+        </RadzenCard>
+    </aside>
+</div>
 
 @code {
     private MapView? _map;
-    private IReadOnlyList<PropertyMapItem> _items = [];
+    private readonly List<MapLayer> _layers = [];
     private MapFeature? _selected;
-    private bool _loading = true;
-    private bool _layerApplied;
+    private bool _applied;
 
     protected override async Task OnInitializedAsync()
     {
-        _items = await MapQueries.GetMapItemsAsync();
-        _loading = false;
+        var propertyItems = await PropertyMapQueries.GetMapItemsAsync();
+        var facilityItems = await FacilityQueries.GetMapItemsAsync();
+
+        if (propertyItems.Count > 0)
+        {
+            _layers.Add(new MapLayer(
+                "properties",
+                "Imoveis",
+                PropertyMapProjector.ToFeatureCollection(propertyItems, Serializer),
+                Color: "#1f7a5c"));
+        }
+
+        if (facilityItems.Count > 0)
+        {
+            _layers.Add(new MapLayer(
+                "facilities",
+                "Equipamentos",
+                FacilityMapProjector.ToFeatureCollection(facilityItems, Serializer),
+                Color: "#1351b4"));
+        }
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private async Task ApplyLayersAsync()
     {
-        if (_loading || _layerApplied || _items.Count == 0 || _map is null)
+        if (_applied || _map is null)
         {
             return;
         }
 
-        _layerApplied = true;
+        _applied = true;
 
-        var geoJson = PropertyMapProjector.ToFeatureCollection(_items, Serializer);
+        foreach (var layer in _layers)
+        {
+            await _map.SetLayerAsync(layer);
+        }
 
-        await _map.SetLayerAsync(new MapLayer("properties", "Imoveis", geoJson));
         await _map.FitBoundsAsync();
     }
 

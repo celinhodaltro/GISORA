@@ -18,7 +18,8 @@ public class PropertyMapTests(WebAppFixture fixture)
 
         await page.GotoAsync($"{fixture.BaseUrl}/map");
 
-        await Expect(page.GetByText("Nenhum imovel com geometria")).ToBeVisibleAsync();
+        await Expect(page.Locator(".leaflet-container")).ToBeVisibleAsync();
+        await Expect(page.GetByText("Clique em um imovel ou equipamento no mapa")).ToBeVisibleAsync();
     }
 
     [Fact]

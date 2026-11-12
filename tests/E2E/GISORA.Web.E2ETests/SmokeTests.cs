@@ -15,9 +15,9 @@ public class SmokeTests(WebAppFixture fixture)
         await page.GotoAsync(fixture.BaseUrl, new PageGotoOptions { WaitUntil = WaitUntilState.DOMContentLoaded });
 
         await Expect(page).ToHaveTitleAsync("GISORA");
-        await Expect(page.Locator(".nav-menu__brand")).ToContainTextAsync("GISORA");
+        await Expect(page.Locator(".app-brand")).ToContainTextAsync("GISORA");
         await Expect(page.GetByRole(AriaRole.Link, new PageGetByRoleOptions { Name = "Imoveis" })).ToBeVisibleAsync();
-        await Expect(page.GetByRole(AriaRole.Heading, new PageGetByRoleOptions { Name = "Visao geral" })).ToBeVisibleAsync();
+        await Expect(page.GetByRole(AriaRole.Heading, new PageGetByRoleOptions { Name = "Painel territorial" })).ToBeVisibleAsync();
     }
 
     [Fact]
@@ -38,7 +38,7 @@ public class SmokeTests(WebAppFixture fixture)
         var page = await fixture.NewPageAsync();
         await page.GotoAsync(fixture.BaseUrl);
 
-        await Expect(page.Locator(".nav-menu__brand")).ToBeVisibleAsync();
+        await Expect(page.Locator(".app-brand")).ToBeVisibleAsync();
 
         var schema = await page.EvaluateAsync<string?>("() => localStorage.getItem('gisora:meta:schema')");
 
@@ -50,10 +50,10 @@ public class SmokeTests(WebAppFixture fixture)
     {
         var page = await fixture.NewPageAsync();
         await page.GotoAsync(fixture.BaseUrl);
-        await Expect(page.Locator(".nav-menu__brand")).ToBeVisibleAsync();
+        await Expect(page.Locator(".app-brand")).ToBeVisibleAsync();
 
         await page.ReloadAsync();
-        await Expect(page.Locator(".nav-menu__brand")).ToBeVisibleAsync();
+        await Expect(page.Locator(".app-brand")).ToBeVisibleAsync();
 
         await Expect(page.Locator("#blazor-error-ui")).ToBeHiddenAsync();
     }

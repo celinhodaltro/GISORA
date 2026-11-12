@@ -1,41 +1,53 @@
 @page "/"
 @using GISORA.BuildingBlocks.Application
+@using GISORA.Geospatial.Application
+@using GISORA.Properties.Application
 @using GISORA.PublicFacilities.Application
 @using GISORA.Roads.Application
+@using GISORA.Shared.Maps
+@using GISORA.Shared.Maps.Components
+@using GISORA.Web.Maps
 @inject IPropertyQueries PropertyQueries
 @inject IUrbanBlockQueries UrbanBlockQueries
 @inject IStreetQueries StreetQueries
 @inject IFacilityQueries FacilityQueries
+@inject IPropertyMapQueries PropertyMapQueries
+@inject IGeoJsonSerializer Serializer
 @inject IDemoDataSeeder DemoSeeder
-@inject NavigationManager Navigation
+@inject GISORA.Web.Layout.MunicipalityState Municipality
 
-<PageHeader Title="Visao geral"
-            Description="POC de gestao territorial com dados no proprio dispositivo."
+<PageHeader Title="Painel territorial"
+            Description="Visao consolidada do cadastro e da base geografica do municipio."
             Icon="dashboard" />
 
-<div class="poc-banner" role="note">
-    POC local · sem autenticacao · dados neste navegador
-</div>
-
-@if (_loading)
-{
-    <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
-}
-else
-{
-    <div class="gisora-grid">
-        <StatCard Label="Imoveis" Value="@_properties.ToString("N0")" Hint="Cadastro imobiliario" Icon="home_work" />
-        <StatCard Label="Quadras" Value="@_urbanBlocks.ToString("N0")" Hint="Quadras fiscais" Icon="grid_view" />
-        <StatCard Label="Logradouros" Value="@_streets.ToString("N0")" Hint="Ruas e avenidas" Icon="signpost" />
-        <StatCard Label="Equipamentos" Value="@_facilities.ToString("N0")" Hint="Escolas, saude, pracas" Icon="school" />
+<div class="workspace">
+    <div class="workspace__map">
+        <MapView @ref="_map"
+                 CenterLatitude="-7.95"
+                 CenterLongitude="-35.25"
+                 Zoom="12"
+                 Height="var(--map-height-home)"
+                 OnReady="ApplyLayersAsync">
+            <MapToolbar />
+            <LayerControl Layers="_layers" />
+            <CoordinateControl Crs="EPSG:4326" />
+        </MapView>
     </div>
 
-    <div class="home-panels">
-        <RadzenCard class="home-panel">
-            <h2 class="home-panel__title">Base demonstrativa</h2>
-            <p class="home-panel__text">
-                Carrega um conjunto de exemplo para explorar o cadastro: municipio, bairros, setor,
-                logradouros, imoveis e equipamentos.
+    <aside class="workspace__side">
+        <div class="gisora-grid workspace__stats">
+            <StatCard Label="Imoveis" Value="@_properties.ToString("N0")" Hint="Cadastro imobiliario" Icon="home_work" />
+            <StatCard Label="Quadras" Value="@_urbanBlocks.ToString("N0")" Hint="Quadras fiscais" Icon="grid_view" />
+            <StatCard Label="Logradouros" Value="@_streets.ToString("N0")" Hint="Ruas e avenidas" Icon="signpost" />
+            <StatCard Label="Equipamentos" Value="@_facilities.ToString("N0")" Hint="Escolas, saude, pracas" Icon="school" />
+        </div>
+
+        <MapLegend Layers="_layers" />
+
+        <RadzenCard class="workspace__panel">
+            <h2 class="workspace__panel-title">Base demonstrativa</h2>
+            <p class="workspace__panel-text">
+                Carrega municipio, bairros, setor, logradouros, imoveis e equipamentos de exemplo.
             </p>
 
             <RadzenButton Text="Carregar dados de demonstracao"
@@ -45,69 +57,27 @@ else
 
             @if (_message is not null)
             {
-                <p class="home-panel__message" role="status">@_message</p>
+                <p class="workspace__message" role="status">@_message</p>
             }
 
             @if (_error is not null)
             {
-                <p class="home-panel__error" role="alert">@_error</p>
+                <p class="workspace__error" role="alert">@_error</p>
             }
         </RadzenCard>
 
-        <RadzenCard class="home-panel">
-            <h2 class="home-panel__title">Acesso rapido</h2>
-            <div class="home-links">
-                <RadzenButton Text="Ver imoveis" Icon="home_work" Variant="Variant.Outlined" Click="@(() => Navigation.NavigateTo("properties"))" />
-                <RadzenButton Text="Abrir mapa" Icon="map" Variant="Variant.Outlined" Click="@(() => Navigation.NavigateTo("map"))" />
-                <RadzenButton Text="Equipamentos" Icon="school" Variant="Variant.Outlined" Click="@(() => Navigation.NavigateTo("facilities"))" />
-                <RadzenButton Text="Territorio" Icon="account_tree" Variant="Variant.Outlined" Click="@(() => Navigation.NavigateTo("territory"))" />
-            </div>
-        </RadzenCard>
-    </div>
-
-    <p class="poc-hint">
-        Dados demonstrativos usam o municipio de Passira (IBGE 2611903) e nao substituem base oficial.
-    </p>
-
-    <RadzenCard class="home-scope">
-        <h2 class="home-panel__title">Escopo desta POC</h2>
-
-        <div class="home-scope__columns">
-            <div>
-                <h3>Inclui</h3>
-                <ul>
-                    <li>Territorio, logradouros, imoveis e equipamentos</li>
-                    <li>Desenho e edicao de geometria do lote</li>
-                    <li>Mapa com selecao e area calculada</li>
-                    <li>Persistencia local com schema versionado</li>
-                </ul>
-            </div>
-
-            <div>
-                <h3>Nao inclui</h3>
-                <ul>
-                    <li>Autenticacao e permissoes</li>
-                    <li>Backend, API e PostGIS</li>
-                    <li>Cemiterios, rural, zoneamento e licenciamento</li>
-                    <li>App mobile e portal publico</li>
-                </ul>
-            </div>
-
-            <div>
-                <h3>Proximos passos</h3>
-                <ul>
-                    <li>Identidade e auditoria</li>
-                    <li>Modulos municipais das fases 4 a 7</li>
-                    <li>Dados oficiais com metadados</li>
-                </ul>
-            </div>
-        </div>
-    </RadzenCard>
-}
+        <p class="workspace__note">
+            Dados armazenados neste navegador. Sem autenticacao nesta versao.
+        </p>
+    </aside>
+</div>
 
 @code {
+    private MapView? _map;
+    private readonly List<MapLayer> _layers = [];
     private bool _loading = true;
     private bool _seeding;
+    private bool _applied;
     private int _properties;
     private int _urbanBlocks;
     private int _streets;
@@ -115,9 +85,26 @@ else
     private string? _message;
     private string? _error;
 
-    protected override async Task OnInitializedAsync() => await LoadCountsAsync();
+    protected override async Task OnInitializedAsync() => await ReloadAsync();
 
-    private async Task LoadCountsAsync()
+    private async Task ApplyLayersAsync()
+    {
+        if (_loading || _applied || _map is null)
+        {
+            return;
+        }
+
+        _applied = true;
+
+        foreach (var layer in _layers)
+        {
+            await _map.SetLayerAsync(layer);
+        }
+
+        await _map.FitBoundsAsync();
+    }
+
+    private async Task ReloadAsync()
     {
         var properties = await PropertyQueries.SearchAsync(new PropertyFilter { PageSize = 1 });
         var urbanBlocks = await UrbanBlockQueries.SearchAsync(new UrbanBlockFilter { PageSize = 1 });
@@ -128,6 +115,31 @@ else
         _urbanBlocks = urbanBlocks.TotalCount;
         _streets = streets.TotalCount;
         _facilities = facilities.TotalCount;
+
+        var propertyItems = await PropertyMapQueries.GetMapItemsAsync();
+        var facilityItems = await FacilityQueries.GetMapItemsAsync();
+
+        _layers.Clear();
+
+        if (propertyItems.Count > 0)
+        {
+            _layers.Add(new MapLayer(
+                "properties",
+                "Imoveis",
+                PropertyMapProjector.ToFeatureCollection(propertyItems, Serializer),
+                Color: "#1f7a5c"));
+        }
+
+        if (facilityItems.Count > 0)
+        {
+            _layers.Add(new MapLayer(
+                "facilities",
+                "Equipamentos",
+                FacilityMapProjector.ToFeatureCollection(facilityItems, Serializer),
+                Color: "#1351b4"));
+        }
+
+        _applied = false;
         _loading = false;
     }
 
@@ -145,7 +157,9 @@ else
                 ? "Base demonstrativa ja estava carregada."
                 : $"Dados demonstrativos carregados: {result.Properties} imoveis, {result.Streets} logradouros, {result.Facilities} equipamentos.";
 
-            await LoadCountsAsync();
+            await ReloadAsync();
+            await Municipality.RefreshAsync();
+            await ApplyLayersAsync();
         }
         catch (InvalidOperationException exception)
         {

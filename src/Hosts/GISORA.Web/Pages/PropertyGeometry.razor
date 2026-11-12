@@ -214,7 +214,7 @@ else
             }
             """;
 
-        await _map.SetLayerAsync(new MapLayer("property-geometry", "Geometria", feature));
+        await _map.SetLayerAsync(new MapLayer("property-geometry", "Geometria", feature, Color: "#1f7a5c"));
         await _map.FitBoundsAsync();
     }
 }

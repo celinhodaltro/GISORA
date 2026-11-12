@@ -1,25 +1,28 @@
 @namespace GISORA.Shared.Maps.Components
 @implements IDisposable
 
-<div class="gisora-layer-control" aria-label="Camadas do mapa">
-    @foreach (var group in Layers.GroupBy(layer => layer.Group))
-    {
-        <div class="gisora-layer-control__group">
-            @if (group.Key is not null)
-            {
-                <span class="gisora-layer-control__group-name">@group.Key</span>
-            }
+@if (Layers.Any())
+{
+    <div class="gisora-layer-control" aria-label="Camadas do mapa">
+        @foreach (var group in Layers.GroupBy(layer => layer.Group))
+        {
+            <div class="gisora-layer-control__group">
+                @if (group.Key is not null)
+                {
+                    <span class="gisora-layer-control__group-name">@group.Key</span>
+                }
 
-            @foreach (var layer in group)
-            {
-                <label class="gisora-layer-control__item">
-                    <input type="checkbox" checked="@_applied.ContainsKey(layer.Id)" @onchange="args => ToggleAsync(layer, args)" />
-                    <span>@layer.Name</span>
-                </label>
-            }
-        </div>
-    }
-</div>
+                @foreach (var layer in group)
+                {
+                    <label class="gisora-layer-control__item">
+                        <input type="checkbox" checked="@_applied.ContainsKey(layer.Id)" @onchange="args => ToggleAsync(layer, args)" />
+                        <span>@layer.Name</span>
+                    </label>
+                }
+            </div>
+        }
+    </div>
+}
 
 @code {
     private readonly Dictionary<string, string> _applied = [];

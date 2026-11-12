@@ -47,6 +47,9 @@ public sealed partial class MapView : IAsyncDisposable
     [Parameter]
     public EventCallback<MapFeature> OnFeatureSelected { get; set; }
 
+    [Parameter]
+    public EventCallback OnReady { get; set; }
+
     public event Action<MapCoordinate>? CoordinateChanged;
 
     public event Action<MapFeature>? FeatureSelected;
@@ -85,6 +88,8 @@ public sealed partial class MapView : IAsyncDisposable
         {
             await FitBoundsAsync();
         }
+
+        await OnReady.InvokeAsync();
     }
 
     public async Task SetLayerAsync(MapLayer layer)
@@ -98,7 +103,7 @@ public sealed partial class MapView : IAsyncDisposable
             return;
         }
 
-        await _module.InvokeVoidAsync("setLayer", _elementId, layer.Id, layer.GeoJson);
+        await _module.InvokeVoidAsync("setLayer", _elementId, layer.Id, layer.GeoJson, layer.Color);
     }
 
     public async Task RemoveLayerAsync(string layerId)
