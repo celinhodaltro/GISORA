@@ -33,6 +33,7 @@ public class CemeteryTests(WebAppFixture fixture)
 
         await page.GetByPlaceholder("Codigo do jazigo").FillAsync("J-01");
         await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Marcar jazigo" }).ClickAsync();
+        await page.WaitForTimeoutAsync(500);
 
         var box = await page.Locator(".gisora-map").BoundingBoxAsync();
         ArgumentNullException.ThrowIfNull(box);

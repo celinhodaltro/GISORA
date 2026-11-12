@@ -125,7 +125,7 @@ export function fitBounds(elementId) {
     return false;
   }
 
-  instance.map.fitBounds(bounds, { padding: [20, 20] });
+  instance.map.fitBounds(bounds, { padding: [20, 20], animate: false });
 
   return true;
 }
@@ -282,7 +282,7 @@ export function enableEdit(elementId, geoJson, dotNetRef) {
   handles.forEach((handle) => handle.on('drag', notify));
 
   instance.draw = { points: [], line: null, polygon, handles, onMapClick: null, dotNetRef };
-  instance.map.fitBounds(polygon.getBounds(), { padding: [24, 24] });
+  instance.map.fitBounds(polygon.getBounds(), { padding: [24, 24], animate: false });
 
   return true;
 }
