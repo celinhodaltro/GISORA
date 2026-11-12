@@ -1,0 +1,39 @@
+name: Bug
+description: Comportamento incorreto em funcionalidade existente
+title: "fix: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: descricao
+    attributes:
+      label: Descricao
+      description: O que acontece e o que deveria acontecer.
+    validations:
+      required: true
+  - type: textarea
+    id: reproducao
+    attributes:
+      label: Passos para reproduzir
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: input
+    id: ambiente
+    attributes:
+      label: Ambiente
+      description: Host, navegador/dispositivo, versao, branch.
+    validations:
+      required: true
+  - type: textarea
+    id: evidencia
+    attributes:
+      label: Evidencia
+      description: Log, stack trace, captura de tela ou video.
+  - type: textarea
+    id: suspeita
+    attributes:
+      label: Camada provavel
+      description: Onde o problema deveria ser corrigido (Domain, Application, Infrastructure, Presentation).

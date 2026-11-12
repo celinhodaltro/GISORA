@@ -1,0 +1,32 @@
+name: Pesquisa tecnica
+description: Spike para reduzir incerteza antes de implementar
+title: "research: "
+labels: ["research"]
+body:
+  - type: textarea
+    id: pergunta
+    attributes:
+      label: Pergunta a responder
+      description: Uma pergunta objetiva, nao um tema.
+    validations:
+      required: true
+  - type: textarea
+    id: contexto
+    attributes:
+      label: Contexto
+    validations:
+      required: true
+  - type: textarea
+    id: criterio
+    attributes:
+      label: Criterio de conclusao
+      description: Qual evidencia encerra a pesquisa (teste, prototipo, benchmark, compatibilidade verificada).
+    validations:
+      required: true
+  - type: textarea
+    id: saida
+    attributes:
+      label: Saida esperada
+      description: ADR, relatorio em docs/ ou issue de implementacao resultante.
+    validations:
+      required: true
