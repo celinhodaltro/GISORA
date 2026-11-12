@@ -1,4 +1,4 @@
-# POC — guia de entrega
+# Guia da aplicacao
 
 ## O que e
 
@@ -45,7 +45,7 @@ Aplicacao web Blazor WebAssembly, local-first, para cadastro territorial. Roda s
 
 ## Limites de uso
 
-Esta POC nao deve receber dado pessoal real. O armazenamento local nao e seguro e nao ha controle de acesso.
+Esta aplicacao nao deve receber dado pessoal real. O armazenamento local nao e seguro e nao ha controle de acesso.
 
 ## Como validar
 

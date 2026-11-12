@@ -13,7 +13,7 @@ public class PocTests(WebAppFixture fixture)
         var page = await fixture.NewPageAsync();
         await page.GotoAsync(fixture.BaseUrl);
 
-        await Expect(page.Locator(".poc-banner")).ToContainTextAsync("POC local");
+        await Expect(page.Locator(".app-header__env")).ToContainTextAsync("Base local");
 
         await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Carregar dados de demonstracao" }).ClickAsync();
         await Expect(page.GetByRole(AriaRole.Status)).ToContainTextAsync("Dados demonstrativos carregados");

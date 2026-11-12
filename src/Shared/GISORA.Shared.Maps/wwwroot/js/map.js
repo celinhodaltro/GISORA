@@ -8,6 +8,16 @@ L.Icon.Default.mergeOptions({
 
 const instances = new Map();
 
+function createPin(color) {
+  return L.divIcon({
+    className: 'gisora-map-pin-wrapper',
+    html: `<span class="gisora-map-pin" style="--pin-color:${color}"></span>`,
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
+    popupAnchor: [0, -12],
+  });
+}
+
 function normalizeProperties(properties) {
   const result = {};
 
@@ -37,6 +47,8 @@ export function create(elementId, options, dotNetRef) {
     }).addTo(map);
   }
 
+  L.control.scale({ position: 'bottomleft', imperial: false, maxWidth: 130 }).addTo(map);
+
   const layers = new Map();
 
   map.on('mousemove', (event) => {
@@ -49,7 +61,7 @@ export function create(elementId, options, dotNetRef) {
   return true;
 }
 
-export function setLayer(elementId, layerId, geoJson) {
+export function setLayer(elementId, layerId, geoJson, color) {
   const instance = instances.get(elementId);
   if (!instance) {
     return false;
@@ -57,7 +69,11 @@ export function setLayer(elementId, layerId, geoJson) {
 
   removeLayer(elementId, layerId);
 
+  const stroke = color ?? '#1351b4';
+
   const group = L.geoJSON(JSON.parse(geoJson), {
+    style: { color: stroke, weight: 2, fillColor: stroke, fillOpacity: 0.18 },
+    pointToLayer: (feature, latlng) => L.marker(latlng, { icon: createPin(stroke) }),
     onEachFeature: (feature, layer) => {
       layer.on('click', () => {
         instance.dotNetRef.invokeMethodAsync('HandleFeatureSelected', {

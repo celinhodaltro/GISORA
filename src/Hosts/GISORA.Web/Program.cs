@@ -53,6 +53,7 @@ builder.Services.AddScoped<IPublicFacilityRepository, LocalStorageFacilityReposi
 builder.Services.AddScoped<IFacilityQueries, LocalStorageFacilityQueries>();
 builder.Services.AddScoped<CreateFacilityHandler>();
 builder.Services.AddScoped<IDemoDataSeeder, DemoDataSeeder>();
+builder.Services.AddScoped<GISORA.Web.Layout.MunicipalityState>();
 builder.Services.AddScoped<IPropertyMapQueries, LocalStoragePropertyMapQueries>();
 builder.Services.AddSingleton<IGeoJsonSerializer, GeoJsonSerializer>();
 

@@ -1,15 +1,60 @@
 @inherits LayoutComponentBase
+@implements IDisposable
+@inject NavigationManager Navigation
+@inject MunicipalityState Municipality
 
-<div class="app-shell">
-    <NavMenu />
+<div class="app-shell @(Collapsed ? "app-shell--collapsed" : null)">
+    <AppHeader Collapsed="Collapsed" Municipality="@Municipality.Name" OnToggle="Toggle" />
 
-    <div class="app-shell__main">
-        <main class="app-shell__content">
+    <div class="app-body">
+        <NavMenu Collapsed="Collapsed" MobileOpen="MobileOpen" OnNavigate="CloseMobile" />
+
+        @if (MobileOpen)
+        {
+            <div class="app-backdrop" @onclick="CloseMobile" aria-hidden="true"></div>
+        }
+
+        <main class="app-content">
             @Body
         </main>
-
-        <footer class="app-shell__footer">
-            GISORA · POC
-        </footer>
     </div>
 </div>
+
+@code {
+    private bool _collapsed;
+    private bool _mobileOpen;
+
+    public bool Collapsed => _collapsed;
+
+    public bool MobileOpen => _mobileOpen;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Navigation.LocationChanged += HandleLocationChanged;
+        Municipality.Changed += HandleMunicipalityChanged;
+        await Municipality.RefreshAsync();
+    }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= HandleLocationChanged;
+        Municipality.Changed -= HandleMunicipalityChanged;
+    }
+
+    private void HandleLocationChanged(object? sender, LocationChangedEventArgs args)
+        => _ = InvokeAsync(async () =>
+        {
+            await Municipality.RefreshAsync();
+            StateHasChanged();
+        });
+
+    private void HandleMunicipalityChanged() => _ = InvokeAsync(StateHasChanged);
+
+    private void Toggle()
+    {
+        _collapsed = !_collapsed;
+        _mobileOpen = !_mobileOpen;
+    }
+
+    private void CloseMobile() => _mobileOpen = false;
+}

@@ -1,0 +1,25 @@
+@namespace GISORA.Shared.Maps.Components
+
+@if (VisibleLayers.Count > 0)
+{
+    <section class="gisora-map-legend" aria-label="Legenda do mapa">
+        <h2 class="gisora-map-legend__title">Legenda</h2>
+
+        <ul class="gisora-map-legend__list">
+            @foreach (var layer in VisibleLayers)
+            {
+                <li class="gisora-map-legend__item">
+                    <span class="gisora-map-legend__swatch" style="background:@(layer.Color ?? "#1351b4")" aria-hidden="true"></span>
+                    <span>@layer.Name</span>
+                </li>
+            }
+        </ul>
+    </section>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public IEnumerable<MapLayer> Layers { get; set; } = [];
+
+    private IReadOnlyList<MapLayer> VisibleLayers => Layers.Where(layer => layer.Visible).ToArray();
+}

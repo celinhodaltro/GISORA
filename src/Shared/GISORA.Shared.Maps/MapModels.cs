@@ -2,7 +2,13 @@ using System.Text.Json.Serialization;
 
 namespace GISORA.Shared.Maps;
 
-public sealed record MapLayer(string Id, string Name, string GeoJson, bool Visible = true, string? Group = null);
+public sealed record MapLayer(
+    string Id,
+    string Name,
+    string GeoJson,
+    bool Visible = true,
+    string? Group = null,
+    string? Color = null);
 
 public sealed record MapFeature(
     [property: JsonPropertyName("id")] string Id,

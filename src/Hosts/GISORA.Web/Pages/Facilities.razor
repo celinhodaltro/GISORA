@@ -207,7 +207,7 @@
 
         var geoJson = FacilityMapProjector.ToFeatureCollection(mapItems, Serializer);
 
-        await _map.SetLayerAsync(new MapLayer("facilities", "Equipamentos", geoJson));
+        await _map.SetLayerAsync(new MapLayer("facilities", "Equipamentos", geoJson, Color: "#1351b4"));
         await _map.FitBoundsAsync();
     }
 

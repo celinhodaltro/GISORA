@@ -2,13 +2,17 @@
 @implements IDisposable
 @using System.Globalization
 
-@if (_coordinate is { } coordinate)
-{
-    <span class="gisora-map-coordinate">
-        @coordinate.Latitude.ToString("F5", CultureInfo.InvariantCulture),
-        @coordinate.Longitude.ToString("F5", CultureInfo.InvariantCulture)
-    </span>
-}
+<footer class="gisora-map-status">
+    <span class="gisora-map-status__crs">@Crs</span>
+
+    @if (_coordinate is { } coordinate)
+    {
+        <span class="gisora-map-status__coordinate">
+            @coordinate.Latitude.ToString("F5", CultureInfo.InvariantCulture),
+            @coordinate.Longitude.ToString("F5", CultureInfo.InvariantCulture)
+        </span>
+    }
+</footer>
 
 @code {
     private MapCoordinate? _coordinate;
@@ -16,14 +20,15 @@
     [CascadingParameter]
     private MapView? Map { get; set; }
 
+    [Parameter]
+    public string Crs { get; set; } = "EPSG:4326";
+
     protected override void OnInitialized()
     {
-        if (Map is null)
+        if (Map is not null)
         {
-            return;
+            Map.CoordinateChanged += OnCoordinateChanged;
         }
-
-        Map.CoordinateChanged += OnCoordinateChanged;
     }
 
     public void Dispose()
