@@ -1,0 +1,75 @@
+name: Deploy Web
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "src/**"
+      - "Directory.Build.props"
+      - "Directory.Packages.props"
+      - "global.json"
+      - ".github/workflows/deploy-web.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    name: Build and package
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Cache NuGet
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/packages.lock.json') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-
+
+      - name: Publish
+        run: dotnet publish src/Hosts/GISORA.Web -c Release -o build/web -p:BaseHref=/GISORA/
+
+      - name: Add SPA fallback
+        run: cp build/web/wwwroot/index.html build/web/wwwroot/404.html
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web/wwwroot
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Publish summary
+        run: |
+          echo "### GISORA Web publicado" >> "$GITHUB_STEP_SUMMARY"
+          echo "${{ steps.deployment.outputs.page_url }}" >> "$GITHUB_STEP_SUMMARY"
