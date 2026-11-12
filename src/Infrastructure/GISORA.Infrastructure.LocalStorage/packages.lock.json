@@ -190,6 +190,21 @@
           "GISORA.Geospatial.Domain": "[0.1.0, )"
         }
       },
+      "gisora.publicfacilities.application": {
+        "type": "Project",
+        "dependencies": {
+          "GISORA.BuildingBlocks.Application": "[0.1.0, )",
+          "GISORA.Geospatial.Domain": "[0.1.0, )",
+          "GISORA.PublicFacilities.Domain": "[0.1.0, )"
+        }
+      },
+      "gisora.publicfacilities.domain": {
+        "type": "Project",
+        "dependencies": {
+          "GISORA.BuildingBlocks.Domain": "[0.1.0, )",
+          "GISORA.Geospatial.Domain": "[0.1.0, )"
+        }
+      },
       "gisora.roads.application": {
         "type": "Project",
         "dependencies": {

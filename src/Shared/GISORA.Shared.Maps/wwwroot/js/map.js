@@ -144,6 +144,10 @@ function disableDraw(elementId) {
     instance.draw.handles.forEach((handle) => handle.remove());
   }
 
+  if (instance.draw.marker) {
+    instance.draw.marker.remove();
+  }
+
   if (instance.draw.polygon) {
     instance.draw.polygon.remove();
   }
@@ -199,6 +203,31 @@ export function finishDraw(elementId) {
 
 export function cancelDraw(elementId) {
   disableDraw(elementId);
+
+  return true;
+}
+
+export function enablePointPick(elementId, dotNetRef) {
+  const instance = instances.get(elementId);
+  if (!instance) {
+    return false;
+  }
+
+  disableDraw(elementId);
+
+  const state = { points: [], line: null, polygon: null, handles: null, marker: null, dotNetRef };
+  state.onMapClick = (event) => {
+    if (state.marker === null) {
+      state.marker = L.marker(event.latlng).addTo(instance.map);
+    } else {
+      state.marker.setLatLng(event.latlng);
+    }
+
+    dotNetRef.invokeMethodAsync('HandlePointPicked', event.latlng.lat, event.latlng.lng);
+  };
+
+  instance.draw = state;
+  instance.map.on('click', state.onMapClick);
 
   return true;
 }

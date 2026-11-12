@@ -10,5 +10,7 @@ public static class StorageNamespaces
 
     public const string Roads = "roads";
 
+    public const string Facilities = "facilities";
+
     public const string Meta = "meta";
 }
