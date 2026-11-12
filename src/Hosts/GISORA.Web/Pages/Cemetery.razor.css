@@ -1,0 +1,16 @@
+.cemetery-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.cemetery-area {
+    margin: 0;
+    color: var(--gisora-muted, #5a6b7b);
+    font-size: 0.8rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.cemetery-input-sm {
+    width: 9rem;
+}

@@ -13,6 +13,10 @@
     <Project Path="src/Infrastructure/GISORA.Infrastructure.LocalStorage/GISORA.Infrastructure.LocalStorage.csproj" />
   </Folder>
   <Folder Name="/src/Modules/" />
+  <Folder Name="/src/Modules/Cemetery/">
+    <Project Path="src/Modules/Cemetery/GISORA.Cemetery.Application/GISORA.Cemetery.Application.csproj" />
+    <Project Path="src/Modules/Cemetery/GISORA.Cemetery.Domain/GISORA.Cemetery.Domain.csproj" />
+  </Folder>
   <Folder Name="/src/Modules/Geospatial/">
     <Project Path="src/Modules/Geospatial/GISORA.Geospatial.Application/GISORA.Geospatial.Application.csproj" />
     <Project Path="src/Modules/Geospatial/GISORA.Geospatial.Domain/GISORA.Geospatial.Domain.csproj" />
@@ -46,6 +50,7 @@
   </Folder>
   <Folder Name="/tests/Unit/">
     <Project Path="tests/Unit/GISORA.BuildingBlocks.UnitTests/GISORA.BuildingBlocks.UnitTests.csproj" />
+    <Project Path="tests/Unit/GISORA.Cemetery.UnitTests/GISORA.Cemetery.UnitTests.csproj" />
     <Project Path="tests/Unit/GISORA.Geospatial.UnitTests/GISORA.Geospatial.UnitTests.csproj" />
     <Project Path="tests/Unit/GISORA.Infrastructure.Geospatial.UnitTests/GISORA.Infrastructure.Geospatial.UnitTests.csproj" />
     <Project Path="tests/Unit/GISORA.Infrastructure.LocalStorage.UnitTests/GISORA.Infrastructure.LocalStorage.UnitTests.csproj" />
