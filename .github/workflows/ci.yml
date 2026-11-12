@@ -44,6 +44,9 @@ jobs:
       - name: Build
         run: dotnet build GISORA.slnx -c Release --no-restore
 
+      - name: Install Playwright browsers
+        run: pwsh tests/E2E/GISORA.Web.E2ETests/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+
       - name: Test
         run: dotnet test GISORA.slnx -c Release --no-build --logger "trx;LogFileName=results.trx" --results-directory TestResults
 
