@@ -1,14 +1,47 @@
-<div class="nav-menu">
-    <a class="nav-menu__brand" href="">GISORA</a>
+<aside class="nav-menu">
+    <a class="nav-menu__brand" href="">
+        <span class="nav-menu__mark" aria-hidden="true">
+            <RadzenIcon Icon="grid_view" />
+        </span>
+        <span class="nav-menu__brand-text">
+            <strong>GISORA</strong>
+            <small>Gestao territorial</small>
+        </span>
+    </a>
 
     <nav class="nav-menu__links">
-        <NavLink class="nav-menu__link" href="" Match="NavLinkMatch.All">Visao geral</NavLink>
-        <NavLink class="nav-menu__link" href="properties">Imoveis</NavLink>
-        <NavLink class="nav-menu__link" href="map">Mapa</NavLink>
-        <NavLink class="nav-menu__link" href="territory">Territorio</NavLink>
-        <NavLink class="nav-menu__link" href="facilities">Equipamentos</NavLink>
-        <NavLink class="nav-menu__link" href="streets">Logradouros</NavLink>
+                <NavLink class="nav-menu__link" href="" Match="NavLinkMatch.All">
+            <span class="nav-menu__icon" aria-hidden="true"><RadzenIcon Icon="dashboard" /></span>
+            <span>Visao geral</span>
+        </NavLink>
+
+        <span class="nav-menu__section">Cadastro</span>
+        <NavLink class="nav-menu__link" href="properties">
+            <span class="nav-menu__icon" aria-hidden="true"><RadzenIcon Icon="home_work" /></span>
+            <span>Imoveis</span>
+        </NavLink>
+        <NavLink class="nav-menu__link" href="facilities">
+            <span class="nav-menu__icon" aria-hidden="true"><RadzenIcon Icon="school" /></span>
+            <span>Equipamentos</span>
+        </NavLink>
+        <NavLink class="nav-menu__link" href="streets">
+            <span class="nav-menu__icon" aria-hidden="true"><RadzenIcon Icon="signpost" /></span>
+            <span>Logradouros</span>
+        </NavLink>
+        <NavLink class="nav-menu__link" href="territory">
+            <span class="nav-menu__icon" aria-hidden="true"><RadzenIcon Icon="account_tree" /></span>
+            <span>Territorio</span>
+        </NavLink>
+
+        <span class="nav-menu__section">Geoprocessamento</span>
+        <NavLink class="nav-menu__link" href="map">
+            <span class="nav-menu__icon" aria-hidden="true"><RadzenIcon Icon="map" /></span>
+            <span>Mapa</span>
+        </NavLink>
     </nav>
 
-    <span class="nav-menu__footer">Base local</span>
-</div>
+    <div class="nav-menu__footer">
+        <span class="nav-menu__badge">POC</span>
+        <span>Dados locais</span>
+    </div>
+</aside>

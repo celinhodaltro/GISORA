@@ -1,4 +1,4 @@
-﻿@page "/"
+@page "/"
 @using GISORA.BuildingBlocks.Application
 @using GISORA.PublicFacilities.Application
 @using GISORA.Roads.Application
@@ -7,8 +7,11 @@
 @inject IStreetQueries StreetQueries
 @inject IFacilityQueries FacilityQueries
 @inject IDemoDataSeeder DemoSeeder
+@inject NavigationManager Navigation
 
-<PageHeader Title="Visao geral" Description="POC de gestao territorial com dados no proprio dispositivo." />
+<PageHeader Title="Visao geral"
+            Description="POC de gestao territorial com dados no proprio dispositivo."
+            Icon="dashboard" />
 
 <div class="poc-banner" role="note">
     POC local · sem autenticacao · dados neste navegador
@@ -21,32 +24,85 @@
 else
 {
     <div class="gisora-grid">
-        <StatCard Label="Imoveis" Value="@_properties.ToString("N0")" Hint="Cadastro imobiliario" />
-        <StatCard Label="Quadras" Value="@_urbanBlocks.ToString("N0")" Hint="Quadras fiscais" />
-        <StatCard Label="Logradouros" Value="@_streets.ToString("N0")" Hint="Ruas e avenidas" />
-        <StatCard Label="Equipamentos" Value="@_facilities.ToString("N0")" Hint="Escolas, saude, pracas" />
+        <StatCard Label="Imoveis" Value="@_properties.ToString("N0")" Hint="Cadastro imobiliario" Icon="home_work" />
+        <StatCard Label="Quadras" Value="@_urbanBlocks.ToString("N0")" Hint="Quadras fiscais" Icon="grid_view" />
+        <StatCard Label="Logradouros" Value="@_streets.ToString("N0")" Hint="Ruas e avenidas" Icon="signpost" />
+        <StatCard Label="Equipamentos" Value="@_facilities.ToString("N0")" Hint="Escolas, saude, pracas" Icon="school" />
     </div>
 
-    <div class="poc-actions">
-        <RadzenButton Text="Carregar dados de demonstracao"
-                      ButtonStyle="ButtonStyle.Primary"
-                      Disabled="@_seeding"
-                      Click="SeedAsync" />
+    <div class="home-panels">
+        <RadzenCard class="home-panel">
+            <h2 class="home-panel__title">Base demonstrativa</h2>
+            <p class="home-panel__text">
+                Carrega um conjunto de exemplo para explorar o cadastro: municipio, bairros, setor,
+                logradouros, imoveis e equipamentos.
+            </p>
 
-        @if (_message is not null)
-        {
-            <p class="poc-actions__message" role="status">@_message</p>
-        }
+            <RadzenButton Text="Carregar dados de demonstracao"
+                          ButtonStyle="ButtonStyle.Primary"
+                          Disabled="@_seeding"
+                          Click="SeedAsync" />
 
-        @if (_error is not null)
-        {
-            <p class="poc-actions__error" role="alert">@_error</p>
-        }
+            @if (_message is not null)
+            {
+                <p class="home-panel__message" role="status">@_message</p>
+            }
+
+            @if (_error is not null)
+            {
+                <p class="home-panel__error" role="alert">@_error</p>
+            }
+        </RadzenCard>
+
+        <RadzenCard class="home-panel">
+            <h2 class="home-panel__title">Acesso rapido</h2>
+            <div class="home-links">
+                <RadzenButton Text="Ver imoveis" Icon="home_work" Variant="Variant.Outlined" Click="@(() => Navigation.NavigateTo("properties"))" />
+                <RadzenButton Text="Abrir mapa" Icon="map" Variant="Variant.Outlined" Click="@(() => Navigation.NavigateTo("map"))" />
+                <RadzenButton Text="Equipamentos" Icon="school" Variant="Variant.Outlined" Click="@(() => Navigation.NavigateTo("facilities"))" />
+                <RadzenButton Text="Territorio" Icon="account_tree" Variant="Variant.Outlined" Click="@(() => Navigation.NavigateTo("territory"))" />
+            </div>
+        </RadzenCard>
     </div>
 
     <p class="poc-hint">
         Dados demonstrativos usam o municipio de Passira (IBGE 2611903) e nao substituem base oficial.
     </p>
+
+    <RadzenCard class="home-scope">
+        <h2 class="home-panel__title">Escopo desta POC</h2>
+
+        <div class="home-scope__columns">
+            <div>
+                <h3>Inclui</h3>
+                <ul>
+                    <li>Territorio, logradouros, imoveis e equipamentos</li>
+                    <li>Desenho e edicao de geometria do lote</li>
+                    <li>Mapa com selecao e area calculada</li>
+                    <li>Persistencia local com schema versionado</li>
+                </ul>
+            </div>
+
+            <div>
+                <h3>Nao inclui</h3>
+                <ul>
+                    <li>Autenticacao e permissoes</li>
+                    <li>Backend, API e PostGIS</li>
+                    <li>Cemiterios, rural, zoneamento e licenciamento</li>
+                    <li>App mobile e portal publico</li>
+                </ul>
+            </div>
+
+            <div>
+                <h3>Proximos passos</h3>
+                <ul>
+                    <li>Identidade e auditoria</li>
+                    <li>Modulos municipais das fases 4 a 7</li>
+                    <li>Dados oficiais com metadados</li>
+                </ul>
+            </div>
+        </div>
+    </RadzenCard>
 }
 
 @code {

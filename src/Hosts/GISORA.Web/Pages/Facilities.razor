@@ -13,7 +13,7 @@
 @inject CreateFacilityHandler CreateFacility
 @inject IGeoJsonSerializer Serializer
 
-<PageHeader Title="Equipamentos publicos" Description="Escolas, saude, pracas, parques e predios publicos." />
+<PageHeader Title="Equipamentos publicos" Description="Escolas, saude, pracas, parques e predios publicos." Icon="school" />
 
 <div class="facilities-layout">
     <RadzenCard>
@@ -49,7 +49,7 @@
             <div class="facilities-form__field">
                 <span>Localizacao</span>
                 <div class="gisora-toolbar">
-                    <RadzenButton Text="Marcar no mapa" ButtonStyle="ButtonStyle.Light" Click="PickAsync" />
+                    <RadzenButton Text="Marcar no mapa" Variant="Variant.Outlined" Click="PickAsync" />
                     <span class="facilities__coordinate">
                         @(_point is { } point ? FacilityMapProjector.ToCoordinateText(point) : "nao definida")
                     </span>
@@ -73,7 +73,7 @@
     </RadzenCard>
 
     <div class="facilities-map">
-        <MapView @ref="_map" CenterLatitude="-7.95" CenterLongitude="-35.25" Zoom="14">
+        <MapView @ref="_map" CenterLatitude="-7.95" CenterLongitude="-35.25" Zoom="14" Height="clamp(20rem, calc(100vh - 28rem), 32rem)">
             <MapToolbar />
             <CoordinateControl />
             <DrawingTool @ref="_tool" OnPointPicked="SetPoint" />
@@ -90,9 +90,9 @@
                     @TypeLabel(facility.Type)
                 </Template>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="FacilityListItem" Title="Localizacao" Width="140px">
+            <RadzenDataGridColumn TItem="FacilityListItem" Title="No mapa" Width="120px">
                 <Template Context="facility">
-                    @(facility.HasLocation ? "definida" : "nao definida")
+                    @(facility.HasLocation ? "Sim" : "Nao")
                 </Template>
             </RadzenDataGridColumn>
         </Columns>

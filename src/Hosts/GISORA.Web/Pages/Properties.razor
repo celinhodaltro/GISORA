@@ -3,7 +3,7 @@
 @inject NavigationManager Navigation
 @using GISORA.Properties.Domain
 
-<PageHeader Title="Imoveis" Description="Consulta ao cadastro imobiliario.">
+<PageHeader Title="Imoveis" Description="Consulta ao cadastro imobiliario." Icon="home_work">
     <Actions>
         <RadzenButton Text="Novo imovel" ButtonStyle="ButtonStyle.Primary" Click="NewProperty" />
     </Actions>
@@ -27,12 +27,12 @@
         <Columns>
             <RadzenDataGridColumn TItem="PropertyListItem" Property="Registration" Title="Inscricao" Width="220px" />
             <RadzenDataGridColumn TItem="PropertyListItem" Property="Number" Title="Numero" Width="120px" />
-            <RadzenDataGridColumn TItem="PropertyListItem" Property="LandAreaSquareMeters" Title="Area do lote (m2)" FormatString="{0:N2}" />
-            <RadzenDataGridColumn TItem="PropertyListItem" Property="BuiltAreaSquareMeters" Title="Area construida (m2)" FormatString="{0:N2}" />
+            <RadzenDataGridColumn TItem="PropertyListItem" Property="LandAreaSquareMeters" Title="Area do lote (m2)" Width="160px" FormatString="{0:N2}" />
+            <RadzenDataGridColumn TItem="PropertyListItem" Property="BuiltAreaSquareMeters" Title="Area construida (m2)" Width="170px" FormatString="{0:N2}" />
             <RadzenDataGridColumn TItem="PropertyListItem" Property="BuildingCount" Title="Edificacoes" Width="120px" />
             <RadzenDataGridColumn TItem="PropertyListItem" Title="Geometria" Width="140px" Sortable="false" Filterable="false">
                 <Template Context="property">
-                    <RadzenButton Text="Geometria" ButtonStyle="ButtonStyle.Light" Click="@(() => OpenGeometry(property.Id))" />
+                    <RadzenButton Text="Geometria" Variant="Variant.Outlined" Size="ButtonSize.Small" Click="@(() => OpenGeometry(property.Id))" />
                 </Template>
             </RadzenDataGridColumn>
         </Columns>

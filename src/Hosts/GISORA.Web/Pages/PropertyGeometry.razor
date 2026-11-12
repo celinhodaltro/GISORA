@@ -12,7 +12,7 @@
 @inject ISpatialOperations Spatial
 @inject UpdatePropertyGeometryHandler UpdateGeometry
 
-<PageHeader Title="Geometria do imovel" Description="Desenhe ou edite o poligono do lote." />
+<PageHeader Title="Geometria do imovel" Description="Desenhe ou edite o poligono do lote." Icon="draw" />
 
 @if (_loading)
 {
@@ -26,8 +26,10 @@ else
 {
     <p class="geometry-page__registration">Inscricao: <strong>@_view.Registration</strong></p>
 
+    <p class="geometry-page__hint">Use <strong>Desenhar</strong> e clique no mapa para adicionar vertices; <strong>Concluir desenho</strong> fecha o poligono.</p>
+
     <div class="geometry-page">
-        <MapView @ref="_map" CenterLatitude="-7.95" CenterLongitude="-35.25" Zoom="16">
+        <MapView @ref="_map" CenterLatitude="-7.95" CenterLongitude="-35.25" Zoom="16" Height="clamp(22rem, calc(100vh - 26rem), 34rem)">
             <MapToolbar />
             <CoordinateControl />
             <DrawingTool @ref="_tool" OnCompleted="ApplyGeometryAsync" OnEdited="ApplyGeometryAsync" />
@@ -35,11 +37,11 @@ else
     </div>
 
     <div class="gisora-toolbar geometry-page__actions">
-        <RadzenButton Text="Desenhar" Click="DrawAsync" />
-        <RadzenButton Text="Concluir desenho" Click="FinishAsync" />
-        <RadzenButton Text="Editar geometria" Disabled="@(_geometry is null && _view?.Geometry is null)" Click="EditAsync" />
+        <RadzenButton Text="Desenhar" Variant="Variant.Outlined" Click="DrawAsync" />
+        <RadzenButton Text="Concluir desenho" Variant="Variant.Outlined" Click="FinishAsync" />
+        <RadzenButton Text="Editar geometria" Variant="Variant.Outlined" Disabled="@(_geometry is null && _view?.Geometry is null)" Click="EditAsync" />
         <RadzenButton Text="Salvar geometria" ButtonStyle="ButtonStyle.Primary" Disabled="@(_geometry is null)" Click="SaveAsync" />
-        <RadzenButton Text="Cancelar" ButtonStyle="ButtonStyle.Light" Click="CancelAsync" />
+        <RadzenButton Text="Cancelar" Variant="Variant.Outlined" Click="CancelAsync" />
     </div>
 
     @if (_areaSquareMeters is { } area)

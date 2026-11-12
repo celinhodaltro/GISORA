@@ -1,14 +1,15 @@
 .geometry-page {
-    height: 26rem;
     margin-bottom: var(--gisora-space-4, 1rem);
-}
-
-.geometry-page .gisora-map-wrapper {
-    height: 100%;
 }
 
 .geometry-page__registration {
     margin: 0 0 var(--gisora-space-3, 0.75rem);
+}
+
+.geometry-page__hint {
+    margin: 0 0 var(--gisora-space-3, 0.75rem);
+    color: var(--gisora-color-text-muted, #5d6b64);
+    font-size: 0.8125rem;
 }
 
 .geometry-page__actions {

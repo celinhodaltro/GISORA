@@ -66,10 +66,10 @@ public sealed class DemoDataSeeder(
             "001", "003", "010", null, matriz.Value, "45", center.Value, 360m, null), cancellationToken));
 
         Require(await createFacility.HandleAsync(new CreateFacilityCommand(
-            "Escola Municipal", FacilityType.School, center.Value, PointAt(-35.2500, -7.9510)), cancellationToken));
+            "Escola Municipal", FacilityType.School, center.Value, PointAt(-35.2552, -7.9542)), cancellationToken));
 
         Require(await createFacility.HandleAsync(new CreateFacilityCommand(
-            "Praca Central", FacilityType.Square, center.Value, PointAt(-35.2490, -7.9525)), cancellationToken));
+            "Praca Central", FacilityType.Square, center.Value, PointAt(-35.2455, -7.9481)), cancellationToken));
 
         await store.SetAsync(DemoNamespace, SeededKey, true, cancellationToken);
 

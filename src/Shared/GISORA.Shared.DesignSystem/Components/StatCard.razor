@@ -1,8 +1,18 @@
 @namespace GISORA.Shared.DesignSystem.Components
 
 <div class="gisora-stat-card">
-    <span class="gisora-stat-card__label">@Label</span>
+    <div class="gisora-stat-card__top">
+        <span class="gisora-stat-card__label">@Label</span>
+        @if (Icon is not null)
+        {
+            <span class="gisora-stat-card__icon" aria-hidden="true">
+                <RadzenIcon Icon="@Icon" />
+            </span>
+        }
+    </div>
+
     <strong class="gisora-stat-card__value">@Value</strong>
+
     @if (Hint is not null)
     {
         <span class="gisora-stat-card__hint">@Hint</span>
@@ -18,4 +28,7 @@
 
     [Parameter]
     public string? Hint { get; set; }
+
+    [Parameter]
+    public string? Icon { get; set; }
 }

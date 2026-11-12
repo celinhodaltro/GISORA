@@ -36,6 +36,12 @@ public sealed partial class MapView : IAsyncDisposable
     public string? Class { get; set; }
 
     [Parameter]
+    public string Height { get; set; } = "24rem";
+
+    [Parameter]
+    public bool AutoFit { get; set; } = true;
+
+    [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
     [Parameter]
@@ -74,6 +80,11 @@ public sealed partial class MapView : IAsyncDisposable
         }
 
         _pendingLayers.Clear();
+
+        if (AutoFit)
+        {
+            await FitBoundsAsync();
+        }
     }
 
     public async Task SetLayerAsync(MapLayer layer)
