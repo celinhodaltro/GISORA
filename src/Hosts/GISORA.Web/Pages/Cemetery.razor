@@ -377,9 +377,9 @@
         _error = null;
         _message = "Setor cadastrado.";
         _sectorCode = null;
-        _selectedSectorId = result.Value.Value;
 
         await ReloadSectorsAsync();
+        _selectedSectorId = result.Value.Value;
     }
 
     private async Task CreateGraveAsync()
@@ -425,22 +425,26 @@
         _message = "Jazigo cadastrado.";
         _graveCode = null;
         _graveLocation = null;
-        _selectedGraveId = result.Value.Value;
 
         await ReloadGravesAsync();
+        _selectedGraveId = result.Value.Value;
     }
 
     private async Task RegisterBurialAsync()
     {
-        if (_selectedGraveId is not { } graveId)
+        var graveId = _selectedGraveId ?? _graves.FirstOrDefault()?.Id.Value;
+
+        if (graveId is not { } selected)
         {
             _error = "Selecione um jazigo.";
 
             return;
         }
 
+        var graveIdValue = selected;
+
         var result = await RegisterBurial.HandleAsync(new RegisterBurialCommand(
-            new GISORA.Cemetery.Domain.GraveId(graveId),
+            new GISORA.Cemetery.Domain.GraveId(graveIdValue),
             _personName ?? string.Empty,
             DateOnly.FromDateTime(DateTime.UtcNow)));
 
