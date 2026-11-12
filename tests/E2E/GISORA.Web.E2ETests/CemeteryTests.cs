@@ -15,10 +15,10 @@ public class CemeteryTests(WebAppFixture fixture)
 
         await page.GetByPlaceholder("Nome do cemiterio").FillAsync("Cemiterio Municipal");
         await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Desenhar limite" }).ClickAsync();
-        await ClickMapAsync(page, 0.30, 0.30);
-        await ClickMapAsync(page, 0.65, 0.30);
+        await ClickMapAsync(page, 0.35, 0.35);
+        await ClickMapAsync(page, 0.65, 0.35);
         await ClickMapAsync(page, 0.65, 0.65);
-        await ClickMapAsync(page, 0.30, 0.65);
+        await ClickMapAsync(page, 0.35, 0.65);
         await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Concluir desenho" }).ClickAsync();
 
         await Expect(page.GetByText("Area:")).ToBeVisibleAsync();
