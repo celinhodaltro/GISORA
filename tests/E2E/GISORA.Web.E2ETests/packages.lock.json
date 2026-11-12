@@ -361,10 +361,26 @@
       "gisora.buildingblocks.domain": {
         "type": "Project"
       },
+      "gisora.geospatial.application": {
+        "type": "Project",
+        "dependencies": {
+          "GISORA.BuildingBlocks.Application": "[0.1.0, )",
+          "GISORA.Geospatial.Domain": "[0.1.0, )"
+        }
+      },
       "gisora.geospatial.domain": {
         "type": "Project",
         "dependencies": {
           "GISORA.BuildingBlocks.Domain": "[0.1.0, )"
+        }
+      },
+      "gisora.infrastructure.geospatial": {
+        "type": "Project",
+        "dependencies": {
+          "GISORA.BuildingBlocks.Domain": "[0.1.0, )",
+          "GISORA.Geospatial.Application": "[0.1.0, )",
+          "GISORA.Geospatial.Domain": "[0.1.0, )",
+          "Microsoft.AspNetCore.Components.Web": "[10.0.15, )"
         }
       },
       "gisora.infrastructure.localstorage": {
@@ -418,6 +434,7 @@
       "gisora.web": {
         "type": "Project",
         "dependencies": {
+          "GISORA.Infrastructure.Geospatial": "[0.1.0, )",
           "GISORA.Infrastructure.LocalStorage": "[0.1.0, )",
           "GISORA.Properties.Application": "[0.1.0, )",
           "GISORA.Shared.DesignSystem": "[0.1.0, )",
