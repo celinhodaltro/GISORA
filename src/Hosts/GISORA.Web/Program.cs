@@ -1,3 +1,5 @@
+using GISORA.Geospatial.Application;
+using GISORA.Infrastructure.Geospatial;
 using GISORA.Infrastructure.LocalStorage;
 using GISORA.Infrastructure.LocalStorage.Repositories;
 using GISORA.Properties.Application;
@@ -35,6 +37,8 @@ builder.Services.AddScoped<IUrbanBlockQueries, LocalStorageUrbanBlockQueries>();
 builder.Services.AddScoped<IPropertyRepository, LocalStoragePropertyRepository>();
 builder.Services.AddScoped<ITaxpayerRepository, LocalStorageTaxpayerRepository>();
 builder.Services.AddScoped<IPropertyQueries, LocalStoragePropertyQueries>();
+builder.Services.AddScoped<IPropertyMapQueries, LocalStoragePropertyMapQueries>();
+builder.Services.AddSingleton<IGeoJsonSerializer, GeoJsonSerializer>();
 
 builder.Services.AddScoped<CreateMunicipalityHandler>();
 builder.Services.AddScoped<CreateUrbanBlockHandler>();
