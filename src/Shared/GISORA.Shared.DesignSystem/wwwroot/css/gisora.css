@@ -48,3 +48,89 @@ body {
     align-items: center;
     margin-bottom: var(--gisora-space-4);
 }
+
+.gisora-map-vertex {
+    width: 12px;
+    height: 12px;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    background: #2f7fb5;
+    box-shadow: 0 0 2px rgba(29, 37, 33, 0.6);
+}
+
+.gisora-page-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--gisora-space-4);
+    margin-bottom: var(--gisora-space-6);
+}
+
+.gisora-page-header__title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--gisora-color-text);
+}
+
+.gisora-page-header__description {
+    margin: var(--gisora-space-1) 0 0;
+    color: var(--gisora-color-text-muted);
+}
+
+.gisora-page-header__actions {
+    display: flex;
+    gap: var(--gisora-space-2);
+}
+
+.gisora-stat-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gisora-space-1);
+    padding: var(--gisora-space-4);
+    background: var(--gisora-color-surface);
+    border: 1px solid var(--gisora-color-border);
+    border-radius: var(--gisora-radius-md);
+    box-shadow: var(--gisora-shadow-sm);
+}
+
+.gisora-stat-card__label {
+    font-size: 0.8125rem;
+    color: var(--gisora-color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.gisora-stat-card__value {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--gisora-color-text);
+}
+
+.gisora-stat-card__hint {
+    font-size: 0.75rem;
+    color: var(--gisora-color-text-muted);
+}
+
+.gisora-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--gisora-space-2);
+    padding: var(--gisora-space-8) var(--gisora-space-4);
+    text-align: center;
+    border: 1px dashed var(--gisora-color-border);
+    border-radius: var(--gisora-radius-md);
+    background: var(--gisora-color-surface);
+}
+
+.gisora-empty-state__title {
+    font-size: 1rem;
+    color: var(--gisora-color-text);
+}
+
+.gisora-empty-state__description {
+    margin: 0;
+    max-width: 32rem;
+    color: var(--gisora-color-text-muted);
+}

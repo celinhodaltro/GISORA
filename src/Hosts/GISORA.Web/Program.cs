@@ -47,6 +47,11 @@ builder.Services.AddScoped<CreateStreetHandler>();
 builder.Services.AddScoped<IPropertyMapQueries, LocalStoragePropertyMapQueries>();
 builder.Services.AddSingleton<IGeoJsonSerializer, GeoJsonSerializer>();
 
+builder.Services.AddScoped<GeospatialInterop>();
+builder.Services.AddScoped<IGeometryValidator, TurfGeometryValidator>();
+builder.Services.AddScoped<ICoordinateTransformer, Proj4CoordinateTransformer>();
+builder.Services.AddScoped<ISpatialOperations, TurfSpatialOperations>();
+
 builder.Services.AddScoped<CreateMunicipalityHandler>();
 builder.Services.AddScoped<CreateUrbanBlockHandler>();
 builder.Services.AddScoped<AddBlockFaceHandler>();

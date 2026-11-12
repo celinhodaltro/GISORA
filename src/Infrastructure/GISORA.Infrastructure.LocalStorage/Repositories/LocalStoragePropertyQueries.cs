@@ -40,4 +40,25 @@ public sealed class LocalStoragePropertyQueries(ILocalStore store) : IPropertyQu
 
         return new PagedResult<PropertyListItem>(items, filter.PageNumber, filter.PageSize, ordered.Length);
     }
+
+    public async Task<PropertyGeometryView?> GetGeometryAsync(PropertyId id, CancellationToken cancellationToken = default)
+    {
+        var document = await store.GetAsync<PropertyDocument>(
+            StorageNamespaces.Properties,
+            $"property-{id.Value}",
+            cancellationToken);
+
+        if (document is null)
+        {
+            return null;
+        }
+
+        var property = document.ToDomain();
+
+        return new PropertyGeometryView(
+            property.Id,
+            property.Registration.Formatted,
+            property.Geometry,
+            property.LandArea.SquareMeters);
+    }
 }

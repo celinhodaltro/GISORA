@@ -1,0 +1,39 @@
+.geometry-page {
+    height: 26rem;
+    margin-bottom: var(--gisora-space-4, 1rem);
+}
+
+.geometry-page .gisora-map-wrapper {
+    height: 100%;
+}
+
+.geometry-page__registration {
+    margin: 0 0 var(--gisora-space-3, 0.75rem);
+}
+
+.geometry-page__actions {
+    margin-top: 0;
+}
+
+.geometry-page__area {
+    margin: 0 0 var(--gisora-space-2, 0.5rem);
+    font-weight: 600;
+}
+
+.geometry-page__error {
+    margin: 0 0 var(--gisora-space-2, 0.5rem);
+    padding: var(--gisora-space-2, 0.5rem) var(--gisora-space-3, 0.75rem);
+    border-radius: var(--gisora-radius-sm, 4px);
+    background: #fdecea;
+    color: var(--gisora-color-danger, #b3261e);
+    font-size: 0.875rem;
+}
+
+.geometry-page__message {
+    margin: 0;
+    padding: var(--gisora-space-2, 0.5rem) var(--gisora-space-3, 0.75rem);
+    border-radius: var(--gisora-radius-sm, 4px);
+    background: #e8f5e9;
+    color: #1f6f4a;
+    font-size: 0.875rem;
+}

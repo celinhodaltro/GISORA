@@ -47,6 +47,8 @@ public sealed partial class MapView : IAsyncDisposable
 
     public bool IsReady => _module is not null;
 
+    public string ElementId => _elementId;
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender is false)

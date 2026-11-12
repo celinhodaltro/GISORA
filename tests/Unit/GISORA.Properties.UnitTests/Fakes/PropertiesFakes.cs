@@ -69,4 +69,7 @@ internal sealed class FakePropertyQueries : IPropertyQueries
             filter.PageSize,
             0));
     }
+
+    public Task<PropertyGeometryView?> GetGeometryAsync(PropertyId id, CancellationToken cancellationToken = default)
+        => Task.FromResult<PropertyGeometryView?>(null);
 }

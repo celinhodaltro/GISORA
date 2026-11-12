@@ -1,6 +1,7 @@
 @page "/properties"
 @inject IPropertyQueries Queries
 @inject NavigationManager Navigation
+@using GISORA.Properties.Domain
 
 <PageHeader Title="Imoveis" Description="Consulta ao cadastro imobiliario.">
     <Actions>
@@ -29,6 +30,11 @@
             <RadzenDataGridColumn TItem="PropertyListItem" Property="LandAreaSquareMeters" Title="Area do lote (m2)" FormatString="{0:N2}" />
             <RadzenDataGridColumn TItem="PropertyListItem" Property="BuiltAreaSquareMeters" Title="Area construida (m2)" FormatString="{0:N2}" />
             <RadzenDataGridColumn TItem="PropertyListItem" Property="BuildingCount" Title="Edificacoes" Width="120px" />
+            <RadzenDataGridColumn TItem="PropertyListItem" Title="Geometria" Width="140px" Sortable="false" Filterable="false">
+                <Template Context="property">
+                    <RadzenButton Text="Geometria" ButtonStyle="ButtonStyle.Light" Click="@(() => OpenGeometry(property.Id))" />
+                </Template>
+            </RadzenDataGridColumn>
         </Columns>
     </RadzenDataGrid>
 </RadzenCard>
@@ -37,6 +43,8 @@
     private const int PageSize = 10;
 
     private void NewProperty() => Navigation.NavigateTo("/properties/new");
+
+    private void OpenGeometry(PropertyId id) => Navigation.NavigateTo($"/properties/{id.Value}/geometry");
 
     private RadzenDataGrid<PropertyListItem>? _grid;
     private IReadOnlyList<PropertyListItem> _items = [];
