@@ -24,6 +24,7 @@ internal static class ArchitectureModel
             typeof(BrowserLocalStore).Assembly,
             typeof(GISORA.Infrastructure.Geospatial.GeospatialInterop).Assembly,
             typeof(Shared.DesignSystem.Components.StatCard).Assembly,
+            typeof(Shared.Maps.Components.MapView).Assembly,
             typeof(Web.App).Assembly)
         .Build();
 

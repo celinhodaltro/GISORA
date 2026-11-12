@@ -26,6 +26,7 @@
   </Folder>
   <Folder Name="/src/Shared/">
     <Project Path="src/Shared/GISORA.Shared.DesignSystem/GISORA.Shared.DesignSystem.csproj" />
+    <Project Path="src/Shared/GISORA.Shared.Maps/GISORA.Shared.Maps.csproj" />
   </Folder>
   <Folder Name="/tests/" />
   <Folder Name="/tests/Architecture/">

@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\GISORA.Shared.DesignSystem\GISORA.Shared.DesignSystem.csproj" />
+    <ProjectReference Include="..\..\Shared\GISORA.Shared.Maps\GISORA.Shared.Maps.csproj" />
     <ProjectReference Include="..\..\Infrastructure\GISORA.Infrastructure.LocalStorage\GISORA.Infrastructure.LocalStorage.csproj" />
     <ProjectReference Include="..\..\Infrastructure\GISORA.Infrastructure.Geospatial\GISORA.Infrastructure.Geospatial.csproj" />
     <ProjectReference Include="..\..\Modules\Territory\GISORA.Territory.Application\GISORA.Territory.Application.csproj" />
