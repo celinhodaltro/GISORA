@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>GISORA.BuildingBlocks.Domain</RootNamespace>
+    <Description>Primitivas de DDD compartilhadas por todos os bounded contexts.</Description>
+  </PropertyGroup>
+
+</Project>

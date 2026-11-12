@@ -403,3 +403,8 @@ dotnet_diagnostic.IDE0005.severity = warning
 [*.{razor,cshtml}]
 dotnet_diagnostic.RZ1000.severity = warning
 dotnet_diagnostic.RZ1002.severity = warning
+
+# Tipo Error segue a convencao do padrao Result. Nao temos consumidores VB
+# no escopo do produto, entao a regra de compatibilidade CA1716 nao se aplica.
+[src/BuildingBlocks/GISORA.BuildingBlocks.Application/Error.cs]
+dotnet_diagnostic.CA1716.severity = none
