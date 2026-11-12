@@ -1,0 +1,228 @@
+@page "/territory"
+@using GISORA.Territory.Application
+@using GISORA.Territory.Application.Commands
+@using GISORA.Territory.Domain
+@inject ITerritoryQueries Queries
+@inject CreateMunicipalityHandler CreateMunicipality
+@inject CreateDistrictHandler CreateDistrict
+@inject CreateNeighborhoodHandler CreateNeighborhood
+@inject CreateFiscalSectorHandler CreateFiscalSector
+
+<PageHeader Title="Territorio" Description="Municipio, distritos, bairros e setores fiscais." />
+
+@if (_error is not null)
+{
+    <p class="territory__error" role="alert">@_error</p>
+}
+
+<div class="territory-grid">
+    <RadzenCard>
+        <h2 class="territory-grid__title">Municipio</h2>
+
+        <div class="gisora-toolbar">
+            <RadzenTextBox @bind-Value="_municipalityName" Placeholder="Nome do municipio" />
+            <RadzenTextBox @bind-Value="_ibgeCode" Placeholder="Codigo IBGE" />
+            <RadzenButton Text="Cadastrar municipio" ButtonStyle="ButtonStyle.Primary" Click="CreateMunicipalityAsync" />
+        </div>
+
+        <RadzenDataGrid Data="@_municipalities" TItem="MunicipalityListItem" Density="Density.Compact" AllowPaging="false">
+            <Columns>
+                <RadzenDataGridColumn TItem="MunicipalityListItem" Property="Name" Title="Nome" />
+                <RadzenDataGridColumn TItem="MunicipalityListItem" Property="IbgeCode" Title="IBGE" Width="120px" />
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenCard>
+
+    <RadzenCard>
+        <h2 class="territory-grid__title">Distrito</h2>
+
+        <div class="gisora-toolbar">
+            <select class="territory-select" @bind="_municipalityId" @bind:after="ReloadAsync" aria-label="Municipio">
+                @foreach (var municipality in _municipalities)
+                {
+                    <option value="@municipality.Id.Value">@municipality.Name</option>
+                }
+            </select>
+            <RadzenTextBox @bind-Value="_districtName" Placeholder="Nome do distrito" />
+            <RadzenButton Text="Cadastrar distrito" ButtonStyle="ButtonStyle.Primary" Click="CreateDistrictAsync" />
+        </div>
+
+        <RadzenDataGrid Data="@_districts" TItem="DistrictListItem" Density="Density.Compact" AllowPaging="false">
+            <Columns>
+                <RadzenDataGridColumn TItem="DistrictListItem" Property="Name" Title="Nome" />
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenCard>
+
+    <RadzenCard>
+        <h2 class="territory-grid__title">Bairro</h2>
+
+        <div class="gisora-toolbar">
+            <select class="territory-select" @bind="_districtId" @bind:after="ReloadNeighborhoodsAsync" aria-label="Distrito">
+                @foreach (var district in _districts)
+                {
+                    <option value="@district.Id.Value">@district.Name</option>
+                }
+            </select>
+            <RadzenTextBox @bind-Value="_neighborhoodName" Placeholder="Nome do bairro" />
+            <RadzenButton Text="Cadastrar bairro" ButtonStyle="ButtonStyle.Primary" Click="CreateNeighborhoodAsync" />
+        </div>
+
+        <RadzenDataGrid Data="@_neighborhoods" TItem="NeighborhoodListItem" Density="Density.Compact" AllowPaging="false">
+            <Columns>
+                <RadzenDataGridColumn TItem="NeighborhoodListItem" Property="Name" Title="Nome" />
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenCard>
+
+    <RadzenCard>
+        <h2 class="territory-grid__title">Setor fiscal</h2>
+
+        <div class="gisora-toolbar">
+            <select class="territory-select" @bind="_sectorDistrictId" @bind:after="ReloadSectorsAsync" aria-label="Distrito do setor">
+                @foreach (var district in _districts)
+                {
+                    <option value="@district.Id.Value">@district.Name</option>
+                }
+            </select>
+            <RadzenTextBox @bind-Value="_sectorCode" Placeholder="Codigo do setor" />
+            <RadzenButton Text="Cadastrar setor" ButtonStyle="ButtonStyle.Primary" Click="CreateSectorAsync" />
+        </div>
+
+        <RadzenDataGrid Data="@_sectors" TItem="FiscalSectorListItem" Density="Density.Compact" AllowPaging="false">
+            <Columns>
+                <RadzenDataGridColumn TItem="FiscalSectorListItem" Property="Code" Title="Codigo" />
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenCard>
+</div>
+
+@code {
+    private IReadOnlyList<MunicipalityListItem> _municipalities = [];
+    private IReadOnlyList<DistrictListItem> _districts = [];
+    private IReadOnlyList<NeighborhoodListItem> _neighborhoods = [];
+    private IReadOnlyList<FiscalSectorListItem> _sectors = [];
+
+    private Guid? _municipalityId;
+    private Guid? _districtId;
+    private Guid? _sectorDistrictId;
+
+    private string? _municipalityName;
+    private string? _ibgeCode;
+    private string? _districtName;
+    private string? _neighborhoodName;
+    private string? _sectorCode;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync() => await ReloadAsync();
+
+    private async Task ReloadAsync()
+    {
+        _municipalities = await Queries.ListMunicipalitiesAsync();
+        await ReloadDistrictsAsync();
+        await ReloadNeighborhoodsAsync();
+        await ReloadSectorsAsync();
+    }
+
+    private async Task ReloadDistrictsAsync()
+    {
+        if (_municipalityId is null && _municipalities.Count > 0)
+        {
+            _municipalityId = _municipalities[0].Id.Value;
+        }
+
+        _districts = await Queries.ListDistrictsAsync(
+            _municipalityId is { } municipalityId ? new MunicipalityId(municipalityId) : null);
+
+        if (_districtId is null && _districts.Count > 0)
+        {
+            _districtId = _districts[0].Id.Value;
+            _sectorDistrictId = _districtId;
+        }
+    }
+
+    private async Task ReloadNeighborhoodsAsync()
+        => _neighborhoods = await Queries.ListNeighborhoodsAsync(
+            _districtId is { } districtId ? new DistrictId(districtId) : null);
+
+    private async Task ReloadSectorsAsync()
+        => _sectors = await Queries.ListFiscalSectorsAsync(
+            _sectorDistrictId is { } districtId ? new DistrictId(districtId) : null);
+
+    private async Task CreateMunicipalityAsync()
+    {
+        var result = await CreateMunicipality.HandleAsync(
+            new CreateMunicipalityCommand(_municipalityName ?? string.Empty, _ibgeCode ?? string.Empty));
+
+        await HandleAsync(result.IsFailure ? result.Error.Message : null, () =>
+        {
+            _municipalityName = null;
+            _ibgeCode = null;
+            _municipalityId = null;
+            _districtId = null;
+            _sectorDistrictId = null;
+        });
+    }
+
+    private async Task CreateDistrictAsync()
+    {
+        if (_municipalityId is not { } municipalityId)
+        {
+            _error = "Cadastre um municipio antes de criar distritos.";
+
+            return;
+        }
+
+        var result = await CreateDistrict.HandleAsync(
+            new CreateDistrictCommand(new MunicipalityId(municipalityId), _districtName ?? string.Empty));
+
+        await HandleAsync(result.IsFailure ? result.Error.Message : null, () =>
+        {
+            _districtName = null;
+            _districtId = null;
+        });
+    }
+
+    private async Task CreateNeighborhoodAsync()
+    {
+        if (_districtId is not { } districtId)
+        {
+            _error = "Cadastre um distrito antes de criar bairros.";
+
+            return;
+        }
+
+        var result = await CreateNeighborhood.HandleAsync(
+            new CreateNeighborhoodCommand(new DistrictId(districtId), _neighborhoodName ?? string.Empty));
+
+        await HandleAsync(result.IsFailure ? result.Error.Message : null, () => _neighborhoodName = null);
+    }
+
+    private async Task CreateSectorAsync()
+    {
+        if (_sectorDistrictId is not { } districtId)
+        {
+            _error = "Cadastre um distrito antes de criar setores fiscais.";
+
+            return;
+        }
+
+        var result = await CreateFiscalSector.HandleAsync(
+            new CreateFiscalSectorCommand(new DistrictId(districtId), _sectorCode ?? string.Empty));
+
+        await HandleAsync(result.IsFailure ? result.Error.Message : null, () => _sectorCode = null);
+    }
+
+    private async Task HandleAsync(string? error, Action onSuccess)
+    {
+        _error = error;
+
+        if (error is not null)
+        {
+            return;
+        }
+
+        onSuccess();
+        await ReloadAsync();
+    }
+}

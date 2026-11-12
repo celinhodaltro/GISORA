@@ -7,6 +7,8 @@ public sealed class LocalStorageMunicipalityRepository(ILocalStore store) : IMun
 {
     private const string IbgeIndexKey = "municipality-ibge-index";
 
+    private const string IdsKey = "municipality-ids";
+
     public async Task<Municipality?> FindAsync(MunicipalityId id, CancellationToken cancellationToken = default)
     {
         var document = await store.GetAsync<MunicipalityDocument>(StorageNamespaces.Territory, Key(id), cancellationToken);
@@ -35,6 +37,13 @@ public sealed class LocalStorageMunicipalityRepository(ILocalStore store) : IMun
 
         index[municipality.IbgeCode.Value] = municipality.Id.Value;
         await store.SetAsync(StorageNamespaces.Territory, IbgeIndexKey, index, cancellationToken);
+
+        var ids = await store.GetAsync<List<Guid>>(StorageNamespaces.Territory, IdsKey, cancellationToken) ?? [];
+        if (ids.Contains(municipality.Id.Value) is false)
+        {
+            ids.Add(municipality.Id.Value);
+            await store.SetAsync(StorageNamespaces.Territory, IdsKey, ids, cancellationToken);
+        }
     }
 
     public async Task UpdateAsync(Municipality municipality, CancellationToken cancellationToken = default)

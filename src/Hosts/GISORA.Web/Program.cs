@@ -36,6 +36,7 @@ builder.Services.AddScoped<INeighborhoodRepository, LocalStorageNeighborhoodRepo
 builder.Services.AddScoped<IFiscalSectorRepository, LocalStorageFiscalSectorRepository>();
 builder.Services.AddScoped<IUrbanBlockRepository, LocalStorageUrbanBlockRepository>();
 builder.Services.AddScoped<IUrbanBlockQueries, LocalStorageUrbanBlockQueries>();
+builder.Services.AddScoped<ITerritoryQueries, LocalStorageTerritoryQueries>();
 
 builder.Services.AddScoped<IPropertyRepository, LocalStoragePropertyRepository>();
 builder.Services.AddScoped<ITaxpayerRepository, LocalStorageTaxpayerRepository>();
@@ -49,6 +50,9 @@ builder.Services.AddSingleton<IGeoJsonSerializer, GeoJsonSerializer>();
 builder.Services.AddScoped<CreateMunicipalityHandler>();
 builder.Services.AddScoped<CreateUrbanBlockHandler>();
 builder.Services.AddScoped<AddBlockFaceHandler>();
+builder.Services.AddScoped<CreateDistrictHandler>();
+builder.Services.AddScoped<CreateNeighborhoodHandler>();
+builder.Services.AddScoped<CreateFiscalSectorHandler>();
 builder.Services.AddScoped<GetUrbanBlockHandler>();
 builder.Services.AddScoped<SearchUrbanBlocksHandler>();
 
