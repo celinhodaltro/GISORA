@@ -37,9 +37,20 @@ public class ModuleBoundaryTests
     }
 
     [Fact]
+    public void RoadsDoesNotDependOnOtherBusinessContexts()
+    {
+        var types = ArchitectureModel.TypesStartingWith("GISORA.Roads");
+
+        DependencyAssertions.AssertNoDependencyOn(
+            types,
+            ["GISORA.Territory", "GISORA.Properties", .. SharedLayers],
+            "Roads");
+    }
+
+    [Fact]
     public void ModulesDoNotDependOnInfrastructureOrHosts()
     {
-        foreach (var module in new[] { "GISORA.Territory", "GISORA.Properties", "GISORA.Geospatial" })
+        foreach (var module in new[] { "GISORA.Territory", "GISORA.Properties", "GISORA.Geospatial", "GISORA.Roads" })
         {
             var types = ArchitectureModel.TypesStartingWith(module);
 

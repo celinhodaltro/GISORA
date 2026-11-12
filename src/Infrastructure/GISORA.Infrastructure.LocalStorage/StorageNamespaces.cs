@@ -8,5 +8,7 @@ public static class StorageNamespaces
 
     public const string Taxpayers = "taxpayers";
 
+    public const string Roads = "roads";
+
     public const string Meta = "meta";
 }

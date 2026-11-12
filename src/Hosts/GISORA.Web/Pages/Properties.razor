@@ -40,6 +40,13 @@
     {
         var pageNumber = args.Skip is { } skip ? (skip / PageSize) + 1 : 1;
 
+        await LoadPageAsync(pageNumber);
+    }
+
+    protected override async Task OnInitializedAsync() => await LoadPageAsync(1);
+
+    private async Task LoadPageAsync(int pageNumber)
+    {
         var page = await Queries.SearchAsync(new PropertyFilter
         {
             RegistrationContains = _search,

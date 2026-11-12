@@ -1,0 +1,8 @@
+.streets__error {
+    margin: 0 0 var(--gisora-space-3, 0.75rem);
+    padding: var(--gisora-space-2, 0.5rem) var(--gisora-space-3, 0.75rem);
+    border-radius: var(--gisora-radius-sm, 4px);
+    background: #fdecea;
+    color: var(--gisora-color-danger, #b3261e);
+    font-size: 0.875rem;
+}

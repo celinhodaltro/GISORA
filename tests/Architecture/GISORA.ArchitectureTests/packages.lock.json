@@ -419,6 +419,8 @@
           "GISORA.Geospatial.Domain": "[0.1.0, )",
           "GISORA.Properties.Application": "[0.1.0, )",
           "GISORA.Properties.Domain": "[0.1.0, )",
+          "GISORA.Roads.Application": "[0.1.0, )",
+          "GISORA.Roads.Domain": "[0.1.0, )",
           "GISORA.Territory.Application": "[0.1.0, )",
           "GISORA.Territory.Domain": "[0.1.0, )",
           "Microsoft.AspNetCore.Components.Web": "[10.0.15, )"
@@ -437,6 +439,19 @@
         "dependencies": {
           "GISORA.BuildingBlocks.Domain": "[0.1.0, )",
           "GISORA.Geospatial.Domain": "[0.1.0, )"
+        }
+      },
+      "gisora.roads.application": {
+        "type": "Project",
+        "dependencies": {
+          "GISORA.BuildingBlocks.Application": "[0.1.0, )",
+          "GISORA.Roads.Domain": "[0.1.0, )"
+        }
+      },
+      "gisora.roads.domain": {
+        "type": "Project",
+        "dependencies": {
+          "GISORA.BuildingBlocks.Domain": "[0.1.0, )"
         }
       },
       "gisora.shared.designsystem": {
@@ -472,6 +487,7 @@
           "GISORA.Infrastructure.Geospatial": "[0.1.0, )",
           "GISORA.Infrastructure.LocalStorage": "[0.1.0, )",
           "GISORA.Properties.Application": "[0.1.0, )",
+          "GISORA.Roads.Application": "[0.1.0, )",
           "GISORA.Shared.DesignSystem": "[0.1.0, )",
           "GISORA.Shared.Maps": "[0.1.0, )",
           "GISORA.Territory.Application": "[0.1.0, )",

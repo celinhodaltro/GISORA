@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>GISORA.Roads.Domain</RootNamespace>
+    <Description>Logradouros do municipio.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="GISORA.Roads.UnitTests" />
+    <InternalsVisibleTo Include="GISORA.Infrastructure.LocalStorage" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\BuildingBlocks\GISORA.BuildingBlocks.Domain\GISORA.BuildingBlocks.Domain.csproj" />
+  </ItemGroup>
+
+</Project>
