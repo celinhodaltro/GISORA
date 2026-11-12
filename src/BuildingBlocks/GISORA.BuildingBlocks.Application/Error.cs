@@ -1,8 +1,5 @@
 namespace GISORA.BuildingBlocks.Application;
 
-/// <summary>
-/// Falha esperada de um caso de uso. Codigo estavel para UI e i18n; mensagem para diagnostico.
-/// </summary>
 public sealed record Error(string Code, string Message)
 {
     public static readonly Error None = new(string.Empty, string.Empty);

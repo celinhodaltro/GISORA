@@ -6,6 +6,7 @@
 | [bounded-contexts.md](bounded-contexts.md) | Contextos delimitados e ondas de implementacao |
 | [dependency-rules.md](dependency-rules.md) | Regras de dependencia garantidas por teste |
 | [data-sources.md](data-sources.md) | Proveniencia, CRS, precisao e marcação de dado demonstrativo |
+| [conventions.md](conventions.md) | Convencoes de codigo e componentizacao |
 | [adr/](adr/) | Decisoes arquiteturais registradas |
 
 ## ADRs

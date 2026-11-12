@@ -1,8 +1,5 @@
 namespace GISORA.BuildingBlocks.Domain;
 
-/// <summary>
-/// Raiz de agregado: ponto unico de acesso as entidades internas e origem dos eventos de dominio.
-/// </summary>
 public abstract class AggregateRoot<TId> : Entity<TId>
     where TId : notnull
 {
@@ -21,9 +18,6 @@ public abstract class AggregateRoot<TId> : Entity<TId>
         _domainEvents.Add(domainEvent);
     }
 
-    /// <summary>
-    /// Remove e devolve os eventos pendentes. A publicacao e responsabilidade da Application.
-    /// </summary>
     public IReadOnlyList<IDomainEvent> DequeueDomainEvents()
     {
         if (_domainEvents.Count == 0)

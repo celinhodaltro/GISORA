@@ -2,9 +2,6 @@ using GISORA.BuildingBlocks.Domain;
 
 namespace GISORA.Geospatial.Domain;
 
-/// <summary>
-/// Coordenada com sistema de referencia explicito. Nunca existe coordenada sem CRS.
-/// </summary>
 public sealed class Coordinate : ValueObject
 {
     public Coordinate(double x, double y, SpatialReference spatialReference, double? z = null)

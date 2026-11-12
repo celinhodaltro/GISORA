@@ -1,9 +1,5 @@
 namespace GISORA.BuildingBlocks.Application;
 
-/// <summary>
-/// Resultado de um caso de uso: sucesso sem valor ou falha com <see cref="Error"/>.
-/// Invariante violada no dominio continua sendo excecao; o handler traduz para Result.
-/// </summary>
 public class Result
 {
     protected Result(bool isSuccess, Error error)
@@ -37,9 +33,6 @@ public class Result
     public static Result<TValue> Fail<TValue>(Error error) => new(error);
 }
 
-/// <summary>
-/// Resultado com valor. Acessar <see cref="Value"/> em falha e erro de programacao.
-/// </summary>
 public sealed class Result<TValue> : Result
 {
     private readonly TValue _value;

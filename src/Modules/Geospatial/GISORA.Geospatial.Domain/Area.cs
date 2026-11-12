@@ -8,9 +8,6 @@ public enum AreaUnit
     Hectares,
 }
 
-/// <summary>
-/// Area sempre nao negativa, com unidade explicita. Conversao m2 &lt;-&gt; ha sem perda para valores decimais.
-/// </summary>
 public sealed class Area : ValueObject
 {
     private const decimal SquareMetersPerHectare = 10_000m;
@@ -42,7 +39,6 @@ public sealed class Area : ValueObject
 
     protected override IEnumerable<object?> GetEqualityComponents()
     {
-        // Igualdade pelo valor em metros quadrados: 1 ha == 10000 m2.
         yield return SquareMeters;
     }
 }

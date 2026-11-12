@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>GISORA.Territory.Application</RootNamespace>
+    <Description>Casos de uso do contexto territorial.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GISORA.Territory.Domain\GISORA.Territory.Domain.csproj" />
+    <ProjectReference Include="..\..\Geospatial\GISORA.Geospatial.Domain\GISORA.Geospatial.Domain.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\GISORA.BuildingBlocks.Application\GISORA.BuildingBlocks.Application.csproj" />
+  </ItemGroup>
+
+</Project>
