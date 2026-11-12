@@ -17,15 +17,15 @@ public class TerritoryTests(WebAppFixture fixture)
         await IbgeCacheSeed.CreateMunicipalityAsync(page);
 
         await page.GetByPlaceholder("Nome do distrito").FillAsync("Sede");
-        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Cadastrar distrito" }).ClickAsync();
+        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Adicionar distrito" }).ClickAsync();
         await Expect(page.GetByText("Sede", new PageGetByTextOptions { Exact = true }).First).ToBeVisibleAsync();
 
         await page.GetByPlaceholder("Nome do bairro").FillAsync("Centro");
-        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Cadastrar bairro" }).ClickAsync();
+        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Adicionar bairro" }).ClickAsync();
         await Expect(page.GetByText("Centro", new PageGetByTextOptions { Exact = true }).First).ToBeVisibleAsync();
 
         await page.GetByPlaceholder("Codigo do setor").FillAsync("001");
-        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Cadastrar setor" }).ClickAsync();
+        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Adicionar setor" }).ClickAsync();
         await Expect(page.GetByText("001", new PageGetByTextOptions { Exact = true }).First).ToBeVisibleAsync();
 
         await page.ReloadAsync();
@@ -44,7 +44,7 @@ public class TerritoryTests(WebAppFixture fixture)
 
         await page.GetByPlaceholder("Digite o nome do municipio").FillAsync("Municipio Inexistente");
 
-        await Expect(page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Cadastrar municipio" })).ToBeDisabledAsync();
+        await Expect(page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Adicionar municipio" })).ToBeDisabledAsync();
         await Expect(page.GetByText("Municipio Inexistente", new PageGetByTextOptions { Exact = true })).ToHaveCountAsync(0);
     }
 

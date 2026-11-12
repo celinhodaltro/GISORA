@@ -61,7 +61,9 @@
                 <input class="territory-input" readonly value="@(_selected?.Code)" />
             </label>
 
-            <RadzenButton Text="Cadastrar municipio"
+            <RadzenButton Icon="add"
+                          aria-label="Adicionar municipio"
+                          title="Adicionar municipio"
                           ButtonStyle="ButtonStyle.Primary"
                           Disabled="@(_selected is null || _catalogLoading)"
                           Click="CreateMunicipalityAsync" />
@@ -96,7 +98,7 @@
                 }
             </select>
             <RadzenTextBox @bind-Value="_districtName" Placeholder="Nome do distrito" />
-            <RadzenButton Text="Cadastrar distrito" ButtonStyle="ButtonStyle.Primary" Click="CreateDistrictAsync" />
+            <RadzenButton Icon="add" aria-label="Adicionar distrito" title="Adicionar distrito" ButtonStyle="ButtonStyle.Primary" Click="CreateDistrictAsync" />
         </div>
 
         <RadzenDataGrid Data="@_districts" TItem="DistrictListItem" Density="Density.Compact" AllowPaging="false">
@@ -117,7 +119,7 @@
                 }
             </select>
             <RadzenTextBox @bind-Value="_neighborhoodName" Placeholder="Nome do bairro" />
-            <RadzenButton Text="Cadastrar bairro" ButtonStyle="ButtonStyle.Primary" Click="CreateNeighborhoodAsync" />
+            <RadzenButton Icon="add" aria-label="Adicionar bairro" title="Adicionar bairro" ButtonStyle="ButtonStyle.Primary" Click="CreateNeighborhoodAsync" />
         </div>
 
         <RadzenDataGrid Data="@_neighborhoods" TItem="NeighborhoodListItem" Density="Density.Compact" AllowPaging="false">
@@ -138,7 +140,7 @@
                 }
             </select>
             <RadzenTextBox @bind-Value="_sectorCode" Placeholder="Codigo do setor" />
-            <RadzenButton Text="Cadastrar setor" ButtonStyle="ButtonStyle.Primary" Click="CreateSectorAsync" />
+            <RadzenButton Icon="add" aria-label="Adicionar setor" title="Adicionar setor" ButtonStyle="ButtonStyle.Primary" Click="CreateSectorAsync" />
         </div>
 
         <RadzenDataGrid Data="@_sectors" TItem="FiscalSectorListItem" Density="Density.Compact" AllowPaging="false">

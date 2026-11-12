@@ -74,11 +74,11 @@ public class PropertyFormTests(WebAppFixture fixture)
         await IbgeCacheSeed.CreateMunicipalityAsync(page);
 
         await page.GetByPlaceholder("Nome do distrito").FillAsync("Sede");
-        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Cadastrar distrito" }).ClickAsync();
+        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Adicionar distrito" }).ClickAsync();
         await Expect(page.GetByText("Sede", new PageGetByTextOptions { Exact = true }).First).ToBeVisibleAsync();
 
         await page.GetByPlaceholder("Nome do bairro").FillAsync("Centro");
-        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Cadastrar bairro" }).ClickAsync();
+        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Adicionar bairro" }).ClickAsync();
         await Expect(page.GetByText("Centro", new PageGetByTextOptions { Exact = true }).First).ToBeVisibleAsync();
 
         await page.GotoAsync($"{fixture.BaseUrl}/streets");
