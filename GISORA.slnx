@@ -1,2 +1,11 @@
 <Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/BuildingBlocks/">
+    <Project Path="src/BuildingBlocks/GISORA.BuildingBlocks.Application/GISORA.BuildingBlocks.Application.csproj" />
+    <Project Path="src/BuildingBlocks/GISORA.BuildingBlocks.Domain/GISORA.BuildingBlocks.Domain.csproj" />
+  </Folder>
+  <Folder Name="/tests/" />
+  <Folder Name="/tests/Unit/">
+    <Project Path="tests/Unit/GISORA.BuildingBlocks.UnitTests/GISORA.BuildingBlocks.UnitTests.csproj" />
+  </Folder>
 </Solution>
