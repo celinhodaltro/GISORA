@@ -12,6 +12,7 @@
     <Product>GISORA</Product>
     <Version>0.1.0</Version>
     <IsPackable>false</IsPackable>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <!-- CS1591: comentario XML obrigatorio. Habilita IDE0005 sem exigir documentacao em todo membro. -->
     <NoWarn>$(NoWarn);CS1591</NoWarn>
