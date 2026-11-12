@@ -72,7 +72,7 @@ public class GeometryDrawingTests(WebAppFixture fixture)
     {
         await page.GotoAsync($"{fixture.BaseUrl}/territory");
         await page.GetByPlaceholder("Nome do municipio").FillAsync("Passira");
-        await page.GetByPlaceholder("Codigo IBGE").FillAsync("2611903");
+        await page.GetByPlaceholder("Codigo IBGE").FillAsync("2610509");
         await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Cadastrar municipio" }).ClickAsync();
         await Expect(page.GetByText("Passira", new PageGetByTextOptions { Exact = true }).First).ToBeVisibleAsync();
 

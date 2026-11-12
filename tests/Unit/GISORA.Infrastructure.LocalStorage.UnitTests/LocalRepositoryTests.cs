@@ -246,13 +246,13 @@ public class LocalRepositoryTests
     {
         var store = new InMemoryLocalStore();
         var repository = new LocalStorageMunicipalityRepository(store);
-        var municipality = Municipality.Register("Passira", IbgeCode.Parse("2611903"));
+        var municipality = Municipality.Register("Passira", IbgeCode.Parse("2610509"));
         await repository.AddAsync(municipality);
 
-        Assert.True(await repository.ExistsByIbgeCodeAsync(IbgeCode.Parse("2611903")));
+        Assert.True(await repository.ExistsByIbgeCodeAsync(IbgeCode.Parse("2610509")));
 
         await Assert.ThrowsAsync<StorageException>(() =>
-            repository.AddAsync(Municipality.Register("Outro", IbgeCode.Parse("2611903"))));
+            repository.AddAsync(Municipality.Register("Outro", IbgeCode.Parse("2610509"))));
     }
 
     private readonly record struct GeoSize(double X, double Y)
