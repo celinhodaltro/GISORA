@@ -1,0 +1,24 @@
+.gisora-page-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--gisora-space-4);
+    margin-bottom: var(--gisora-space-6);
+}
+
+.gisora-page-header__title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--gisora-color-text);
+}
+
+.gisora-page-header__description {
+    margin: var(--gisora-space-1) 0 0;
+    color: var(--gisora-color-text-muted);
+}
+
+.gisora-page-header__actions {
+    display: flex;
+    gap: var(--gisora-space-2);
+}

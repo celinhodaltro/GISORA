@@ -1,0 +1,35 @@
+﻿@page "/"
+@inject IPropertyQueries PropertyQueries
+@inject IUrbanBlockQueries UrbanBlockQueries
+
+<PageHeader Title="Visao geral"
+            Description="Situacao atual do cadastro territorial armazenado neste dispositivo." />
+
+@if (_loading)
+{
+    <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+}
+else
+{
+    <div class="gisora-grid">
+        <StatCard Label="Imoveis" Value="@_propertyCount.ToString("N0")" Hint="Imoveis cadastrados" />
+        <StatCard Label="Quadras" Value="@_urbanBlockCount.ToString("N0")" Hint="Quadras fiscais cadastradas" />
+        <StatCard Label="Armazenamento" Value="Local" Hint="Dados no navegador deste dispositivo" />
+    </div>
+}
+
+@code {
+    private bool _loading = true;
+    private int _propertyCount;
+    private int _urbanBlockCount;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var properties = await PropertyQueries.SearchAsync(new PropertyFilter { PageSize = 1 });
+        var urbanBlocks = await UrbanBlockQueries.SearchAsync(new UrbanBlockFilter { PageSize = 1 });
+
+        _propertyCount = properties.TotalCount;
+        _urbanBlockCount = urbanBlocks.TotalCount;
+        _loading = false;
+    }
+}

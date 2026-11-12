@@ -1,0 +1,64 @@
+@page "/properties"
+@inject IPropertyQueries Queries
+
+<PageHeader Title="Imoveis" Description="Consulta ao cadastro imobiliario." />
+
+<RadzenCard>
+    <div class="gisora-toolbar">
+        <RadzenTextBox @bind-Value="_search" Placeholder="Inscricao imobiliaria" />
+        <RadzenButton Text="Buscar" ButtonStyle="ButtonStyle.Primary" Click="SearchAsync" />
+    </div>
+
+    <RadzenDataGrid @ref="_grid"
+                    TItem="PropertyListItem"
+                    Data="@_items"
+                    Count="@_total"
+                    LoadData="LoadAsync"
+                    AllowPaging="true"
+                    PageSize="@PageSize"
+                    Density="Density.Compact"
+                    EmptyText="Nenhum imovel cadastrado neste dispositivo.">
+        <Columns>
+            <RadzenDataGridColumn TItem="PropertyListItem" Property="Registration" Title="Inscricao" Width="220px" />
+            <RadzenDataGridColumn TItem="PropertyListItem" Property="Number" Title="Numero" Width="120px" />
+            <RadzenDataGridColumn TItem="PropertyListItem" Property="LandAreaSquareMeters" Title="Area do lote (m2)" FormatString="{0:N2}" />
+            <RadzenDataGridColumn TItem="PropertyListItem" Property="BuiltAreaSquareMeters" Title="Area construida (m2)" FormatString="{0:N2}" />
+            <RadzenDataGridColumn TItem="PropertyListItem" Property="BuildingCount" Title="Edificacoes" Width="120px" />
+        </Columns>
+    </RadzenDataGrid>
+</RadzenCard>
+
+@code {
+    private const int PageSize = 10;
+
+    private RadzenDataGrid<PropertyListItem>? _grid;
+    private IReadOnlyList<PropertyListItem> _items = [];
+    private int _total;
+    private string? _search;
+
+    private async Task LoadAsync(LoadDataArgs args)
+    {
+        var pageNumber = args.Skip is { } skip ? (skip / PageSize) + 1 : 1;
+
+        var page = await Queries.SearchAsync(new PropertyFilter
+        {
+            RegistrationContains = _search,
+            PageNumber = pageNumber,
+            PageSize = PageSize,
+        });
+
+        _items = page.Items;
+        _total = page.TotalCount;
+    }
+
+    private async Task SearchAsync()
+    {
+        if (_grid is null)
+        {
+            return;
+        }
+
+        _grid.CurrentPage = 0;
+        await _grid.Reload();
+    }
+}

@@ -4,6 +4,9 @@
     <Project Path="src/BuildingBlocks/GISORA.BuildingBlocks.Application/GISORA.BuildingBlocks.Application.csproj" />
     <Project Path="src/BuildingBlocks/GISORA.BuildingBlocks.Domain/GISORA.BuildingBlocks.Domain.csproj" />
   </Folder>
+  <Folder Name="/src/Hosts/">
+    <Project Path="src/Hosts/GISORA.Web/GISORA.Web.csproj" />
+  </Folder>
   <Folder Name="/src/Infrastructure/">
     <Project Path="src/Infrastructure/GISORA.Infrastructure.LocalStorage/GISORA.Infrastructure.LocalStorage.csproj" />
   </Folder>
@@ -19,6 +22,9 @@
   <Folder Name="/src/Modules/Territory/">
     <Project Path="src/Modules/Territory/GISORA.Territory.Application/GISORA.Territory.Application.csproj" />
     <Project Path="src/Modules/Territory/GISORA.Territory.Domain/GISORA.Territory.Domain.csproj" />
+  </Folder>
+  <Folder Name="/src/Shared/">
+    <Project Path="src/Shared/GISORA.Shared.DesignSystem/GISORA.Shared.DesignSystem.csproj" />
   </Folder>
   <Folder Name="/tests/" />
   <Folder Name="/tests/Unit/">

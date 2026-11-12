@@ -1,0 +1,28 @@
+.gisora-stat-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gisora-space-1);
+    padding: var(--gisora-space-4);
+    background: var(--gisora-color-surface);
+    border: 1px solid var(--gisora-color-border);
+    border-radius: var(--gisora-radius-md);
+    box-shadow: var(--gisora-shadow-sm);
+}
+
+.gisora-stat-card__label {
+    font-size: 0.8125rem;
+    color: var(--gisora-color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.gisora-stat-card__value {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--gisora-color-text);
+}
+
+.gisora-stat-card__hint {
+    font-size: 0.75rem;
+    color: var(--gisora-color-text-muted);
+}

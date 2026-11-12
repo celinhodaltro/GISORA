@@ -1,0 +1,22 @@
+.gisora-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--gisora-space-2);
+    padding: var(--gisora-space-8) var(--gisora-space-4);
+    text-align: center;
+    border: 1px dashed var(--gisora-color-border);
+    border-radius: var(--gisora-radius-md);
+    background: var(--gisora-color-surface);
+}
+
+.gisora-empty-state__title {
+    font-size: 1rem;
+    color: var(--gisora-color-text);
+}
+
+.gisora-empty-state__description {
+    margin: 0;
+    max-width: 32rem;
+    color: var(--gisora-color-text-muted);
+}

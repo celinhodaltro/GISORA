@@ -1,0 +1,27 @@
+@namespace GISORA.Shared.DesignSystem.Components
+
+<div class="gisora-page-header">
+    <div class="gisora-page-header__text">
+        <h1 class="gisora-page-header__title">@Title</h1>
+        @if (Description is not null)
+        {
+            <p class="gisora-page-header__description">@Description</p>
+        }
+    </div>
+
+    @if (Actions is not null)
+    {
+        <div class="gisora-page-header__actions">@Actions</div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = string.Empty;
+
+    [Parameter]
+    public string? Description { get; set; }
+
+    [Parameter]
+    public RenderFragment? Actions { get; set; }
+}
