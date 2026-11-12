@@ -1,5 +1,5 @@
 .map-page .gisora-map-wrapper {
-    height: 28rem;
+    height: clamp(24rem, calc(100vh - 18rem), 42rem);
 }
 
 .map-page {

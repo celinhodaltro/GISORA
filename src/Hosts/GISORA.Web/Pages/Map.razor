@@ -7,7 +7,7 @@
 @inject IPropertyMapQueries MapQueries
 @inject IGeoJsonSerializer Serializer
 
-<PageHeader Title="Mapa" Description="Imoveis com geometria cadastrada neste dispositivo." />
+<PageHeader Title="Mapa" Description="Imoveis com geometria cadastrada neste dispositivo." Icon="map" />
 
 @if (_loading)
 {
@@ -21,21 +21,23 @@ else if (_items.Count == 0)
 else
 {
     <div class="map-page">
-        <MapView @ref="_map" CenterLatitude="-7.97" CenterLongitude="-35.24" Zoom="13">
+        <MapView @ref="_map" CenterLatitude="-7.97" CenterLongitude="-35.24" Zoom="13" Height="clamp(24rem, calc(100vh - 20rem), 42rem)">
             <MapToolbar />
             <CoordinateControl />
             <FeatureSelector OnSelected="Select" />
         </MapView>
     </div>
 
-    @if (_selected is null)
-    {
-        <p class="map-page__hint">Selecione um imovel no mapa para ver os atributos.</p>
-    }
-    else
-    {
-        <FeatureInspector Title="Imovel selecionado" Feature="_selected" />
-    }
+    <RadzenCard>
+        @if (_selected is null)
+        {
+            <p class="map-page__hint">Selecione um imovel no mapa para ver os atributos.</p>
+        }
+        else
+        {
+            <FeatureInspector Title="Imovel selecionado" Feature="_selected" />
+        }
+    </RadzenCard>
 }
 
 @code {

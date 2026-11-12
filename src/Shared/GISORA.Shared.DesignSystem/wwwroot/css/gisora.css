@@ -1,6 +1,29 @@
 :root {
+    --rz-primary: #1f6f4a;
+    --rz-primary-light: #2f8a5e;
+    --rz-primary-lighter: #e8f3ee;
+    --rz-primary-dark: #17583b;
+    --rz-primary-darker: #11432c;
+    --rz-secondary: #2f7fb5;
+    --rz-secondary-light: #4b97c9;
+    --rz-secondary-lighter: #e6f1f8;
+    --rz-body-background-color: #f4f6f5;
+    --rz-base-background-color: #ffffff;
+    --rz-base-50: #fafbfa;
+    --rz-base-100: #f2f5f3;
+    --rz-base-200: #e7ece9;
+    --rz-base-300: #d9e0dc;
+    --rz-text-color: #1d2521;
+    --rz-text-title-color: #14201a;
+    --rz-text-secondary-color: #5d6b64;
+    --rz-text-tertiary-color: #7d8a84;
+    --rz-border-radius: 10px;
+    --rz-body-font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    --rz-card-shadow: 0 1px 2px rgba(20, 32, 26, 0.06), 0 8px 24px rgba(20, 32, 26, 0.04);
+    --rz-card-border-radius: 14px;
+
     --gisora-color-primary: #1f6f4a;
-    --gisora-color-primary-strong: #17583b;
+    --gisora-color-primary-strong: #145238;
     --gisora-color-accent: #2f7fb5;
     --gisora-color-text: #1d2521;
     --gisora-color-text-muted: #5d6b64;
@@ -14,9 +37,9 @@
     --gisora-space-4: 1rem;
     --gisora-space-6: 1.5rem;
     --gisora-space-8: 2rem;
-    --gisora-radius-sm: 4px;
-    --gisora-radius-md: 8px;
-    --gisora-shadow-sm: 0 1px 2px rgba(29, 37, 33, 0.08);
+    --gisora-radius-sm: 6px;
+    --gisora-radius-md: 10px;
+    --gisora-shadow-sm: 0 1px 2px rgba(20, 32, 26, 0.08);
     --gisora-font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
 }
 
@@ -27,11 +50,22 @@ body {
     font-family: var(--gisora-font-family);
     color: var(--gisora-color-text);
     background: var(--gisora-color-surface-muted);
+    -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+    letter-spacing: -0.01em;
+}
+
+a {
+    color: var(--gisora-color-primary);
 }
 
 .gisora-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
     gap: var(--gisora-space-4);
 }
 
@@ -46,64 +80,96 @@ body {
     flex-wrap: wrap;
     gap: var(--gisora-space-2);
     align-items: center;
-    margin-bottom: var(--gisora-space-4);
-}
-
-.gisora-map-vertex {
-    width: 12px;
-    height: 12px;
-    border: 2px solid #ffffff;
-    border-radius: 50%;
-    background: #2f7fb5;
-    box-shadow: 0 0 2px rgba(29, 37, 33, 0.6);
 }
 
 .gisora-page-header {
     display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: var(--gisora-space-4);
+    align-items: center;
+    gap: var(--gisora-space-3);
     margin-bottom: var(--gisora-space-6);
+}
+
+.gisora-page-header__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 14px;
+    background: var(--rz-primary-lighter, #e8f3ee);
+    color: var(--rz-primary, #1f6f4a);
+    font-size: 1.5rem;
+    flex: 0 0 auto;
+}
+
+.gisora-page-header__text {
+    flex: 1 1 auto;
+    min-width: 0;
 }
 
 .gisora-page-header__title {
     margin: 0;
-    font-size: 1.5rem;
-    font-weight: 600;
+    font-size: 1.6rem;
+    font-weight: 650;
+    line-height: 1.2;
     color: var(--gisora-color-text);
 }
 
 .gisora-page-header__description {
-    margin: var(--gisora-space-1) 0 0;
+    margin: 0.2rem 0 0;
     color: var(--gisora-color-text-muted);
+    font-size: 0.9375rem;
 }
 
 .gisora-page-header__actions {
     display: flex;
     gap: var(--gisora-space-2);
+    flex: 0 0 auto;
 }
 
 .gisora-stat-card {
     display: flex;
     flex-direction: column;
-    gap: var(--gisora-space-1);
+    gap: var(--gisora-space-2);
     padding: var(--gisora-space-4);
     background: var(--gisora-color-surface);
     border: 1px solid var(--gisora-color-border);
-    border-radius: var(--gisora-radius-md);
+    border-radius: 14px;
     box-shadow: var(--gisora-shadow-sm);
+    min-height: 7rem;
+}
+
+.gisora-stat-card__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--gisora-space-2);
 }
 
 .gisora-stat-card__label {
-    font-size: 0.8125rem;
+    font-size: 0.75rem;
+    font-weight: 600;
     color: var(--gisora-color-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.08em;
+}
+
+.gisora-stat-card__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 10px;
+    background: var(--rz-secondary-lighter, #e6f1f8);
+    color: var(--rz-secondary, #2f7fb5);
+    font-size: 1.2rem;
 }
 
 .gisora-stat-card__value {
-    font-size: 1.75rem;
-    font-weight: 600;
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
     color: var(--gisora-color-text);
 }
 
@@ -120,7 +186,7 @@ body {
     padding: var(--gisora-space-8) var(--gisora-space-4);
     text-align: center;
     border: 1px dashed var(--gisora-color-border);
-    border-radius: var(--gisora-radius-md);
+    border-radius: 14px;
     background: var(--gisora-color-surface);
 }
 
@@ -133,4 +199,197 @@ body {
     margin: 0;
     max-width: 32rem;
     color: var(--gisora-color-text-muted);
+}
+
+.gisora-map-vertex {
+    width: 12px;
+    height: 12px;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    background: #2f7fb5;
+    box-shadow: 0 0 2px rgba(29, 37, 33, 0.6);
+}
+
+.rz-card {
+    border: 1px solid var(--gisora-color-border);
+    box-shadow: var(--gisora-shadow-sm);
+}
+
+.rz-card-content {
+    padding: 1.25rem;
+}
+
+.rz-grid-table {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.rz-grid-table thead th {
+    background: var(--gisora-color-surface-muted) !important;
+    color: var(--gisora-color-text-muted) !important;
+    font-size: 0.75rem !important;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.rz-grid-table tbody tr:hover {
+    background: #f7faf8;
+}
+
+.rz-button {
+    font-weight: 600;
+}
+
+.territory-select,
+.facilities-form__select,
+.property-form__select {
+    height: var(--rz-input-size-md, 2.5rem);
+    padding: 0 var(--rz-input-padding-inline-md, 0.9375rem);
+    border: 1px solid var(--gisora-color-border);
+    border-radius: var(--rz-input-border-radius, 10px);
+    background: var(--gisora-color-surface);
+    color: var(--gisora-color-text);
+    font: inherit;
+    font-size: 0.875rem;
+}
+
+.nav-menu {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    height: 100vh;
+    padding: 1.5rem 1rem;
+    background: linear-gradient(180deg, #145238 0%, #0f3d2a 100%);
+    color: #ffffff;
+    overflow-y: auto;
+}
+
+.nav-menu a {
+    text-decoration: none;
+}
+
+.nav-menu__brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    color: #ffffff;
+}
+
+.nav-menu__mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.14);
+    color: #d9f2e5;
+    font-size: 1.35rem;
+}
+
+.nav-menu__brand-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+}
+
+.nav-menu__brand-text strong {
+    font-size: 1.15rem;
+    letter-spacing: 0.06em;
+}
+
+.nav-menu__brand-text small {
+    margin-top: 0.2rem;
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.65);
+}
+
+.nav-menu__links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.nav-menu__section {
+    margin: 0.9rem 0.6rem 0.35rem;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.nav-menu__link {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.6rem 0.7rem;
+    border-radius: 10px;
+    color: rgba(255, 255, 255, 0.82) !important;
+    text-decoration: none !important;
+    font-size: 0.9rem;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.nav-menu__link:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff !important;
+}
+
+.nav-menu__link.active {
+    background: rgba(255, 255, 255, 0.18);
+    color: #ffffff !important;
+    font-weight: 600;
+    box-shadow: inset 3px 0 0 #7fd3a8;
+}
+
+.nav-menu__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+.nav-menu__footer {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.nav-menu__badge {
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.16);
+    color: #ffffff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+}
+
+@media (max-width: 60rem) {
+    .nav-menu {
+        position: static;
+        height: auto;
+        padding: 1rem;
+    }
+
+    .nav-menu__links {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .nav-menu__section,
+    .nav-menu__footer {
+        display: none;
+    }
 }

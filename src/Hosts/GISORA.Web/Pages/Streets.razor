@@ -5,14 +5,14 @@
 @inject IStreetQueries Queries
 @inject CreateStreetHandler CreateStreet
 
-<PageHeader Title="Logradouros" Description="Ruas, avenidas, travessas, rodovias e estradas rurais." />
+<PageHeader Title="Logradouros" Description="Ruas, avenidas, travessas, rodovias e estradas rurais." Icon="signpost" />
 
 <RadzenCard>
     <div class="gisora-toolbar">
         <RadzenTextBox @bind-Value="_name" Placeholder="Nome do logradouro" />
         <RadzenDropDown TValue="TypeOption" @bind-Value="_selectedType" Data="TypeOptions" TextProperty="Label" />
         <RadzenButton Text="Cadastrar" ButtonStyle="ButtonStyle.Primary" Click="CreateAsync" />
-        <RadzenButton Text="Buscar" ButtonStyle="ButtonStyle.Light" Click="SearchAsync" />
+        <RadzenButton Text="Buscar" Variant="Variant.Outlined" Click="SearchAsync" />
     </div>
 
     @if (_error is not null)
@@ -30,8 +30,8 @@
                     Density="Density.Compact"
                     EmptyText="Nenhum logradouro cadastrado.">
         <Columns>
-            <RadzenDataGridColumn TItem="StreetListItem" Property="Name" Title="Nome" />
-            <RadzenDataGridColumn TItem="StreetListItem" Title="Tipo" Width="160px">
+            <RadzenDataGridColumn TItem="StreetListItem" Property="Name" Title="Nome" Width="70%" />
+            <RadzenDataGridColumn TItem="StreetListItem" Title="Tipo" Width="30%">
                 <Template Context="street">
                     @TypeLabel(street.Type)
                 </Template>

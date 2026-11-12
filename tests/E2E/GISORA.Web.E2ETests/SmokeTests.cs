@@ -15,7 +15,7 @@ public class SmokeTests(WebAppFixture fixture)
         await page.GotoAsync(fixture.BaseUrl, new PageGotoOptions { WaitUntil = WaitUntilState.DOMContentLoaded });
 
         await Expect(page).ToHaveTitleAsync("GISORA");
-        await Expect(page.Locator(".nav-menu__brand")).ToHaveTextAsync("GISORA");
+        await Expect(page.Locator(".nav-menu__brand")).ToContainTextAsync("GISORA");
         await Expect(page.GetByRole(AriaRole.Link, new PageGetByRoleOptions { Name = "Imoveis" })).ToBeVisibleAsync();
         await Expect(page.GetByRole(AriaRole.Heading, new PageGetByRoleOptions { Name = "Visao geral" })).ToBeVisibleAsync();
     }

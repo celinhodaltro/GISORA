@@ -1,5 +1,11 @@
 import * as L from '../lib/leaflet/leaflet-src.esm.js';
 
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: new URL('../lib/leaflet/images/marker-icon-2x.png', import.meta.url).href,
+  iconUrl: new URL('../lib/leaflet/images/marker-icon.png', import.meta.url).href,
+  shadowUrl: new URL('../lib/leaflet/images/marker-shadow.png', import.meta.url).href,
+});
+
 const instances = new Map();
 
 function normalizeProperties(properties) {
@@ -89,6 +95,8 @@ export function fitBounds(elementId) {
   if (!instance) {
     return false;
   }
+
+  instance.map.invalidateSize();
 
   let bounds = null;
 
