@@ -61,9 +61,25 @@ dotnet test
 
 Aplicacao web publicada em https://celinhodaltro.github.io/GISORA/ a cada merge na `main`.
 
+## Estado atual
+
+| Rota | Funcao |
+| --- | --- |
+| `/` | Visao geral com contadores reais |
+| `/properties` | Listagem de imoveis com busca |
+| `/properties/new` | Cadastro de imovel |
+| `/map` | Imoveis com geometria no mapa |
+| `/streets` | Logradouros |
+| `/territory` | Municipio, distrito, bairro e setor |
+
+O motor geografico (Leaflet, Turf.js, Proj4js) esta integrado. O cadastro funciona no dispositivo; nao ha backend. Veja [roadmap](docs/roadmap.md) para o que falta.
+
+Aviso: enquanto nao houver autenticacao e API, a aplicacao opera em modo demonstracao e nao deve receber dado pessoal real (ADR 0007).
+
 ## Documentacao
 
 - [Arquitetura](docs/architecture.md)
+- [Roadmap](docs/roadmap.md)
 - [Bounded contexts](docs/bounded-contexts.md)
 - [Regras de dependencia](docs/dependency-rules.md)
 - [Convencoes de codigo](docs/conventions.md)

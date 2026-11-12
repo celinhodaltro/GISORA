@@ -5,6 +5,7 @@
 | [architecture.md](architecture.md) | Camadas, direcao de dependencias, composicao por host |
 | [bounded-contexts.md](bounded-contexts.md) | Contextos delimitados e ondas de implementacao |
 | [dependency-rules.md](dependency-rules.md) | Regras de dependencia garantidas por teste |
+| [roadmap.md](roadmap.md) | Estado por fase e dividas conhecidas |
 | [data-sources.md](data-sources.md) | Proveniencia, CRS, precisao e marcação de dado demonstrativo |
 | [conventions.md](conventions.md) | Convencoes de codigo e componentizacao |
 | [adr/](adr/) | Decisoes arquiteturais registradas |

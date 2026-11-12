@@ -31,3 +31,4 @@ O que fica mais facil, o que fica mais dificil, o que passa a ser obrigatorio.
 | [0004](0004-read-model-separation.md) | Separacao entre repositorio e read model | Aceito |
 | [0005](0005-geospatial-kernel.md) | Kernel geografico | Aceito |
 | [0006](0006-ui-radzen.md) | Radzen como design system | Aceito |
+| [0007](0007-authentication-authorization.md) | Autenticacao e autorizacao | Aceito |

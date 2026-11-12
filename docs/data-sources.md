@@ -45,3 +45,9 @@ Enquanto nao houver dado oficial, a aplicacao opera com base vazia. Nenhum dado 
 - CPF/CNPJ sao mascarados na saida (`***.***.***-XX`).
 - `localStorage` nao e apresentado como armazenamento seguro.
 - Dado demonstrativo nao deve conter documento real de pessoa.
+
+## Basemap
+
+Desenvolvimento e demonstracao usam tiles do OpenStreetMap, com atribuicao e parametro configuravel em `MapView`.
+
+Producao municipal deve apontar para servico oficial de tiles (municipal ou estadual), com termo de uso e disponibilidade verificados. Nenhum dado de imovel ou contribuinte e enviado ao provedor de tiles alem da extensao visualizada.
