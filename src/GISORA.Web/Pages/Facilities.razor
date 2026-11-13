@@ -1,0 +1,216 @@
+@page "/facilities"
+@using GISORA.Application.PublicFacilities
+@using GISORA.Application.PublicFacilities.Commands
+@using GISORA.Domain.PublicFacilities
+@using GISORA.Web.Maps
+@using GISORA.Web.Maps.Components
+@using GISORA.Application.Territory
+@using GISORA.Domain.Geospatial
+@using GISORA.Application.Geospatial
+@inject IFacilityQueries Queries
+@inject ITerritoryQueries Territory
+@inject CreateFacilityHandler CreateFacility
+@inject IGeoJsonSerializer Serializer
+
+<PageHeader Title="Equipamentos publicos" Description="Escolas, saude, pracas, parques e predios publicos." Icon="school" />
+
+<div class="facilities-layout">
+    <RadzenCard>
+        <h2 class="facilities__title">Novo equipamento</h2>
+
+        <div class="facilities-form">
+            <label class="facilities-form__field">
+                <span>Nome</span>
+                <RadzenTextBox @bind-Value="_name" Placeholder="Nome do equipamento" />
+            </label>
+
+            <label class="facilities-form__field">
+                <span>Tipo</span>
+                <select class="facilities-form__select" @bind="_type">
+                    @foreach (var option in FacilitySymbology.All)
+                    {
+                        <option value="@option.Type">@option.Label</option>
+                    }
+                </select>
+            </label>
+
+            <label class="facilities-form__field">
+                <span>Bairro (opcional)</span>
+                <select class="facilities-form__select" @bind="_neighborhoodId">
+                    <option value="">Sem bairro</option>
+                    @foreach (var neighborhood in _neighborhoods)
+                    {
+                        <option value="@neighborhood.Id.Value">@neighborhood.Name</option>
+                    }
+                </select>
+            </label>
+
+            <div class="facilities-form__field">
+                <span>Localizacao</span>
+                <div class="gisora-toolbar">
+                    <RadzenButton Text="Marcar no mapa" Variant="Variant.Outlined" Click="PickAsync" />
+                    <span class="facilities__coordinate">
+                        @(_point is { } point ? FacilityMapProjector.ToCoordinateText(point) : "nao definida")
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="gisora-toolbar">
+            <RadzenButton Text="Salvar equipamento" ButtonStyle="ButtonStyle.Primary" Click="SaveAsync" />
+        </div>
+
+        @if (_error is not null)
+        {
+            <p class="facilities__error" role="alert">@_error</p>
+        }
+
+        @if (_message is not null)
+        {
+            <p class="facilities__message" role="status">@_message</p>
+        }
+    </RadzenCard>
+
+    <div class="facilities-map">
+        <MapView @ref="_map" CenterLatitude="-7.95" CenterLongitude="-35.25" Zoom="14" Height="clamp(20rem, calc(100vh - 28rem), 32rem)">
+            <MapToolbar />
+            <CoordinateControl />
+            <DrawingTool @ref="_tool" OnPointPicked="SetPoint" />
+        </MapView>
+
+        <MapLegend Layers="_layers" />
+    </div>
+</div>
+
+<RadzenCard>
+    <RadzenDataGrid Data="@_items" TItem="FacilityListItem" Density="Density.Compact" AllowPaging="false" EmptyText="Nenhum equipamento cadastrado.">
+        <Columns>
+            <RadzenDataGridColumn TItem="FacilityListItem" Property="Name" Title="Nome" />
+            <RadzenDataGridColumn TItem="FacilityListItem" Title="Tipo" Width="160px">
+                <Template Context="facility">
+                    @TypeLabel(facility.Type)
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="FacilityListItem" Title="No mapa" Width="120px">
+                <Template Context="facility">
+                    @(facility.HasLocation ? "Sim" : "Nao")
+                </Template>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+</RadzenCard>
+
+@code {
+    private MapView? _map;
+    private DrawingTool? _tool;
+    private readonly List<MapLayer> _layers = [];
+    private IReadOnlyList<FacilityListItem> _items = [];
+    private IReadOnlyList<NeighborhoodListItem> _neighborhoods = [];
+    private FacilityType _type = FacilityType.School;
+    private Guid? _neighborhoodId;
+    private MapCoordinate? _point;
+    private string? _name;
+    private string? _error;
+    private string? _message;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _neighborhoods = await Territory.ListNeighborhoodsAsync();
+        await ReloadAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false || _map is null)
+        {
+            return;
+        }
+
+        await ShowFacilitiesAsync();
+    }
+
+    private async Task ReloadAsync()
+    {
+        var page = await Queries.SearchAsync(new FacilityFilter { PageSize = 200 });
+
+        _items = page.Items;
+    }
+
+    private async Task PickAsync()
+    {
+        _error = null;
+
+        await _tool!.StartPickingPointAsync();
+    }
+
+    private void SetPoint(MapCoordinate coordinate)
+    {
+        _point = coordinate;
+        _error = null;
+        StateHasChanged();
+    }
+
+    private async Task SaveAsync()
+    {
+        var location = _point is { } point
+            ? new GISORA.Domain.Geospatial.Point(new Coordinate(point.Longitude, point.Latitude, SpatialReference.Wgs84))
+            : null;
+
+        var result = await CreateFacility.HandleAsync(new CreateFacilityCommand(
+            _name ?? string.Empty,
+            _type,
+            _neighborhoodId,
+            location));
+
+        if (result.IsFailure)
+        {
+            _error = result.Error.Message;
+            _message = null;
+
+            return;
+        }
+
+        _error = null;
+        _message = "Equipamento cadastrado.";
+        _name = string.Empty;
+        _point = null;
+
+        await _tool!.CancelAsync();
+        await ReloadAsync();
+        await ShowFacilitiesAsync();
+    }
+
+    private async Task ShowFacilitiesAsync()
+    {
+        if (_map is null)
+        {
+            return;
+        }
+
+        var mapItems = await Queries.GetMapItemsAsync();
+
+        if (mapItems.Count == 0)
+        {
+            return;
+        }
+
+        var geoJson = FacilityMapProjector.ToFeatureCollection(mapItems, Serializer);
+        var layer = new MapLayer(
+            "facilities",
+            "Equipamentos",
+            geoJson,
+            Color: "#1351b4",
+            Legend: FacilityMapProjector.ToLegend(mapItems));
+
+        _layers.Clear();
+        _layers.Add(layer);
+
+        await _map.SetLayerAsync(layer);
+        await _map.FitBoundsAsync();
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private static string TypeLabel(FacilityType type)
+        => FacilitySymbology.For(type).Label;
+}

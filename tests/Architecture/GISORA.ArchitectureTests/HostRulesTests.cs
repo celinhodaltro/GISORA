@@ -1,4 +1,4 @@
-using GISORA.BuildingBlocks.Domain;
+using GISORA.Domain.Common;
 
 namespace GISORA.ArchitectureTests;
 

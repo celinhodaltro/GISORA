@@ -2,59 +2,55 @@ namespace GISORA.ArchitectureTests;
 
 public class ModuleBoundaryTests
 {
-    private static readonly string[] SharedLayers =
+    private static readonly string[] BusinessModules =
     [
-        "GISORA.Infrastructure",
-        "GISORA.Shared",
-        "GISORA.Web",
+        "Territory",
+        "Properties",
+        "Roads",
+        "PublicFacilities",
+        "Cemetery",
+        "Rural",
+        "UrbanPlanning",
+        "Integration",
     ];
 
-    [Fact]
-    public void TerritoryDoesNotDependOnProperties()
-    {
-        var types = ArchitectureModel.TypesStartingWith("GISORA.Territory");
-
-        DependencyAssertions.AssertNoDependencyOn(types, ["GISORA.Properties", .. SharedLayers], "Territory");
-    }
 
     [Fact]
-    public void PropertiesDoesNotDependOnTerritory()
+    public void BusinessContextsDoNotDependOnEachOther()
     {
-        var types = ArchitectureModel.TypesStartingWith("GISORA.Properties");
+        foreach (var module in BusinessModules)
+        {
+            var types = ArchitectureModel.TypesStartingWith($"GISORA.Domain.{module}")
+                .Concat(ArchitectureModel.TypesStartingWith($"GISORA.Application.{module}"))
+                .ToArray();
 
-        DependencyAssertions.AssertNoDependencyOn(types, ["GISORA.Territory", .. SharedLayers], "Properties");
+            string[] forbidden =
+            [
+                "GISORA.Infrastructure",
+                "GISORA.Web",
+                .. BusinessModules
+                    .Where(other => other != module)
+                    .SelectMany(other => new[] { $"GISORA.Domain.{other}", $"GISORA.Application.{other}" }),
+            ];
+
+            DependencyAssertions.AssertNoDependencyOn(types, forbidden, module);
+        }
     }
 
     [Fact]
     public void GeospatialKernelDoesNotDependOnBusinessContexts()
     {
-        var types = ArchitectureModel.TypesStartingWith("GISORA.Geospatial");
+        var types = ArchitectureModel.TypesStartingWith("GISORA.Domain.Geospatial")
+            .Concat(ArchitectureModel.TypesStartingWith("GISORA.Application.Geospatial"))
+            .ToArray();
 
-        DependencyAssertions.AssertNoDependencyOn(
-            types,
-            ["GISORA.Territory", "GISORA.Properties", .. SharedLayers],
-            "Geospatial");
-    }
+        string[] forbidden =
+        [
+            "GISORA.Infrastructure",
+            "GISORA.Web",
+            .. BusinessModules.SelectMany(module => new[] { $"GISORA.Domain.{module}", $"GISORA.Application.{module}" }),
+        ];
 
-    [Fact]
-    public void RoadsDoesNotDependOnOtherBusinessContexts()
-    {
-        var types = ArchitectureModel.TypesStartingWith("GISORA.Roads");
-
-        DependencyAssertions.AssertNoDependencyOn(
-            types,
-            ["GISORA.Territory", "GISORA.Properties", .. SharedLayers],
-            "Roads");
-    }
-
-    [Fact]
-    public void ModulesDoNotDependOnInfrastructureOrHosts()
-    {
-        foreach (var module in new[] { "GISORA.Territory", "GISORA.Properties", "GISORA.Geospatial", "GISORA.Roads", "GISORA.PublicFacilities", "GISORA.Cemetery", "GISORA.Rural", "GISORA.UrbanPlanning", "GISORA.Integration" })
-        {
-            var types = ArchitectureModel.TypesStartingWith(module);
-
-            DependencyAssertions.AssertNoDependencyOn(types, SharedLayers, module);
-        }
+        DependencyAssertions.AssertNoDependencyOn(types, forbidden, "Geospatial");
     }
 }

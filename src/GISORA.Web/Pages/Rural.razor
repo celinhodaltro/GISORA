@@ -1,0 +1,396 @@
+@page "/rural"
+@using GISORA.Application.Geospatial
+@using GISORA.Domain.Geospatial
+@using GISORA.Application.Rural
+@using GISORA.Application.Rural.Commands
+@using GISORA.Domain.Rural
+@using GISORA.Web.Maps
+@using GISORA.Web.Maps.Components
+@inject IRuralPropertyQueries Queries
+@inject CreateRuralPropertyHandler CreateProperty
+@inject ImportRuralPropertyHandler ImportProperty
+@inject AddPreservationAreaHandler AddPreservationArea
+@inject IGeoJsonSerializer Serializer
+@inject ISpatialOperations Spatial
+
+<PageHeader Title="Propriedades rurais"
+            Description="CAR, SIGEF, SNCI, reserva legal e areas de preservacao permanente."
+            Icon="agriculture" />
+
+<div class="workspace">
+    <div class="workspace__map">
+        <MapView @ref="_map"
+                 CenterLatitude="-7.95"
+                 CenterLongitude="-35.25"
+                 Zoom="13"
+                 Height="var(--map-height-map)"
+                 OnReady="ApplyLayersAsync">
+            <MapToolbar />
+            <LayerControl Layers="_layers" />
+            <CoordinateControl Crs="EPSG:4326" />
+            <DrawingTool @ref="_tool" OnCompleted="CompleteDrawingAsync" />
+        </MapView>
+    </div>
+
+    <aside class="workspace__side">
+        <MapLegend Layers="_layers" />
+
+        <RadzenCard>
+            <h2 class="workspace__panel-title">Propriedade rural</h2>
+
+            <div class="rural-form">
+                <input class="territory-input" placeholder="Nome da propriedade" @bind="_name" />
+
+                <select class="territory-select" @bind="_usage" aria-label="Uso">
+                    @foreach (var usage in Usages)
+                    {
+                        <option value="@usage">@RuralMapProjector.UsageLabel(usage)</option>
+                    }
+                </select>
+
+                <input class="territory-input" placeholder="Codigo CAR" @bind="_carCode" />
+                <input class="territory-input" placeholder="Codigo SIGEF" @bind="_sigefCode" />
+                <input class="territory-input" placeholder="Codigo SNCI" @bind="_snciCode" />
+
+                <div class="gisora-toolbar">
+                    <RadzenButton Text="Desenhar limite" Variant="Variant.Outlined" Click="@(() => StartDrawingAsync(false))" />
+                    <RadzenButton Text="Concluir desenho" Variant="Variant.Outlined" Click="FinishDrawingAsync" />
+                </div>
+
+                @if (_boundaryAreaHectares is { } hectares)
+                {
+                    <p class="rural-area">Area: @RuralMapProjector.Hectares(hectares)</p>
+                }
+
+                <RadzenButton Text="Salvar propriedade"
+                              ButtonStyle="ButtonStyle.Primary"
+                              Click="SavePropertyAsync" />
+            </div>
+        </RadzenCard>
+
+        <RadzenCard>
+            <h2 class="workspace__panel-title">Importar GeoJSON</h2>
+
+            <div class="rural-form">
+                <input class="territory-input" placeholder="Nome importado" @bind="_importName" />
+                <textarea class="territory-input rural-textarea" placeholder="GeoJSON" @bind="_importGeoJson"></textarea>
+                <input class="territory-input" placeholder="CRS" @bind="_importCrs" />
+
+                <RadzenButton Text="Importar GeoJSON"
+                              ButtonStyle="ButtonStyle.Primary"
+                              Click="ImportAsync" />
+            </div>
+        </RadzenCard>
+
+        <RadzenCard>
+            <h2 class="workspace__panel-title">APP</h2>
+
+            <div class="rural-form">
+                <select class="territory-select" @bind="_selectedPropertyId" aria-label="Propriedade">
+                    @foreach (var property in _properties)
+                    {
+                        <option value="@property.Id.Value">@property.Name</option>
+                    }
+                </select>
+
+                <input class="territory-input" placeholder="Rotulo da APP" @bind="_appLabel" />
+
+                <div class="gisora-toolbar">
+                    <RadzenButton Text="Desenhar APP" Variant="Variant.Outlined" Click="@(() => StartDrawingAsync(true))" />
+                    <RadzenButton Text="Concluir APP" Variant="Variant.Outlined" Click="FinishDrawingAsync" />
+                </div>
+
+                @if (_appAreaHectares is { } hectares)
+                {
+                    <p class="rural-area rural-app-area">APP: @RuralMapProjector.Hectares(hectares)</p>
+                }
+
+                <RadzenButton Text="Adicionar APP"
+                              ButtonStyle="ButtonStyle.Primary"
+                              Click="SavePreservationAreaAsync" />
+            </div>
+
+            @if (_error is not null)
+            {
+                <p class="workspace__error" role="alert">@_error</p>
+            }
+
+            @if (_message is not null)
+            {
+                <p class="workspace__message" role="status">@_message</p>
+            }
+        </RadzenCard>
+    </aside>
+</div>
+
+<RadzenCard>
+    <h2 class="workspace__panel-title">Propriedades cadastradas</h2>
+
+    <RadzenDataGrid Data="@_properties" TItem="RuralPropertyListItem" Density="Density.Compact" AllowPaging="false" EmptyText="Nenhuma propriedade rural cadastrada.">
+        <Columns>
+            <RadzenDataGridColumn TItem="RuralPropertyListItem" Property="Name" Title="Nome" />
+            <RadzenDataGridColumn TItem="RuralPropertyListItem" Title="Uso" Width="140px">
+                <Template Context="property">
+                    @RuralMapProjector.UsageLabel(property.Usage)
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="RuralPropertyListItem" Property="CarCode" Title="CAR" />
+            <RadzenDataGridColumn TItem="RuralPropertyListItem" Title="Area" Width="120px">
+                <Template Context="property">
+                    @RuralMapProjector.Hectares(property.AreaHectares)
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="RuralPropertyListItem" Title="APP" Width="90px">
+                <Template Context="property">
+                    @property.PreservationAreaCount
+                </Template>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+</RadzenCard>
+
+@code {
+    private static readonly RuralUsage[] Usages = Enum.GetValues<RuralUsage>();
+
+    private MapView? _map;
+    private DrawingTool? _tool;
+    private readonly List<MapLayer> _layers = [];
+
+    private IReadOnlyList<RuralPropertyListItem> _properties = [];
+
+    private Guid? _selectedPropertyId;
+    private string? _name;
+    private RuralUsage _usage = RuralUsage.Agriculture;
+    private string? _carCode;
+    private string? _sigefCode;
+    private string? _snciCode;
+    private string? _importName;
+    private string? _importGeoJson;
+    private string _importCrs = "EPSG:4326";
+    private string? _appLabel;
+
+    private Polygon? _boundary;
+    private Polygon? _appBoundary;
+    private decimal? _boundaryAreaHectares;
+    private decimal? _appAreaHectares;
+    private bool _drawingApp;
+    private bool _applied;
+    private string? _error;
+    private string? _message;
+
+    protected override async Task OnInitializedAsync() => await ReloadAsync();
+
+    private async Task ApplyLayersAsync()
+    {
+        if (_map is null || _applied)
+        {
+            return;
+        }
+
+        _applied = true;
+
+        foreach (var layer in _layers)
+        {
+            await _map.SetLayerAsync(layer);
+        }
+
+        await _map.FitBoundsAsync();
+    }
+
+    private async Task ReloadAsync()
+    {
+        _properties = await Queries.ListAsync();
+
+        if (_selectedPropertyId is null && _properties.Count > 0)
+        {
+            _selectedPropertyId = _properties[0].Id.Value;
+        }
+
+        await RefreshLayersAsync();
+    }
+
+    private async Task RefreshLayersAsync()
+    {
+        var properties = await Queries.GetMapItemsAsync();
+        var areas = await Queries.GetPreservationAreaMapItemsAsync();
+
+        _layers.Clear();
+
+        if (properties.Count > 0)
+        {
+            _layers.Add(new MapLayer(
+                "rural-properties",
+                "Propriedades rurais",
+                RuralMapProjector.PropertiesToFeatureCollection(properties, Serializer),
+                Color: "#7c5a12",
+                Legend: [new MapLegendItem("Propriedade rural", "#7c5a12")]));
+        }
+
+        if (areas.Count > 0)
+        {
+            _layers.Add(new MapLayer(
+                "rural-app",
+                "APP",
+                RuralMapProjector.PreservationAreasToFeatureCollection(areas, Serializer),
+                Color: "#0f766e",
+                Legend: [new MapLegendItem("APP", "#0f766e")]));
+        }
+
+        _applied = false;
+
+        if (_map is not null && _map.IsReady)
+        {
+            await ApplyLayersAsync();
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task StartDrawingAsync(bool forApp)
+    {
+        _drawingApp = forApp;
+        _error = null;
+
+        await _tool!.StartDrawingAsync();
+    }
+
+    private async Task FinishDrawingAsync()
+    {
+        var completed = await _tool!.FinishDrawingAsync();
+
+        if (completed is false)
+        {
+            _error = "Informe ao menos tres pontos para fechar o poligono.";
+        }
+    }
+
+    private async Task CompleteDrawingAsync(string geoJson)
+    {
+        var geometry = Serializer.Deserialize(geoJson, SpatialReference.Wgs84);
+
+        if (geometry is not Polygon polygon)
+        {
+            _error = "Desenhe um poligono.";
+            return;
+        }
+
+        var area = (await Spatial.AreaAsync(polygon)).Hectares;
+
+        if (_drawingApp)
+        {
+            _appBoundary = polygon;
+            _appAreaHectares = area;
+        }
+        else
+        {
+            _boundary = polygon;
+            _boundaryAreaHectares = area;
+        }
+
+        _error = null;
+    }
+
+    private async Task SavePropertyAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_name))
+        {
+            _error = "Informe o nome da propriedade.";
+            return;
+        }
+
+        if (_boundary is null)
+        {
+            _error = "Desenhe o limite da propriedade.";
+            return;
+        }
+
+        var result = await CreateProperty.HandleAsync(new CreateRuralPropertyCommand(
+            _name ?? string.Empty,
+            _boundary,
+            _usage,
+            null,
+            _carCode,
+            _sigefCode,
+            _snciCode));
+
+        if (result.IsFailure)
+        {
+            _error = result.Error.Message;
+            return;
+        }
+
+        _error = null;
+        _message = "Propriedade rural cadastrada.";
+        _name = null;
+        _boundary = null;
+        _boundaryAreaHectares = null;
+        _selectedPropertyId = result.Value.Value;
+
+        await ReloadAsync();
+    }
+
+    private async Task ImportAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_importName) || string.IsNullOrWhiteSpace(_importGeoJson))
+        {
+            _error = "Informe o nome e o GeoJSON da propriedade.";
+            return;
+        }
+
+        var result = await ImportProperty.HandleAsync(new ImportRuralPropertyCommand(
+            _importName ?? string.Empty,
+            _importGeoJson ?? string.Empty,
+            _usage,
+            _importCrs));
+
+        if (result.IsFailure)
+        {
+            _error = result.Error.Message;
+            _message = null;
+            return;
+        }
+
+        _error = null;
+        _message = "Propriedade rural importada.";
+        _importName = null;
+        _importGeoJson = null;
+        _selectedPropertyId = result.Value.Value;
+
+        await ReloadAsync();
+    }
+
+    private async Task SavePreservationAreaAsync()
+    {
+        if (_selectedPropertyId is not { } propertyId)
+        {
+            _error = "Selecione uma propriedade.";
+            return;
+        }
+
+        if (_appBoundary is null)
+        {
+            _error = "Desenhe a APP.";
+            return;
+        }
+
+        var result = await AddPreservationArea.HandleAsync(new AddPreservationAreaCommand(
+            new RuralPropertyId(propertyId),
+            _appLabel ?? string.Empty,
+            _appBoundary));
+
+        if (result.IsFailure)
+        {
+            _error = result.Error.Message;
+            _message = null;
+            return;
+        }
+
+        _error = null;
+        _message = "APP cadastrada.";
+        _appLabel = null;
+        _appBoundary = null;
+        _appAreaHectares = null;
+
+        await ReloadAsync();
+    }
+}

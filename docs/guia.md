@@ -7,7 +7,7 @@ Aplicacao web Blazor WebAssembly, local-first, para cadastro territorial. Roda s
 ## Como abrir
 
 - Publicado em https://celinhodaltro.github.io/GISORA/
-- Local: `dotnet run --project src/Hosts/GISORA.Web`
+- Local: `dotnet run --project src/GISORA.Web`
 
 ## Roteiro de demonstracao (3 minutos)
 

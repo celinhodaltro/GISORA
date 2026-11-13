@@ -1,76 +1,13 @@
 <Solution>
-  <Folder Name="/src/" />
-  <Folder Name="/src/BuildingBlocks/">
-    <Project Path="src/BuildingBlocks/GISORA.BuildingBlocks.Application/GISORA.BuildingBlocks.Application.csproj" />
-    <Project Path="src/BuildingBlocks/GISORA.BuildingBlocks.Domain/GISORA.BuildingBlocks.Domain.csproj" />
+  <Folder Name="/src/">
+    <Project Path="src/GISORA.Domain/GISORA.Domain.csproj" />
+    <Project Path="src/GISORA.Application/GISORA.Application.csproj" />
+    <Project Path="src/GISORA.Infrastructure/GISORA.Infrastructure.csproj" />
+    <Project Path="src/GISORA.Web/GISORA.Web.csproj" />
   </Folder>
-  <Folder Name="/src/Hosts/">
-    <Project Path="src/Hosts/GISORA.Web/GISORA.Web.csproj" />
-  </Folder>
-  <Folder Name="/src/Infrastructure/">
-    <Project Path="src/Infrastructure/GISORA.Infrastructure.Geospatial/GISORA.Infrastructure.Geospatial.csproj" />
-    <Project Path="src/Infrastructure/GISORA.Infrastructure.Integration/GISORA.Infrastructure.Integration.csproj" />
-    <Project Path="src/Infrastructure/GISORA.Infrastructure.LocalStorage/GISORA.Infrastructure.LocalStorage.csproj" />
-  </Folder>
-  <Folder Name="/src/Modules/" />
-  <Folder Name="/src/Modules/Cemetery/">
-    <Project Path="src/Modules/Cemetery/GISORA.Cemetery.Application/GISORA.Cemetery.Application.csproj" />
-    <Project Path="src/Modules/Cemetery/GISORA.Cemetery.Domain/GISORA.Cemetery.Domain.csproj" />
-  </Folder>
-  <Folder Name="/src/Modules/Geospatial/">
-    <Project Path="src/Modules/Geospatial/GISORA.Geospatial.Application/GISORA.Geospatial.Application.csproj" />
-    <Project Path="src/Modules/Geospatial/GISORA.Geospatial.Domain/GISORA.Geospatial.Domain.csproj" />
-  </Folder>
-  <Folder Name="/src/Modules/Integration/">
-    <Project Path="src/Modules/Integration/GISORA.Integration.Application/GISORA.Integration.Application.csproj" />
-  </Folder>
-  <Folder Name="/src/Modules/Properties/">
-    <Project Path="src/Modules/Properties/GISORA.Properties.Application/GISORA.Properties.Application.csproj" />
-    <Project Path="src/Modules/Properties/GISORA.Properties.Domain/GISORA.Properties.Domain.csproj" />
-  </Folder>
-  <Folder Name="/src/Modules/PublicFacilities/">
-    <Project Path="src/Modules/PublicFacilities/GISORA.PublicFacilities.Application/GISORA.PublicFacilities.Application.csproj" />
-    <Project Path="src/Modules/PublicFacilities/GISORA.PublicFacilities.Domain/GISORA.PublicFacilities.Domain.csproj" />
-  </Folder>
-  <Folder Name="/src/Modules/Roads/">
-    <Project Path="src/Modules/Roads/GISORA.Roads.Application/GISORA.Roads.Application.csproj" />
-    <Project Path="src/Modules/Roads/GISORA.Roads.Domain/GISORA.Roads.Domain.csproj" />
-  </Folder>
-  <Folder Name="/src/Modules/Rural/">
-    <Project Path="src/Modules/Rural/GISORA.Rural.Application/GISORA.Rural.Application.csproj" />
-    <Project Path="src/Modules/Rural/GISORA.Rural.Domain/GISORA.Rural.Domain.csproj" />
-  </Folder>
-  <Folder Name="/src/Modules/Territory/">
-    <Project Path="src/Modules/Territory/GISORA.Territory.Application/GISORA.Territory.Application.csproj" />
-    <Project Path="src/Modules/Territory/GISORA.Territory.Domain/GISORA.Territory.Domain.csproj" />
-  </Folder>
-  <Folder Name="/src/Modules/UrbanPlanning/">
-    <Project Path="src/Modules/UrbanPlanning/GISORA.UrbanPlanning.Application/GISORA.UrbanPlanning.Application.csproj" />
-    <Project Path="src/Modules/UrbanPlanning/GISORA.UrbanPlanning.Domain/GISORA.UrbanPlanning.Domain.csproj" />
-  </Folder>
-  <Folder Name="/src/Shared/">
-    <Project Path="src/Shared/GISORA.Shared.DesignSystem/GISORA.Shared.DesignSystem.csproj" />
-    <Project Path="src/Shared/GISORA.Shared.Maps/GISORA.Shared.Maps.csproj" />
-  </Folder>
-  <Folder Name="/tests/" />
-  <Folder Name="/tests/Architecture/">
+  <Folder Name="/tests/">
+    <Project Path="tests/Unit/GISORA.UnitTests/GISORA.UnitTests.csproj" />
     <Project Path="tests/Architecture/GISORA.ArchitectureTests/GISORA.ArchitectureTests.csproj" />
-  </Folder>
-  <Folder Name="/tests/E2E/">
     <Project Path="tests/E2E/GISORA.Web.E2ETests/GISORA.Web.E2ETests.csproj" />
-  </Folder>
-  <Folder Name="/tests/Unit/">
-    <Project Path="tests/Unit/GISORA.BuildingBlocks.UnitTests/GISORA.BuildingBlocks.UnitTests.csproj" />
-    <Project Path="tests/Unit/GISORA.Cemetery.UnitTests/GISORA.Cemetery.UnitTests.csproj" />
-    <Project Path="tests/Unit/GISORA.Geospatial.UnitTests/GISORA.Geospatial.UnitTests.csproj" />
-    <Project Path="tests/Unit/GISORA.Infrastructure.Geospatial.UnitTests/GISORA.Infrastructure.Geospatial.UnitTests.csproj" />
-    <Project Path="tests/Unit/GISORA.Infrastructure.LocalStorage.UnitTests/GISORA.Infrastructure.LocalStorage.UnitTests.csproj" />
-    <Project Path="tests/Unit/GISORA.Integration.UnitTests/GISORA.Integration.UnitTests.csproj" />
-    <Project Path="tests/Unit/GISORA.Properties.UnitTests/GISORA.Properties.UnitTests.csproj" />
-    <Project Path="tests/Unit/GISORA.PublicFacilities.UnitTests/GISORA.PublicFacilities.UnitTests.csproj" />
-    <Project Path="tests/Unit/GISORA.Roads.UnitTests/GISORA.Roads.UnitTests.csproj" />
-    <Project Path="tests/Unit/GISORA.Rural.UnitTests/GISORA.Rural.UnitTests.csproj" />
-    <Project Path="tests/Unit/GISORA.UrbanPlanning.UnitTests/GISORA.UrbanPlanning.UnitTests.csproj" />
-    <Project Path="tests/Unit/GISORA.Territory.UnitTests/GISORA.Territory.UnitTests.csproj" />
   </Folder>
 </Solution>

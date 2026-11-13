@@ -10,7 +10,7 @@ A primeira versao precisa operar sem backend proprio, com dados no dispositivo, 
 
 ## Decisao
 
-- Toda persistencia passa por `ILocalStore` em `GISORA.Infrastructure.LocalStorage`.
+- Toda persistencia passa por `ILocalStore` em `GISORA.Infrastructure.Persistence`.
 - Dominio e Application nao conhecem `localStorage`, JSON, JavaScript ou navegador.
 - Um documento por agregado, com filhos embutidos.
 - Indice denormalizado por colecao para listagem, mantido junto do documento.

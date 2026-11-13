@@ -1,0 +1,37 @@
+@namespace GISORA.Web.DesignSystem.Components
+
+<header class="gisora-page-header">
+    @if (Icon is not null)
+    {
+        <span class="gisora-page-header__icon" aria-hidden="true">
+            <RadzenIcon Icon="@Icon" />
+        </span>
+    }
+
+    <div class="gisora-page-header__text">
+        <h1 class="gisora-page-header__title">@Title</h1>
+        @if (Description is not null)
+        {
+            <p class="gisora-page-header__description">@Description</p>
+        }
+    </div>
+
+    @if (Actions is not null)
+    {
+        <div class="gisora-page-header__actions">@Actions</div>
+    }
+</header>
+
+@code {
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = string.Empty;
+
+    [Parameter]
+    public string? Description { get; set; }
+
+    [Parameter]
+    public string? Icon { get; set; }
+
+    [Parameter]
+    public RenderFragment? Actions { get; set; }
+}

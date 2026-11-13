@@ -21,25 +21,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\BuildingBlocks\GISORA.BuildingBlocks.Domain\GISORA.BuildingBlocks.Domain.csproj" />
-    <ProjectReference Include="..\..\..\src\BuildingBlocks\GISORA.BuildingBlocks.Application\GISORA.BuildingBlocks.Application.csproj" />
-    <ProjectReference Include="..\..\..\src\Modules\Geospatial\GISORA.Geospatial.Domain\GISORA.Geospatial.Domain.csproj" />
-    <ProjectReference Include="..\..\..\src\Modules\Geospatial\GISORA.Geospatial.Application\GISORA.Geospatial.Application.csproj" />
-    <ProjectReference Include="..\..\..\src\Modules\Territory\GISORA.Territory.Domain\GISORA.Territory.Domain.csproj" />
-    <ProjectReference Include="..\..\..\src\Modules\Territory\GISORA.Territory.Application\GISORA.Territory.Application.csproj" />
-    <ProjectReference Include="..\..\..\src\Modules\Properties\GISORA.Properties.Domain\GISORA.Properties.Domain.csproj" />
-    <ProjectReference Include="..\..\..\src\Modules\Properties\GISORA.Properties.Application\GISORA.Properties.Application.csproj" />
-    <ProjectReference Include="..\..\..\src\Modules\Roads\GISORA.Roads.Domain\GISORA.Roads.Domain.csproj" />
-    <ProjectReference Include="..\..\..\src\Modules\Roads\GISORA.Roads.Application\GISORA.Roads.Application.csproj" />
-    <ProjectReference Include="..\..\..\src\Modules\PublicFacilities\GISORA.PublicFacilities.Domain\GISORA.PublicFacilities.Domain.csproj" />
-    <ProjectReference Include="..\..\..\src\Modules\PublicFacilities\GISORA.PublicFacilities.Application\GISORA.PublicFacilities.Application.csproj" />
-    <ProjectReference Include="..\..\..\src\Modules\Cemetery\GISORA.Cemetery.Domain\GISORA.Cemetery.Domain.csproj" />
-    <ProjectReference Include="..\..\..\src\Modules\Cemetery\GISORA.Cemetery.Application\GISORA.Cemetery.Application.csproj" />
-    <ProjectReference Include="..\..\..\src\Infrastructure\GISORA.Infrastructure.LocalStorage\GISORA.Infrastructure.LocalStorage.csproj" />
-    <ProjectReference Include="..\..\..\src\Infrastructure\GISORA.Infrastructure.Geospatial\GISORA.Infrastructure.Geospatial.csproj" />
-    <ProjectReference Include="..\..\..\src\Shared\GISORA.Shared.DesignSystem\GISORA.Shared.DesignSystem.csproj" />
-    <ProjectReference Include="..\..\..\src\Shared\GISORA.Shared.Maps\GISORA.Shared.Maps.csproj" />
-    <ProjectReference Include="..\..\..\src\Hosts\GISORA.Web\GISORA.Web.csproj" />
+    <ProjectReference Include="..\..\..\src\GISORA.Domain\GISORA.Domain.csproj" />
+    <ProjectReference Include="..\..\..\src\GISORA.Application\GISORA.Application.csproj" />
+    <ProjectReference Include="..\..\..\src\GISORA.Infrastructure\GISORA.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\src\GISORA.Web\GISORA.Web.csproj" />
   </ItemGroup>
 
 </Project>

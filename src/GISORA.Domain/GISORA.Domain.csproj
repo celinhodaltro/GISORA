@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>GISORA.Domain</RootNamespace>
+    <Description>Dominio do GISORA: contexto geografico, territorial, cadastral, rural, cemiterial e urbanistico.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="GISORA.UnitTests" />
+    <InternalsVisibleTo Include="GISORA.Infrastructure" />
+  </ItemGroup>
+
+</Project>
