@@ -1,7 +1,9 @@
 <Solution>
-  <Folder Name="/src/">
+  <Folder Name="/src/core/">
     <Project Path="src/core/GISORA.Domain/GISORA.Domain.csproj" />
     <Project Path="src/core/GISORA.Application/GISORA.Application.csproj" />
+  </Folder>
+  <Folder Name="/src/infrastructure/">
     <Project Path="src/infrastructure/GISORA.Infrastructure/GISORA.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/src/presentations/">
