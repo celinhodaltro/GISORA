@@ -5,16 +5,16 @@
 O GISORA usa tres projetos de producao, organizados por camada e, dentro de cada camada, por modulo funcional. O host compoe a aplicacao.
 
 ```
-src/Presentations/       (Shared, Presentation e Hybrid)
+src/presentations/       (Shared, Presentation e Hybrid)
         |
         v
-src/GISORA.Application    (casos de uso, consultas, contratos)
+src/core/GISORA.Application    (casos de uso, consultas, contratos)
         |
         v
-src/GISORA.Domain         (agregados, value objects, eventos, contratos de repositorio)
+src/core/GISORA.Domain         (agregados, value objects, eventos, contratos de repositorio)
         ^
         |
-src/GISORA.Infrastructure (persistencia, geoespacial, integracoes)
+src/infrastructure/GISORA.Infrastructure (persistencia, geoespacial, integracoes)
 ```
 
 A dependencia aponta para dentro: Infrastructure implementa interfaces definidas por Domain/Application. O host referencia os tres projetos apenas para composicao.
@@ -42,7 +42,7 @@ src/
     Persistence/        ILocalStore, documentos, indices, repositorios e consultas
     Geospatial/         Turf.js, Proj4js, GeoJSON
     Integrations/       IBGE e SINTER/CIB
-  Presentations/
+  presentations/
     GISORA.Presentation.Shared/   Pages/ Layout/ Components/ Maps/ DesignSystem/ wwwroot/
     GISORA.Presentation/          Blazor WASM host
     GISORA.Presentation.Hybrid/   MAUI Blazor Hybrid host

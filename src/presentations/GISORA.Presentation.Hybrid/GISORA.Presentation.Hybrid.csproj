@@ -43,7 +43,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\GISORA.Presentation.Shared\GISORA.Presentation.Shared.csproj" />
-    <ProjectReference Include="..\..\GISORA.Infrastructure\GISORA.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\infrastructure\GISORA.Infrastructure\GISORA.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

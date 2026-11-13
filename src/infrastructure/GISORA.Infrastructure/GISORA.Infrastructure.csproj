@@ -11,8 +11,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\GISORA.Domain\GISORA.Domain.csproj" />
-    <ProjectReference Include="..\GISORA.Application\GISORA.Application.csproj" />
+    <ProjectReference Include="..\..\core\GISORA.Domain\GISORA.Domain.csproj" />
+    <ProjectReference Include="..\..\core\GISORA.Application\GISORA.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>

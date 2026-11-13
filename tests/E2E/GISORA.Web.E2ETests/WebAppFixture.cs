@@ -120,7 +120,7 @@ public sealed class WebAppFixture : IAsyncLifetime
             throw new InvalidOperationException("GISORA.slnx nao encontrado a partir do diretorio de teste.");
         }
 
-        return Path.Combine(directory.FullName, "src", "Presentations", "GISORA.Presentation", "GISORA.Presentation.csproj");
+        return Path.Combine(directory.FullName, "src", "presentations", "GISORA.Presentation", "GISORA.Presentation.csproj");
     }
 }
 

@@ -41,7 +41,7 @@ Resposta: `access_token`, `expires_in`, `token_type` (a documentacao informa exp
 
 ## Contrato de resposta
 
-O modelo tipado fica em `src/GISORA.Application/Integration/CibContracts.cs` e mapeia os campos documentados:
+O modelo tipado fica em `src/core/GISORA.Application/Integration/CibContracts.cs` e mapeia os campos documentados:
 
 | Objeto | Campos |
 | --- | --- |
@@ -59,7 +59,7 @@ Os codigos de dominio (`tipoImovel`, `tpArquitetonico`, `destinacaoImovel`, `pad
 
 ## Modos de operacao
 
-Configuracao em `src/Presentations/GISORA.Presentation/wwwroot/appsettings.json`:
+Configuracao em `src/presentations/GISORA.Presentation/wwwroot/appsettings.json`:
 
 ```json
 {

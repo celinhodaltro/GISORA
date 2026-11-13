@@ -19,9 +19,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\GISORA.Domain\GISORA.Domain.csproj" />
-    <ProjectReference Include="..\..\..\src\GISORA.Application\GISORA.Application.csproj" />
-    <ProjectReference Include="..\..\..\src\GISORA.Infrastructure\GISORA.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\src\core\GISORA.Domain\GISORA.Domain.csproj" />
+    <ProjectReference Include="..\..\..\src\core\GISORA.Application\GISORA.Application.csproj" />
+    <ProjectReference Include="..\..\..\src\infrastructure\GISORA.Infrastructure\GISORA.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

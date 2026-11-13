@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Presentations\GISORA.Presentation\GISORA.Presentation.csproj" />
+    <ProjectReference Include="..\..\..\src\presentations\GISORA.Presentation\GISORA.Presentation.csproj" />
   </ItemGroup>
 
   <ItemGroup>
