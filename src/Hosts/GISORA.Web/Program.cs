@@ -82,6 +82,7 @@ builder.Services.AddScoped<IRestrictionRepository, LocalStorageRestrictionReposi
 builder.Services.AddScoped<IRegulationQueries, LocalStorageRegulationQueries>();
 builder.Services.AddScoped<CreateZoneHandler>();
 builder.Services.AddScoped<CreateRestrictionHandler>();
+builder.Services.AddCibIntegration(builder.Configuration);
 builder.Services.AddScoped<IDemoDataSeeder, DemoDataSeeder>();
 builder.Services.AddScoped<GISORA.Web.Layout.MunicipalityState>();
 

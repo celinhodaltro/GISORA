@@ -31,6 +31,7 @@ internal static class ArchitectureModel
             typeof(Rural.Application.IRuralPropertyQueries).Assembly,
             typeof(UrbanPlanning.Domain.Zone).Assembly,
             typeof(UrbanPlanning.Application.IRegulationQueries).Assembly,
+            typeof(Integration.Application.ICibPropertyGateway).Assembly,
             typeof(BrowserLocalStore).Assembly,
             typeof(GISORA.Infrastructure.Geospatial.GeospatialInterop).Assembly,
             typeof(Shared.DesignSystem.Components.StatCard).Assembly,

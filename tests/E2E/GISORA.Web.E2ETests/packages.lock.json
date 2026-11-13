@@ -403,6 +403,7 @@
         "type": "Project",
         "dependencies": {
           "GISORA.Infrastructure.LocalStorage": "[0.1.0, )",
+          "GISORA.Integration.Application": "[0.1.0, )",
           "GISORA.Territory.Application": "[0.1.0, )"
         }
       },
@@ -427,6 +428,9 @@
           "GISORA.UrbanPlanning.Domain": "[0.1.0, )",
           "Microsoft.AspNetCore.Components.Web": "[10.0.15, )"
         }
+      },
+      "gisora.integration.application": {
+        "type": "Project"
       },
       "gisora.properties.application": {
         "type": "Project",
@@ -537,6 +541,7 @@
           "GISORA.Infrastructure.Geospatial": "[0.1.0, )",
           "GISORA.Infrastructure.Integration": "[0.1.0, )",
           "GISORA.Infrastructure.LocalStorage": "[0.1.0, )",
+          "GISORA.Integration.Application": "[0.1.0, )",
           "GISORA.Properties.Application": "[0.1.0, )",
           "GISORA.PublicFacilities.Application": "[0.1.0, )",
           "GISORA.Roads.Application": "[0.1.0, )",

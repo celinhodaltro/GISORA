@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Modules\Territory\GISORA.Territory.Application\GISORA.Territory.Application.csproj" />
+    <ProjectReference Include="..\..\Modules\Integration\GISORA.Integration.Application\GISORA.Integration.Application.csproj" />
     <ProjectReference Include="..\GISORA.Infrastructure.LocalStorage\GISORA.Infrastructure.LocalStorage.csproj" />
   </ItemGroup>
 
