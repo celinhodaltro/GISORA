@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
+    <RestorePackagesWithLockFile>false</RestorePackagesWithLockFile>
+    <StaticWebAssetSpaFallbackEnabled>true</StaticWebAssetSpaFallbackEnabled>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" PrivateAssets="all" />
+    <PackageReference Include="Radzen.Blazor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GISORA.Presentation.Shared\GISORA.Presentation.Shared.csproj" />
+    <ProjectReference Include="..\..\core\GISORA.Domain\GISORA.Domain.csproj" />
+    <ProjectReference Include="..\..\core\GISORA.Application\GISORA.Application.csproj" />
+    <ProjectReference Include="..\..\infrastructure\GISORA.Infrastructure\GISORA.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

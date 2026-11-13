@@ -398,13 +398,23 @@
           "Microsoft.AspNetCore.Components.Web": "[10.0.15, )"
         }
       },
-      "gisora.web": {
+      "gisora.presentation": {
         "type": "Project",
         "dependencies": {
           "GISORA.Application": "[0.1.0, )",
           "GISORA.Domain": "[0.1.0, )",
           "GISORA.Infrastructure": "[0.1.0, )",
+          "GISORA.Presentation.Shared": "[0.1.0, )",
           "Microsoft.AspNetCore.Components.WebAssembly": "[10.0.15, )",
+          "Radzen.Blazor": "[13.0.0, )"
+        }
+      },
+      "gisora.presentation.shared": {
+        "type": "Project",
+        "dependencies": {
+          "GISORA.Application": "[0.1.0, )",
+          "GISORA.Domain": "[0.1.0, )",
+          "Microsoft.AspNetCore.Components.Web": "[10.0.15, )",
           "Radzen.Blazor": "[13.0.0, )"
         }
       },

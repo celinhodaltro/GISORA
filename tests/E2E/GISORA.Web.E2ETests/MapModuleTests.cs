@@ -3,7 +3,7 @@ namespace GISORA.Web.E2ETests;
 [Collection(WebAppGroup.Name)]
 public class MapModuleTests(WebAppFixture fixture)
 {
-    private const string ModulePath = "/js/map.js";
+    private const string ModulePath = "/_content/GISORA.Presentation.Shared/js/map.js";
 
     [Fact]
     public async Task RendersLayerSelectsFeatureAndDestroys()

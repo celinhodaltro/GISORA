@@ -1,0 +1,30 @@
+@namespace GISORA.Presentation.Shared.Maps.Components
+@implements IDisposable
+
+@code {
+    [CascadingParameter]
+    private MapView? Map { get; set; }
+
+    [Parameter]
+    public EventCallback<MapFeature> OnSelected { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (Map is null)
+        {
+            return;
+        }
+
+        Map.FeatureSelected += HandleSelection;
+    }
+
+    public void Dispose()
+    {
+        if (Map is not null)
+        {
+            Map.FeatureSelected -= HandleSelection;
+        }
+    }
+
+    private void HandleSelection(MapFeature feature) => _ = OnSelected.InvokeAsync(feature);
+}

@@ -37,10 +37,15 @@ Domain  ←  Application  ←  Presentation (Hosts)
 
 ```
 src/
-  GISORA.Domain/          Agregados, value objects e contratos, por contexto
-  GISORA.Application/     Casos de uso, consultas e contratos, por contexto
-  GISORA.Infrastructure/  Persistencia, geoespacial e integracoes
-  GISORA.Web/             Blazor WASM: paginas, layout, mapas e design system
+  core/
+    GISORA.Domain/        Agregados, value objects e contratos, por contexto
+    GISORA.Application/   Casos de uso, consultas e contratos, por contexto
+  infrastructure/
+    GISORA.Infrastructure/ Persistencia, geoespacial e integracoes
+  presentations/
+    GISORA.Presentation.Shared/   Layout, componentes, paginas, mapas e design system
+    GISORA.Presentation/          Host Blazor WASM
+    GISORA.Presentation.Hybrid/   Host MAUI Blazor Hybrid (Android, iOS, Windows/macOS)
 tests/
   Unit/ GISORA.UnitTests
   Architecture/ GISORA.ArchitectureTests

@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>GISORA.Infrastructure</RootNamespace>
+    <Description>Persistencia local, operacoes geoespaciais e integracoes externas do GISORA.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\core\GISORA.Domain\GISORA.Domain.csproj" />
+    <ProjectReference Include="..\..\core\GISORA.Application\GISORA.Application.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="GISORA.UnitTests" />
+  </ItemGroup>
+
+</Project>

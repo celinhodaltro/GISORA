@@ -17,7 +17,8 @@ public class RuleCoverageTests
             "GISORA.Domain",
             "GISORA.Application",
             "GISORA.Infrastructure",
-            "GISORA.Web",
+            "GISORA.Presentation.Shared",
+            "GISORA.Presentation",
         ];
 
         Assert.All(expected, name => Assert.Contains(name, assemblies));
@@ -29,7 +30,7 @@ public class RuleCoverageTests
         Assert.True(ArchitectureModel.TypesStartingWith("GISORA.Domain").Count > 0);
         Assert.True(ArchitectureModel.TypesStartingWith("GISORA.Application").Count > 0);
         Assert.True(ArchitectureModel.TypesStartingWith("GISORA.Infrastructure").Count > 0);
-        Assert.True(ArchitectureModel.TypesStartingWith("GISORA.Web").Count > 0);
+        Assert.True(ArchitectureModel.TypesStartingWith("GISORA.Presentation").Count > 0);
     }
 
     [Fact]

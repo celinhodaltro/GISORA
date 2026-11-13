@@ -10,7 +10,7 @@ O produto precisa de componentes de dados (grid com paginacao e filtro), formula
 
 ## Decisao
 
-Usar `Radzen.Blazor` como base de componentes, dentro de `GISORA.Web.DesignSystem`, com tokens proprios em CSS e componentes de composicao (`PageHeader`, `StatCard`, `EmptyState`).
+Usar `Radzen.Blazor` como base de componentes, dentro de `GISORA.Presentation.Shared.DesignSystem`, com tokens proprios em CSS e componentes de composicao (`PageHeader`, `StatCard`, `EmptyState`).
 
 Versao verificada nesta maquina: `Radzen.Blazor 13.0.0`, com alvo `lib/net10.0`, compilando e publicando no host WebAssembly.
 

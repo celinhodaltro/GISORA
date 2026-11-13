@@ -13,7 +13,7 @@ public class HostRulesTests
     [Fact]
     public void WebHostDoesNotDefineAggregatesOrValueObjects()
     {
-        var hostAssembly = typeof(Web.App).Assembly;
+        var hostAssembly = typeof(Presentation.App).Assembly;
 
         foreach (var type in hostAssembly.GetTypes())
         {

@@ -5,16 +5,16 @@
 O GISORA usa tres projetos de producao, organizados por camada e, dentro de cada camada, por modulo funcional. O host compoe a aplicacao.
 
 ```
-src/GISORA.Web            (Blazor WASM: paginas, layout, componentes)
+src/presentations/       (Shared, Presentation e Hybrid)
         |
         v
-src/GISORA.Application    (casos de uso, consultas, contratos)
+src/core/GISORA.Application    (casos de uso, consultas, contratos)
         |
         v
-src/GISORA.Domain         (agregados, value objects, eventos, contratos de repositorio)
+src/core/GISORA.Domain         (agregados, value objects, eventos, contratos de repositorio)
         ^
         |
-src/GISORA.Infrastructure (persistencia, geoespacial, integracoes)
+src/infrastructure/GISORA.Infrastructure (persistencia, geoespacial, integracoes)
 ```
 
 A dependencia aponta para dentro: Infrastructure implementa interfaces definidas por Domain/Application. O host referencia os tres projetos apenas para composicao.
@@ -42,8 +42,10 @@ src/
     Persistence/        ILocalStore, documentos, indices, repositorios e consultas
     Geospatial/         Turf.js, Proj4js, GeoJSON
     Integrations/       IBGE e SINTER/CIB
-  GISORA.Web/
-    Pages/ Layout/ Components/ Maps/ DesignSystem/ wwwroot/
+  presentations/
+    GISORA.Presentation.Shared/   Pages/ Layout/ Components/ Maps/ DesignSystem/ wwwroot/
+    GISORA.Presentation/          Blazor WASM host
+    GISORA.Presentation.Hybrid/   MAUI Blazor Hybrid host
 tests/
   Unit/GISORA.UnitTests
   Architecture/GISORA.ArchitectureTests
@@ -99,7 +101,7 @@ Dois contratos por agregado:
 - `GISORA.Domain.Geospatial`: `SpatialReference`, `Coordinate`, `Geometry` e derivados, `BoundingBox`, `Area`, `Distance`.
 - `GISORA.Application.Geospatial`: `IGeometryValidator`, `ICoordinateTransformer`, `ISpatialOperations`, `IGeoJsonSerializer`.
 - `GISORA.Infrastructure.Geospatial`: implementacao via Turf.js 7.4 e Proj4js 2.2, vendorizados e carregados por modulo ES.
-- `GISORA.Web.Maps`: componentes Leaflet e `js/map.js`; nao conhece contexto de negocio.
+- `GISORA.Presentation.Shared.Maps`: componentes Leaflet e `js/map.js`; nao conhece contexto de negocio.
 
 O basemap padrao e OpenStreetMap, configuravel por parametro. Producao municipal deve apontar para servico oficial de tiles.
 
