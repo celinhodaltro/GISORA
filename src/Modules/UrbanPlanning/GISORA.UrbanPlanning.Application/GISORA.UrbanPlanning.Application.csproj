@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>GISORA.UrbanPlanning.Application</RootNamespace>
+    <Description>Casos de uso de zoneamento e restricoes urbanisticas.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GISORA.UrbanPlanning.Domain\GISORA.UrbanPlanning.Domain.csproj" />
+    <ProjectReference Include="..\..\Geospatial\GISORA.Geospatial.Domain\GISORA.Geospatial.Domain.csproj" />
+    <ProjectReference Include="..\..\Geospatial\GISORA.Geospatial.Application\GISORA.Geospatial.Application.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\GISORA.BuildingBlocks.Application\GISORA.BuildingBlocks.Application.csproj" />
+  </ItemGroup>
+
+</Project>

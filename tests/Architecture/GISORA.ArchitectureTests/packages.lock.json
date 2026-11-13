@@ -452,6 +452,8 @@
           "GISORA.Rural.Domain": "[0.1.0, )",
           "GISORA.Territory.Application": "[0.1.0, )",
           "GISORA.Territory.Domain": "[0.1.0, )",
+          "GISORA.UrbanPlanning.Application": "[0.1.0, )",
+          "GISORA.UrbanPlanning.Domain": "[0.1.0, )",
           "Microsoft.AspNetCore.Components.Web": "[10.0.15, )"
         }
       },
@@ -541,6 +543,22 @@
           "GISORA.Geospatial.Domain": "[0.1.0, )"
         }
       },
+      "gisora.urbanplanning.application": {
+        "type": "Project",
+        "dependencies": {
+          "GISORA.BuildingBlocks.Application": "[0.1.0, )",
+          "GISORA.Geospatial.Application": "[0.1.0, )",
+          "GISORA.Geospatial.Domain": "[0.1.0, )",
+          "GISORA.UrbanPlanning.Domain": "[0.1.0, )"
+        }
+      },
+      "gisora.urbanplanning.domain": {
+        "type": "Project",
+        "dependencies": {
+          "GISORA.BuildingBlocks.Domain": "[0.1.0, )",
+          "GISORA.Geospatial.Domain": "[0.1.0, )"
+        }
+      },
       "gisora.web": {
         "type": "Project",
         "dependencies": {
@@ -555,6 +573,7 @@
           "GISORA.Shared.DesignSystem": "[0.1.0, )",
           "GISORA.Shared.Maps": "[0.1.0, )",
           "GISORA.Territory.Application": "[0.1.0, )",
+          "GISORA.UrbanPlanning.Application": "[0.1.0, )",
           "Microsoft.AspNetCore.Components.WebAssembly": "[10.0.15, )"
         }
       },

@@ -50,7 +50,7 @@ public class ModuleBoundaryTests
     [Fact]
     public void ModulesDoNotDependOnInfrastructureOrHosts()
     {
-        foreach (var module in new[] { "GISORA.Territory", "GISORA.Properties", "GISORA.Geospatial", "GISORA.Roads", "GISORA.PublicFacilities", "GISORA.Cemetery", "GISORA.Rural" })
+        foreach (var module in new[] { "GISORA.Territory", "GISORA.Properties", "GISORA.Geospatial", "GISORA.Roads", "GISORA.PublicFacilities", "GISORA.Cemetery", "GISORA.Rural", "GISORA.UrbanPlanning" })
         {
             var types = ArchitectureModel.TypesStartingWith(module);
 

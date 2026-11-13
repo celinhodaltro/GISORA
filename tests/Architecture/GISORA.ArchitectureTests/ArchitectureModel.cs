@@ -29,6 +29,8 @@ internal static class ArchitectureModel
             typeof(Cemetery.Application.ICemeteryQueries).Assembly,
             typeof(Rural.Domain.RuralProperty).Assembly,
             typeof(Rural.Application.IRuralPropertyQueries).Assembly,
+            typeof(UrbanPlanning.Domain.Zone).Assembly,
+            typeof(UrbanPlanning.Application.IRegulationQueries).Assembly,
             typeof(BrowserLocalStore).Assembly,
             typeof(GISORA.Infrastructure.Geospatial.GeospatialInterop).Assembly,
             typeof(Shared.DesignSystem.Components.StatCard).Assembly,
