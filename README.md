@@ -37,18 +37,18 @@ Domain  ←  Application  ←  Presentation (Hosts)
 
 ```
 src/
-  Hosts/            Aplicações executáveis (Web, Mobile, Api)
-  Modules/          Bounded contexts (Domain / Application / Infrastructure)
-  Shared/           UI, Design System, Mapas e Contratos entre módulos
-  BuildingBlocks/   Primitivas de DDD e de Application
-  Infrastructure/   Adaptadores técnicos (LocalStorage, Files, Geospatial)
+  GISORA.Domain/          Agregados, value objects e contratos, por contexto
+  GISORA.Application/     Casos de uso, consultas e contratos, por contexto
+  GISORA.Infrastructure/  Persistencia, geoespacial e integracoes
+  GISORA.Web/             Blazor WASM: paginas, layout, mapas e design system
 tests/
-  Unit/ Integration/ Architecture/ E2E/
-docs/               ADRs, contexto de domínio, matriz de rastreabilidade
+  Unit/ GISORA.UnitTests
+  Architecture/ GISORA.ArchitectureTests
+  E2E/ GISORA.Web.E2ETests
+docs/                     ADRs, contexto de dominio e regras
 ```
 
-Cada contexto só ganha camadas quando possui regra de negócio real. A fronteira entre módulos é garantida por testes arquiteturais, não apenas por pastas.
-
+Cada contexto mantem seu namespace (`GISORA.Domain.<Modulo>` / `GISORA.Application.<Modulo>`). A fronteira entre modulos e garantida por testes arquiteturais.
 ## Desenvolvimento
 
 Requisitos: .NET SDK 10.0.4xx.

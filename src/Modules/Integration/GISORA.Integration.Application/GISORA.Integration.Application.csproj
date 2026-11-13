@@ -1,9 +1,0 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <RootNamespace>GISORA.Integration.Application</RootNamespace>
-    <Description>Contratos tipados da consulta de Unidade Imobiliaria no SINTER/CIB.</Description>
-  </PropertyGroup>
-
-</Project>

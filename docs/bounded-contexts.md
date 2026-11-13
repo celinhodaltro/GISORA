@@ -23,7 +23,7 @@ Onda 3 nao significa um contexto por vez obrigatoriamente: significa que cada um
 
 - Um contexto nao referencia o `Domain` nem o `Application` de outro.
 - Dados de outro contexto entram por identificador, nunca por entidade.
-- Kernel compartilhado hoje: `Geospatial` e `BuildingBlocks`.
+- Kernel compartilhado hoje: `Geospatial` e `Common`.
 - Se um contexto precisar de dado de outro, o caminho e um contrato publico (futuro `GISORA.Shared.Contracts`) ou evento de integracao, nao acesso ao repositorio interno.
 
 ## Exemplo aplicado

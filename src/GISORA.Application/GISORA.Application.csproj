@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>GISORA.Application</RootNamespace>
+    <Description>Casos de uso, consultas e contratos do GISORA por contexto funcional.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GISORA.Domain\GISORA.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="GISORA.UnitTests" />
+  </ItemGroup>
+
+</Project>

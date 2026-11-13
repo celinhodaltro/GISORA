@@ -1,0 +1,9 @@
+@namespace GISORA.Web.Maps.Components
+
+<div class="gisora-map-wrapper" style="height:@Height">
+    <div id="@_elementId" class="gisora-map @Class"></div>
+
+    <CascadingValue Value="this">
+        @ChildContent
+    </CascadingValue>
+</div>

@@ -2,13 +2,6 @@ namespace GISORA.ArchitectureTests;
 
 public class LayerRulesTests
 {
-    private static readonly string[] InfrastructureAndHosts =
-    [
-        "GISORA.Infrastructure",
-        "GISORA.Web",
-        "GISORA.Shared.DesignSystem",
-    ];
-
     private static readonly string[] TechnologyLeaks =
     [
         "Microsoft.JSInterop",
@@ -18,33 +11,33 @@ public class LayerRulesTests
     ];
 
     [Fact]
-    public void DomainDoesNotDependOnInfrastructureHostsOrTechnology()
+    public void DomainDoesNotDependOnOtherLayersOrTechnology()
     {
-        var domainTypes = ArchitectureModel.TypesStartingWith("GISORA.")
-            .Where(type => type.Namespace!.FullName.EndsWith(".Domain", StringComparison.Ordinal))
-            .ToArray();
+        var domainTypes = ArchitectureModel.TypesStartingWith("GISORA.Domain");
 
-        DependencyAssertions.AssertNoDependencyOn(domainTypes, InfrastructureAndHosts, "Domain");
-        DependencyAssertions.AssertNoDependencyOn(domainTypes, TechnologyLeaks, "Domain");
+        DependencyAssertions.AssertNoDependencyOn(
+            domainTypes,
+            ["GISORA.Application", "GISORA.Infrastructure", "GISORA.Web", .. TechnologyLeaks],
+            "Domain");
     }
 
     [Fact]
-    public void ApplicationDoesNotDependOnInfrastructureOrTechnology()
+    public void ApplicationDoesNotDependOnInfrastructureWebOrTechnology()
     {
-        var applicationTypes = ArchitectureModel.TypesStartingWith("GISORA.")
-            .Where(type => type.Namespace!.FullName.EndsWith(".Application", StringComparison.Ordinal))
-            .ToArray();
+        var applicationTypes = ArchitectureModel.TypesStartingWith("GISORA.Application");
 
-        DependencyAssertions.AssertNoDependencyOn(applicationTypes, InfrastructureAndHosts, "Application");
-        DependencyAssertions.AssertNoDependencyOn(applicationTypes, TechnologyLeaks, "Application");
+        DependencyAssertions.AssertNoDependencyOn(
+            applicationTypes,
+            ["GISORA.Infrastructure", "GISORA.Web", .. TechnologyLeaks],
+            "Application");
     }
 
     [Fact]
-    public void InfrastructureDoesNotDependOnHosts()
+    public void InfrastructureDoesNotDependOnHost()
     {
-        var infrastructureTypes = ArchitectureModel.TypesStartingWith("GISORA.Infrastructure.");
+        var infrastructureTypes = ArchitectureModel.TypesStartingWith("GISORA.Infrastructure");
 
-        DependencyAssertions.AssertNoDependencyOn(infrastructureTypes, ["GISORA.Web", "GISORA.Shared.DesignSystem"], "Infrastructure");
+        DependencyAssertions.AssertNoDependencyOn(infrastructureTypes, ["GISORA.Web"], "Infrastructure");
     }
 
     [Fact]

@@ -3,7 +3,7 @@ namespace GISORA.Web.E2ETests;
 [Collection(WebAppGroup.Name)]
 public class GeospatialModuleTests(WebAppFixture fixture)
 {
-    private const string ModulePath = "/_content/GISORA.Infrastructure.Geospatial/js/geospatial.js";
+    private const string ModulePath = "/_content/GISORA.Infrastructure/js/geospatial.js";
 
     [Fact]
     public async Task ComputesProjectedAreaInSquareMeters()

@@ -1,0 +1,465 @@
+@page "/cib"
+@using System.Globalization
+@using GISORA.Application.Geospatial
+@using GISORA.Application.Integration
+@using GISORA.Application.Properties
+@using GISORA.Web.Maps
+@using GISORA.Web.Maps.Components
+@using GISORA.Web.Components
+@inject ICibPropertyGateway CibGateway
+@inject IPropertyMapQueries PropertyQueries
+@inject IGeoJsonSerializer Serializer
+
+<PageHeader Title="Consulta CIB"
+            Description="Consulta integrada de unidades imobiliarias no SINTER/CIB."
+            Icon="travel_explore" />
+
+<div class="workspace">
+    <div class="workspace__map">
+        <MapView @ref="_map"
+                 CenterLatitude="-7.95"
+                 CenterLongitude="-35.25"
+                 Zoom="15"
+                 Height="var(--map-height-map)"
+                 OnReady="ApplyLayersAsync"
+                 OnFeatureSelected="SelectPropertyAsync">
+            <MapToolbar />
+            <LayerControl Layers="_layers" />
+            <CoordinateControl Crs="EPSG:4326" />
+        </MapView>
+    </div>
+
+    <aside class="workspace__side">
+        <MapLegend Layers="_layers" />
+
+        <RadzenCard>
+            <div class="cib-mode">
+                <span class="cib-mode__badge @(CibGateway.IsDemonstration ? "cib-mode__badge--demo" : "cib-mode__badge--live")">
+                    @(CibGateway.IsDemonstration ? "Modo demonstracao" : "Integracao oficial")
+                </span>
+                <span class="cib-mode__hint">
+                    @(CibGateway.IsDemonstration
+                        ? "Dados simulados com a mesma estrutura da API oficial."
+                        : "Dados retornados pelo servico de integracao SINTER.")
+                </span>
+            </div>
+
+            <h2 class="workspace__panel-title">Consulta por CIB</h2>
+
+            <div class="cib-form">
+                <input class="territory-input cib-input"
+                       placeholder="Codigo CIB"
+                       @bind="_cib"
+                       @bind:event="oninput"
+                       @onkeydown="HandleKeyDown" />
+
+                <RadzenButton Text="@(_loading ? "Consultando..." : "Consultar CIB")"
+                              ButtonStyle="ButtonStyle.Primary"
+                              Disabled="@_loading"
+                              Click="QueryAsync" />
+            </div>
+
+            @if (CibGateway.IsDemonstration)
+            {
+                <p class="cib-demo-codes">
+                    CIBs de demonstracao:
+                    @foreach (var code in DemoCibs)
+                    {
+                        <button type="button" class="cib-demo-code" @onclick="() => UseDemoCodeAsync(code)">@(code)</button>
+                    }
+                </p>
+            }
+
+            @if (_error is not null)
+            {
+                <p class="workspace__error" role="alert">@_error</p>
+            }
+
+            @if (_selectedProperty is { } property)
+            {
+                <section class="cib-section cib-section--selected" aria-label="Imovel selecionado">
+                    <h3 class="cib-section__title">Imovel selecionado no mapa</h3>
+                    <dl class="cib-list">
+                        <dt>Inscricao municipal</dt>
+                        <dd>@property.Registration</dd>
+                        <dt>Area do terreno</dt>
+                        <dd>@FormatArea(property.LandAreaSquareMeters)</dd>
+                        <dt>Area construida</dt>
+                        <dd>@FormatArea(property.BuiltAreaSquareMeters)</dd>
+                    </dl>
+                </section>
+            }
+
+            @if (_result is { Record: { } record })
+            {
+                <section class="cib-panel" aria-label="Dados do CIB">
+                    <header class="cib-panel__header">
+                        <div>
+                            <span class="cib-panel__eyebrow">Cadastro Imobiliario Brasileiro</span>
+                            <h2 class="cib-panel__cib">@Display(record.Cib?.Valor)</h2>
+                        </div>
+
+                        @if (record.Cib?.Situacao is { Length: > 0 } situacao)
+                        {
+                            <span class="cib-status">@situacao</span>
+                        }
+                    </header>
+
+                    @if (_result.IsDemonstration)
+                    {
+                        <p class="cib-panel__notice">Dados simulados para demonstracao. Nao representam imovel real.</p>
+                    }
+
+                    @if (HasIdentification(record))
+                    {
+                        <section class="cib-section">
+                            <h3 class="cib-section__title">Identificacao</h3>
+                            <dl class="cib-list">
+                                <CibField Label="Inscricao imobiliaria" Value="@record.DadosGeraisImovel?.InscricaoImobiliaria" />
+                                <CibField Label="Situacao" Value="@record.Cib?.Situacao" />
+                            </dl>
+                        </section>
+                    }
+
+                    @if (HasLocation(record))
+                    {
+                        <section class="cib-section">
+                            <h3 class="cib-section__title">Localizacao</h3>
+                            <dl class="cib-list">
+                                <CibField Label="Municipio" Value="@record.InfoIbge?.NomeMunicipio" />
+                                <CibField Label="UF" Value="@record.InfoIbge?.SiglaUf" />
+                                <CibField Label="Codigo IBGE" Value="@record.InfoIbge?.CodigoIbge?.ToString(CultureInfo.InvariantCulture)" />
+                                <CibField Label="Logradouro" Value="@AddressLine(record.EnderecoImovel)" />
+                                <CibField Label="Bairro" Value="@record.EnderecoImovel?.Bairro" />
+                                <CibField Label="CEP" Value="@record.EnderecoImovel?.Cep" />
+                                <CibField Label="Complemento" Value="@ComplementLine(record.EnderecoImovel)" />
+                            </dl>
+                        </section>
+                    }
+
+                    @if (HasTerritorial(record))
+                    {
+                        <section class="cib-section">
+                            <h3 class="cib-section__title">Caracteristicas territoriais</h3>
+                            <dl class="cib-list">
+                                <CibField Label="Area do terreno" Value="@FormatArea(record.DadosGeraisImovel?.AreaTerreno)" />
+                                <CibField Label="Tipo de imovel (codigo)" Value="@record.DadosGeraisImovel?.TipoImovel?.ToString(CultureInfo.InvariantCulture)" />
+                                <CibField Label="Destinacao (codigo)" Value="@record.DadosGeraisImovel?.DestinacaoImovel?.ToString(CultureInfo.InvariantCulture)" />
+                                <CibField Label="BICE" Value="@record.DadosGeraisImovel?.Bice?.ToString(CultureInfo.InvariantCulture)" />
+                            </dl>
+                        </section>
+                    }
+
+                    @if (HasConstruction(record))
+                    {
+                        <section class="cib-section">
+                            <h3 class="cib-section__title">Caracteristicas construtivas</h3>
+                            <dl class="cib-list">
+                                <CibField Label="Area construida" Value="@FormatArea(record.DadosGeraisImovel?.AreaConstruida)" />
+                                <CibField Label="Ano construtivo" Value="@record.DadosGeraisImovel?.AnoConstrutivo?.ToString(CultureInfo.InvariantCulture)" />
+                                <CibField Label="Padrao construtivo (codigo)" Value="@record.DadosGeraisImovel?.PadraoConstrutivo?.ToString(CultureInfo.InvariantCulture)" />
+                                <CibField Label="Tipo arquitetonico (codigo)" Value="@record.DadosGeraisImovel?.TpArquitetonico?.ToString(CultureInfo.InvariantCulture)" />
+                                <CibField Label="Vagas de garagem" Value="@record.DadosGeraisImovel?.QtdGaragem?.ToString(CultureInfo.InvariantCulture)" />
+                                <CibField Label="Piscina" Value="@FormatBoolean(record.DadosGeraisImovel?.TemPiscina)" />
+                                <CibField Label="Area privativa" Value="@FormatArea(record.AreaConstruidaCompl?.AreaPrivativa)" />
+                                <CibField Label="Area comum" Value="@FormatArea(record.AreaConstruidaCompl?.AreaComum)" />
+                                <CibField Label="Fracao ideal" Value="@record.AreaConstruidaCompl?.FraIdeal?.ToString("N4", PtBr)" />
+                            </dl>
+                        </section>
+                    }
+
+                    @if (HasCadastral(record))
+                    {
+                        <section class="cib-section">
+                            <h3 class="cib-section__title">Informacoes cadastrais</h3>
+                            <dl class="cib-list">
+                                <CibField Label="Valor venal" Value="@FormatMoney(record.DadosGeraisImovel?.ValorVenal)" />
+                                <CibField Label="Data do ultimo valor venal" Value="@FormatDate(record.DadosGeraisImovel?.DtUltimoValorVenal)" />
+                                <CibField Label="Valor de referencia de mercado" Value="@FormatMoney(record.DadosGeraisImovel?.ValorRefMercado)" />
+                                <CibField Label="Data do ultimo valor de mercado" Value="@FormatDate(record.DadosGeraisImovel?.DataUltVlrMercado)" />
+                                <CibField Label="Serventia registral" Value="@record.ServicoRegistroImovel?.NomeServentiaRI" />
+                                <CibField Label="CNS registral" Value="@record.ServicoRegistroImovel?.CnsRI?.ToString(CultureInfo.InvariantCulture)" />
+                                <CibField Label="Matricula" Value="@record.ServicoRegistroImovel?.NumMatriculaRI" />
+                                <CibField Label="Ultimo ato" Value="@record.ServicoRegistroImovel?.NumUltimoAtoRI" />
+                                <CibField Label="Atualizacao registral" Value="@FormatDate(record.ServicoRegistroImovel?.DtUltAtualizacao)" />
+                                <CibField Label="Serventia de notas" Value="@record.CartorioNotas?.NomeServentiaNotas" />
+                                <CibField Label="CNS de notas" Value="@record.CartorioNotas?.CnsNotas?.ToString(CultureInfo.InvariantCulture)" />
+                            </dl>
+                        </section>
+                    }
+
+                    @if (record.Titular is { Count: > 0 } titulares)
+                    {
+                        <section class="cib-section">
+                            <h3 class="cib-section__title">Titularidade</h3>
+                            <ul class="cib-titulares">
+                                @foreach (var titular in titulares)
+                                {
+                                    <li class="cib-titular">
+                                        <span class="cib-titular__name">@Display(titular.NomeTitular)</span>
+                                        <span class="cib-titular__detail">
+                                            @(titular.PercTitularidade is { } perc ? $"{perc:P0} do imovel" : "Percentual nao informado")
+                                            @if (titular.DtAquisicaoTitular is { } data)
+                                            {
+                                                <text> | adquirido em @data.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture)</text>
+                                            }
+                                        </span>
+                                    </li>
+                                }
+                            </ul>
+                        </section>
+                    }
+
+                    @if (record.Itbi is { } itbi && HasItbi(itbi))
+                    {
+                        <section class="cib-section">
+                            <h3 class="cib-section__title">ITBI</h3>
+                            <dl class="cib-list">
+                                <CibField Label="Base de calculo" Value="@FormatMoney(itbi.BaseCalculITBI)" />
+                                <CibField Label="Data da transacao" Value="@FormatDate(itbi.DtTransacaoITBI)" />
+                                <CibField Label="Tipo de transacao (codigo)" Value="@itbi.TpTransacaoITBI?.ToString(CultureInfo.InvariantCulture)" />
+                                <CibField Label="Percentual transacionado" Value="@(itbi.PercTransacionadoITBI is { } p ? p.ToString("P0", PtBr) : null)" />
+                                <CibField Label="Valor de referencia" Value="@FormatMoney(itbi.ValorRefITBI)" />
+                            </dl>
+                        </section>
+                    }
+                </section>
+            }
+        </RadzenCard>
+    </aside>
+</div>
+
+@code {
+    private static readonly CultureInfo PtBr = CultureInfo.GetCultureInfo("pt-BR");
+
+    private static readonly IReadOnlyList<string> DemoCibs = ["DEMO1A2B", "DEMO3C4D", "DEMO5E6F"];
+
+    private MapView? _map;
+    private readonly List<MapLayer> _layers = [];
+    private IReadOnlyList<PropertyMapItem> _properties = [];
+    private PropertyMapItem? _selectedProperty;
+    private CibLookupResult? _result;
+    private string? _cib;
+    private string? _error;
+    private bool _loading;
+    private bool _fitted;
+
+    protected override async Task OnInitializedAsync()
+        => _properties = await PropertyQueries.GetMapItemsAsync();
+
+    private async Task ApplyLayersAsync()
+    {
+        if (_map is null)
+        {
+            return;
+        }
+
+        await RefreshLayersAsync();
+
+        if (_fitted is false)
+        {
+            _fitted = true;
+            await _map.FitBoundsAsync();
+        }
+    }
+
+    private async Task RefreshLayersAsync()
+    {
+        _layers.Clear();
+
+        if (_properties.Count > 0)
+        {
+            _layers.Add(new MapLayer(
+                "cib-properties",
+                "Imoveis",
+                RegulationMapProjector.PropertiesToFeatureCollection(_properties, Serializer),
+                Color: "#64748b"));
+        }
+
+        if (_selectedProperty is not null)
+        {
+            _layers.Add(new MapLayer(
+                "cib-selected",
+                "Imovel em consulta",
+                RegulationMapProjector.PropertiesToFeatureCollection([_selectedProperty], Serializer),
+                Color: "#1d4ed8",
+                Legend: [new MapLegendItem("Imovel em consulta", "#1d4ed8")]));
+        }
+
+        if (_map is null || _map.IsReady is false)
+        {
+            return;
+        }
+
+        foreach (var layer in _layers)
+        {
+            await _map.SetLayerAsync(layer);
+        }
+
+        await RemoveStaleLayersAsync();
+    }
+
+    private async Task RemoveStaleLayersAsync()
+    {
+        if (_map is null)
+        {
+            return;
+        }
+
+        if (_layers.All(layer => layer.Id != "cib-selected"))
+        {
+            await _map.RemoveLayerAsync("cib-selected");
+        }
+    }
+
+    private async Task SelectPropertyAsync(MapFeature feature)
+    {
+        if (Guid.TryParse(feature.Id, out var id) is false)
+        {
+            return;
+        }
+
+        _selectedProperty = _properties.FirstOrDefault(property => property.Id.Value == id);
+
+        await RefreshLayersAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task UseDemoCodeAsync(string code)
+    {
+        _cib = code;
+        await QueryAsync();
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter")
+        {
+            await QueryAsync();
+        }
+    }
+
+    private async Task QueryAsync()
+    {
+        if (_loading)
+        {
+            return;
+        }
+
+        _error = null;
+        _result = null;
+        _loading = true;
+
+        try
+        {
+            var result = await CibGateway.FindByCibAsync(_cib ?? string.Empty);
+            _result = result.Status is CibLookupStatus.Success ? result : null;
+
+            if (result.Status is not CibLookupStatus.Success)
+            {
+                _error = result.Error;
+            }
+        }
+        finally
+        {
+            _loading = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private static bool HasIdentification(CibPropertyRecord record)
+        => NotEmpty(record.DadosGeraisImovel?.InscricaoImobiliaria) || NotEmpty(record.Cib?.Situacao);
+
+    private static bool HasLocation(CibPropertyRecord record)
+        => NotEmpty(record.InfoIbge?.NomeMunicipio)
+           || NotEmpty(record.EnderecoImovel?.NomeLogradouro)
+           || NotEmpty(record.EnderecoImovel?.Bairro);
+
+    private static bool HasTerritorial(CibPropertyRecord record)
+        => record.DadosGeraisImovel?.AreaTerreno is not null
+           || record.DadosGeraisImovel?.TipoImovel is not null
+           || record.DadosGeraisImovel?.DestinacaoImovel is not null
+           || record.DadosGeraisImovel?.Bice is not null;
+
+    private static bool HasConstruction(CibPropertyRecord record)
+        => record.DadosGeraisImovel?.AreaConstruida is not null
+           || record.DadosGeraisImovel?.AnoConstrutivo is not null
+           || record.DadosGeraisImovel?.PadraoConstrutivo is not null
+           || record.DadosGeraisImovel?.TpArquitetonico is not null
+           || record.DadosGeraisImovel?.QtdGaragem is not null
+           || record.DadosGeraisImovel?.TemPiscina is not null
+           || record.AreaConstruidaCompl?.AreaPrivativa is not null
+           || record.AreaConstruidaCompl?.AreaComum is not null;
+
+    private static bool HasCadastral(CibPropertyRecord record)
+        => record.DadosGeraisImovel?.ValorVenal is not null
+           || record.ServicoRegistroImovel?.NomeServentiaRI is not null
+           || record.CartorioNotas?.NomeServentiaNotas is not null;
+
+    private static bool HasItbi(CibItbi itbi)
+        => itbi.BaseCalculITBI is not null
+           || itbi.ValorRefITBI is not null
+           || itbi.DtTransacaoITBI is not null;
+
+    private static bool NotEmpty(string? value) => string.IsNullOrWhiteSpace(value) is false;
+
+    private static string? Display(string? value) => NotEmpty(value) ? value : null;
+
+    private static string? AddressLine(CibEnderecoImovel? endereco)
+    {
+        if (endereco is null)
+        {
+            return null;
+        }
+
+        var parts = new List<string>();
+
+        if (endereco.TipoLogradouro is { } tipo)
+        {
+            parts.Add($"codigo {tipo}");
+        }
+
+        if (NotEmpty(endereco.NomeLogradouro))
+        {
+            parts.Add(endereco.NomeLogradouro!);
+        }
+
+        if (NotEmpty(endereco.NumeroImovel))
+        {
+            parts.Add($"n. {endereco.NumeroImovel}");
+        }
+
+        return parts.Count == 0 ? null : string.Join(", ", parts);
+    }
+
+    private static string? ComplementLine(CibEnderecoImovel? endereco)
+    {
+        if (endereco is null)
+        {
+            return null;
+        }
+
+        var parts = new[] { endereco.ComplNroImovel, endereco.ComplEndereco }
+            .Where(NotEmpty)
+            .ToArray();
+
+        return parts.Length == 0 ? null : string.Join(" | ", parts);
+    }
+
+    private static string? FormatArea(decimal? squareMeters)
+        => squareMeters is { } value ? $"{value.ToString("N2", PtBr)} m2" : null;
+
+    private static string? FormatMoney(decimal? value)
+        => value is { } amount ? $"R$ {amount.ToString("N2", PtBr)}" : null;
+
+    private static string? FormatDate(DateOnly? value)
+        => value?.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture);
+
+    private static string? FormatBoolean(bool? value)
+        => value switch
+        {
+            true => "Sim",
+            false => "Nao",
+            _ => null,
+        };
+}

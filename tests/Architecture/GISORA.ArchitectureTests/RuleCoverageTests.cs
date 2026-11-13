@@ -1,12 +1,12 @@
-using GISORA.BuildingBlocks.Domain;
-using GISORA.Geospatial.Domain;
+using GISORA.Domain.Common;
+using GISORA.Domain.Geospatial;
 
 namespace GISORA.ArchitectureTests;
 
 public class RuleCoverageTests
 {
     [Fact]
-    public void ArchitectureContainsAllSolutionAssemblies()
+    public void ArchitectureContainsCoreAssemblies()
     {
         var assemblies = ArchitectureModel.Architecture.Assemblies
             .Select(assembly => assembly.Name)
@@ -14,29 +14,9 @@ public class RuleCoverageTests
 
         string[] expected =
         [
-            "GISORA.BuildingBlocks.Domain",
-            "GISORA.BuildingBlocks.Application",
-            "GISORA.Geospatial.Domain",
-            "GISORA.Geospatial.Application",
-            "GISORA.Territory.Domain",
-            "GISORA.Territory.Application",
-            "GISORA.Properties.Domain",
-            "GISORA.Properties.Application",
-            "GISORA.Roads.Domain",
-            "GISORA.Roads.Application",
-            "GISORA.PublicFacilities.Domain",
-            "GISORA.PublicFacilities.Application",
-            "GISORA.Cemetery.Domain",
-            "GISORA.Cemetery.Application",
-            "GISORA.Rural.Domain",
-            "GISORA.Rural.Application",
-            "GISORA.UrbanPlanning.Domain",
-            "GISORA.UrbanPlanning.Application",
-            "GISORA.Integration.Application",
-            "GISORA.Infrastructure.LocalStorage",
-            "GISORA.Infrastructure.Geospatial",
-            "GISORA.Shared.DesignSystem",
-            "GISORA.Shared.Maps",
+            "GISORA.Domain",
+            "GISORA.Application",
+            "GISORA.Infrastructure",
             "GISORA.Web",
         ];
 
@@ -46,46 +26,40 @@ public class RuleCoverageTests
     [Fact]
     public void EveryLayerRuleHasTypesToCheck()
     {
-        Assert.True(HasTypesIn("GISORA.", ".Domain"));
-        Assert.True(HasTypesIn("GISORA.", ".Application"));
-        Assert.True(ArchitectureModel.TypesStartingWith("GISORA.Infrastructure.").Count > 0);
+        Assert.True(ArchitectureModel.TypesStartingWith("GISORA.Domain").Count > 0);
+        Assert.True(ArchitectureModel.TypesStartingWith("GISORA.Application").Count > 0);
+        Assert.True(ArchitectureModel.TypesStartingWith("GISORA.Infrastructure").Count > 0);
         Assert.True(ArchitectureModel.TypesStartingWith("GISORA.Web").Count > 0);
-        Assert.True(ArchitectureModel.TypesStartingWith("GISORA.Territory").Count > 0);
-        Assert.True(ArchitectureModel.TypesStartingWith("GISORA.Properties").Count > 0);
     }
 
     [Fact]
     public void RuleDetectsForbiddenDependency()
     {
         var violation = DependencyAssertions.FindViolation(
-            "GISORA.Properties.Domain.Example",
-            ["GISORA.Infrastructure.LocalStorage.ILocalStore", "System.String"],
+            "GISORA.Domain.Properties.Example",
+            ["GISORA.Infrastructure.Persistence.ILocalStore", "System.String"],
             ["GISORA.Infrastructure"]);
 
         Assert.NotNull(violation);
-        Assert.Contains("GISORA.Infrastructure.LocalStorage.ILocalStore", violation, StringComparison.Ordinal);
+        Assert.Contains("GISORA.Infrastructure.Persistence.ILocalStore", violation, StringComparison.Ordinal);
     }
 
     [Fact]
     public void RuleAcceptsAllowedDependency()
     {
         var violation = DependencyAssertions.FindViolation(
-            "GISORA.Properties.Domain.Example",
-            ["GISORA.Geospatial.Domain.Area", "GISORA.BuildingBlocks.Domain.Guard"],
+            "GISORA.Domain.Properties.Example",
+            ["GISORA.Domain.Geospatial.Area", "GISORA.Domain.Common.Guard"],
             ["GISORA.Infrastructure"]);
 
         Assert.Null(violation);
     }
 
     [Fact]
-    public void DomainPrimitivesRemainInBuildingBlocks()
+    public void DomainPrimitivesRemainInDomain()
     {
         Assert.NotNull(typeof(AggregateRoot<>));
         Assert.NotNull(typeof(ValueObject));
         Assert.NotNull(typeof(Geometry));
     }
-
-    private static bool HasTypesIn(string prefix, string namespaceSuffix)
-        => ArchitectureModel.TypesStartingWith(prefix)
-            .Any(type => type.Namespace!.FullName.EndsWith(namespaceSuffix, StringComparison.Ordinal));
 }

@@ -1,11 +1,8 @@
 using ArchUnitNET.Domain;
 using ArchUnitNET.Loader;
 
-using GISORA.BuildingBlocks.Application;
-using GISORA.BuildingBlocks.Domain;
-using GISORA.Infrastructure.LocalStorage;
-using GISORA.Properties.Domain;
-using GISORA.Territory.Domain;
+using GISORA.Application.Common;
+using GISORA.Domain.Common;
 
 namespace GISORA.ArchitectureTests;
 
@@ -15,27 +12,7 @@ internal static class ArchitectureModel
         .LoadAssemblies(
             typeof(Entity<>).Assembly,
             typeof(Result<>).Assembly,
-            typeof(Geospatial.Domain.Coordinate).Assembly,
-            typeof(Geospatial.Application.IGeometryValidator).Assembly,
-            typeof(Municipality).Assembly,
-            typeof(Territory.Application.UrbanBlockFilter).Assembly,
-            typeof(Property).Assembly,
-            typeof(Properties.Application.PropertyFilter).Assembly,
-            typeof(Roads.Domain.Street).Assembly,
-            typeof(Roads.Application.StreetFilter).Assembly,
-            typeof(PublicFacilities.Domain.PublicFacility).Assembly,
-            typeof(PublicFacilities.Application.FacilityFilter).Assembly,
-            typeof(Cemetery.Domain.Cemetery).Assembly,
-            typeof(Cemetery.Application.ICemeteryQueries).Assembly,
-            typeof(Rural.Domain.RuralProperty).Assembly,
-            typeof(Rural.Application.IRuralPropertyQueries).Assembly,
-            typeof(UrbanPlanning.Domain.Zone).Assembly,
-            typeof(UrbanPlanning.Application.IRegulationQueries).Assembly,
-            typeof(Integration.Application.ICibPropertyGateway).Assembly,
-            typeof(BrowserLocalStore).Assembly,
-            typeof(GISORA.Infrastructure.Geospatial.GeospatialInterop).Assembly,
-            typeof(Shared.DesignSystem.Components.StatCard).Assembly,
-            typeof(Shared.Maps.Components.MapView).Assembly,
+            typeof(Infrastructure.Persistence.BrowserLocalStore).Assembly,
             typeof(Web.App).Assembly)
         .Build();
 
