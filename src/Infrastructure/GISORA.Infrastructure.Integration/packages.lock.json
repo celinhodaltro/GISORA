@@ -207,6 +207,9 @@
           "Microsoft.AspNetCore.Components.Web": "[10.0.15, )"
         }
       },
+      "gisora.integration.application": {
+        "type": "Project"
+      },
       "gisora.properties.application": {
         "type": "Project",
         "dependencies": {

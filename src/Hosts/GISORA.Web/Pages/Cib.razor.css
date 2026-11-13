@@ -1,0 +1,195 @@
+.cib-mode {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin-bottom: var(--gisora-space-3, 0.75rem);
+}
+
+.cib-mode__badge {
+    align-self: flex-start;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.cib-mode__badge--demo {
+    background: #fdf1d6;
+    color: #8a5a00;
+    border: 1px solid #e8c479;
+}
+
+.cib-mode__badge--live {
+    background: #e3f0fb;
+    color: #1351b4;
+    border: 1px solid #a8c8ea;
+}
+
+.cib-mode__hint {
+    font-size: 0.75rem;
+    color: var(--gisora-muted, #5a6b7b);
+}
+
+.cib-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gisora-space-2, 0.5rem);
+}
+
+.cib-input {
+    font-family: var(--gisora-font-mono, monospace);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.cib-demo-codes {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+    margin: var(--gisora-space-2, 0.5rem) 0 0;
+    font-size: 0.72rem;
+    color: var(--gisora-muted, #5a6b7b);
+}
+
+.cib-demo-code {
+    padding: 0.1rem 0.4rem;
+    border: 1px solid var(--gisora-border, #dde4ec);
+    border-radius: 4px;
+    background: #ffffff;
+    color: var(--gisora-blue-700, #1351b4);
+    font-family: var(--gisora-font-mono, monospace);
+    font-size: 0.7rem;
+    cursor: pointer;
+}
+
+.cib-demo-code:hover {
+    background: var(--gisora-blue-50, #f3f7fd);
+}
+
+.cib-panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gisora-space-3, 0.75rem);
+    margin-top: var(--gisora-space-3, 0.75rem);
+}
+
+.cib-panel__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.7rem 0.85rem;
+    border-radius: var(--gisora-radius-md, 10px);
+    background: linear-gradient(120deg, #eef4fc, #f7faf7);
+    border: 1px solid var(--gisora-border, #dde4ec);
+}
+
+.cib-panel__eyebrow {
+    display: block;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gisora-muted, #5a6b7b);
+}
+
+.cib-panel__cib {
+    margin: 0.1rem 0 0;
+    font-family: var(--gisora-font-mono, monospace);
+    font-size: 1.25rem;
+    letter-spacing: 0.08em;
+    color: var(--gisora-ink, #12212f);
+}
+
+.cib-status {
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    background: #e8f5e9;
+    color: #1f6f4a;
+    font-size: 0.7rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.cib-panel__notice {
+    margin: 0;
+    padding: 0.5rem 0.65rem;
+    border-radius: var(--gisora-radius-sm, 6px);
+    background: #fdf1d6;
+    color: #7a4f00;
+    font-size: 0.75rem;
+}
+
+.cib-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.cib-section--selected {
+    margin-top: var(--gisora-space-3, 0.75rem);
+    padding: 0.6rem 0.7rem;
+    border: 1px solid var(--gisora-border, #dde4ec);
+    border-left: 3px solid #1d4ed8;
+    border-radius: var(--gisora-radius-sm, 6px);
+}
+
+.cib-section__title {
+    margin: 0;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--gisora-muted, #5a6b7b);
+}
+
+.cib-list {
+    display: grid;
+    grid-template-columns: minmax(7rem, 42%) minmax(0, 1fr);
+    gap: 0.3rem 0.6rem;
+    margin: 0;
+    font-size: 0.82rem;
+}
+
+.cib-list dt {
+    color: var(--gisora-muted, #5a6b7b);
+}
+
+.cib-list dd {
+    min-width: 0;
+    margin: 0;
+    color: var(--gisora-ink, #12212f);
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+}
+
+.cib-titulares {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.cib-titular {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    padding: 0.45rem 0.6rem;
+    border: 1px solid var(--gisora-border, #dde4ec);
+    border-radius: var(--gisora-radius-sm, 6px);
+    font-size: 0.8rem;
+}
+
+.cib-titular__name {
+    font-weight: 600;
+}
+
+.cib-titular__detail {
+    font-size: 0.72rem;
+    color: var(--gisora-muted, #5a6b7b);
+}

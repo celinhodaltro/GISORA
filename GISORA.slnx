@@ -21,6 +21,9 @@
     <Project Path="src/Modules/Geospatial/GISORA.Geospatial.Application/GISORA.Geospatial.Application.csproj" />
     <Project Path="src/Modules/Geospatial/GISORA.Geospatial.Domain/GISORA.Geospatial.Domain.csproj" />
   </Folder>
+  <Folder Name="/src/Modules/Integration/">
+    <Project Path="src/Modules/Integration/GISORA.Integration.Application/GISORA.Integration.Application.csproj" />
+  </Folder>
   <Folder Name="/src/Modules/Properties/">
     <Project Path="src/Modules/Properties/GISORA.Properties.Application/GISORA.Properties.Application.csproj" />
     <Project Path="src/Modules/Properties/GISORA.Properties.Domain/GISORA.Properties.Domain.csproj" />
@@ -62,6 +65,7 @@
     <Project Path="tests/Unit/GISORA.Geospatial.UnitTests/GISORA.Geospatial.UnitTests.csproj" />
     <Project Path="tests/Unit/GISORA.Infrastructure.Geospatial.UnitTests/GISORA.Infrastructure.Geospatial.UnitTests.csproj" />
     <Project Path="tests/Unit/GISORA.Infrastructure.LocalStorage.UnitTests/GISORA.Infrastructure.LocalStorage.UnitTests.csproj" />
+    <Project Path="tests/Unit/GISORA.Integration.UnitTests/GISORA.Integration.UnitTests.csproj" />
     <Project Path="tests/Unit/GISORA.Properties.UnitTests/GISORA.Properties.UnitTests.csproj" />
     <Project Path="tests/Unit/GISORA.PublicFacilities.UnitTests/GISORA.PublicFacilities.UnitTests.csproj" />
     <Project Path="tests/Unit/GISORA.Roads.UnitTests/GISORA.Roads.UnitTests.csproj" />
