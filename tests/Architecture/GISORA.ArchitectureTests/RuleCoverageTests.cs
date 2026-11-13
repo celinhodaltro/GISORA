@@ -28,6 +28,8 @@ public class RuleCoverageTests
             "GISORA.PublicFacilities.Application",
             "GISORA.Cemetery.Domain",
             "GISORA.Cemetery.Application",
+            "GISORA.Rural.Domain",
+            "GISORA.Rural.Application",
             "GISORA.Infrastructure.LocalStorage",
             "GISORA.Infrastructure.Geospatial",
             "GISORA.Shared.DesignSystem",

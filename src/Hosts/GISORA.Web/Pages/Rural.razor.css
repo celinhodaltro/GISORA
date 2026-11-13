@@ -1,0 +1,19 @@
+.rural-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gisora-space-2, 0.5rem);
+}
+
+.rural-textarea {
+    min-height: 7rem;
+    resize: vertical;
+    font-family: var(--gisora-font-mono, monospace);
+    font-size: 0.75rem;
+}
+
+.rural-area {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--gisora-ink-soft, #3b4b5a);
+    font-variant-numeric: tabular-nums;
+}

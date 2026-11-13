@@ -14,5 +14,7 @@ public static class StorageNamespaces
 
     public const string Cemetery = "cemetery";
 
+    public const string Rural = "rural";
+
     public const string Meta = "meta";
 }
