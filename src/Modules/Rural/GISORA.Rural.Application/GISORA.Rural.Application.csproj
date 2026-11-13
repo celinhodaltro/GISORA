@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>GISORA.Rural.Application</RootNamespace>
+    <Description>Casos de uso de propriedades rurais, CAR, SIGEF e APP.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GISORA.Rural.Domain\GISORA.Rural.Domain.csproj" />
+    <ProjectReference Include="..\..\Geospatial\GISORA.Geospatial.Domain\GISORA.Geospatial.Domain.csproj" />
+    <ProjectReference Include="..\..\Geospatial\GISORA.Geospatial.Application\GISORA.Geospatial.Application.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\GISORA.BuildingBlocks.Application\GISORA.BuildingBlocks.Application.csproj" />
+  </ItemGroup>
+
+</Project>

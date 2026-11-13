@@ -33,6 +33,10 @@
     <Project Path="src/Modules/Roads/GISORA.Roads.Application/GISORA.Roads.Application.csproj" />
     <Project Path="src/Modules/Roads/GISORA.Roads.Domain/GISORA.Roads.Domain.csproj" />
   </Folder>
+  <Folder Name="/src/Modules/Rural/">
+    <Project Path="src/Modules/Rural/GISORA.Rural.Application/GISORA.Rural.Application.csproj" />
+    <Project Path="src/Modules/Rural/GISORA.Rural.Domain/GISORA.Rural.Domain.csproj" />
+  </Folder>
   <Folder Name="/src/Modules/Territory/">
     <Project Path="src/Modules/Territory/GISORA.Territory.Application/GISORA.Territory.Application.csproj" />
     <Project Path="src/Modules/Territory/GISORA.Territory.Domain/GISORA.Territory.Domain.csproj" />
@@ -57,6 +61,7 @@
     <Project Path="tests/Unit/GISORA.Properties.UnitTests/GISORA.Properties.UnitTests.csproj" />
     <Project Path="tests/Unit/GISORA.PublicFacilities.UnitTests/GISORA.PublicFacilities.UnitTests.csproj" />
     <Project Path="tests/Unit/GISORA.Roads.UnitTests/GISORA.Roads.UnitTests.csproj" />
+    <Project Path="tests/Unit/GISORA.Rural.UnitTests/GISORA.Rural.UnitTests.csproj" />
     <Project Path="tests/Unit/GISORA.Territory.UnitTests/GISORA.Territory.UnitTests.csproj" />
   </Folder>
 </Solution>
