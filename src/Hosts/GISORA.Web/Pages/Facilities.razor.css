@@ -33,7 +33,10 @@
 }
 
 .facilities-map {
-    height: 24rem;
+    display: flex;
+    flex-direction: column;
+    gap: var(--gisora-space-3, 0.75rem);
+    min-width: 0;
 }
 
 .facilities__coordinate {

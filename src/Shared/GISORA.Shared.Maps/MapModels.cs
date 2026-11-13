@@ -8,7 +8,10 @@ public sealed record MapLayer(
     string GeoJson,
     bool Visible = true,
     string? Group = null,
-    string? Color = null);
+    string? Color = null,
+    IReadOnlyList<MapLegendItem>? Legend = null);
+
+public sealed record MapLegendItem(string Label, string Color, string? Icon = null);
 
 public sealed record MapFeature(
     [property: JsonPropertyName("id")] string Id,

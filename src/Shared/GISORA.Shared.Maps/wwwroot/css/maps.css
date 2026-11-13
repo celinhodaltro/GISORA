@@ -213,3 +213,38 @@
     background: transparent;
     border: none;
 }
+
+.gisora-map-pin {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: var(--pin-color, #1351b4);
+    border: 2px solid #ffffff;
+    box-shadow: 0 1px 4px rgba(18, 33, 47, 0.4);
+    color: #ffffff;
+}
+
+.gisora-map-pin .rzi {
+    font-size: 0.9rem;
+    line-height: 1;
+    --rz-icon-size: 0.9rem;
+}
+
+.gisora-map-legend__swatch--icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.15rem;
+    height: 1.15rem;
+    border-radius: 50%;
+    color: #ffffff;
+}
+
+.gisora-map-legend__swatch--icon .rzi {
+    --rz-icon-size: 0.7rem;
+    font-size: 0.7rem;
+    line-height: 1;
+}
