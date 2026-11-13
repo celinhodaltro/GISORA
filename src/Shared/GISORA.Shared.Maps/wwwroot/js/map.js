@@ -8,13 +8,21 @@ L.Icon.Default.mergeOptions({
 
 const instances = new Map();
 
-function createPin(color) {
+function sanitizeToken(value) {
+  return String(value ?? '').replace(/[^a-z0-9_-]/gi, '').toLowerCase();
+}
+
+function createPin(color, icon) {
+  const glyph = sanitizeToken(icon);
+  const glyphHtml = glyph.length > 0 ? `<i class="rzi" aria-hidden="true">${glyph}</i>` : '';
+  const typeClass = glyph.length > 0 ? ` gisora-map-pin--${glyph}` : '';
+
   return L.divIcon({
-    className: 'gisora-map-pin-wrapper',
-    html: `<span class="gisora-map-pin" style="--pin-color:${color}"></span>`,
-    iconSize: [24, 24],
-    iconAnchor: [12, 12],
-    popupAnchor: [0, -12],
+    className: `gisora-map-pin-wrapper${typeClass}`,
+    html: `<span class="gisora-map-pin" style="--pin-color:${color}">${glyphHtml}</span>`,
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+    popupAnchor: [0, -14],
   });
 }
 
@@ -73,7 +81,17 @@ export function setLayer(elementId, layerId, geoJson, color) {
 
   const group = L.geoJSON(JSON.parse(geoJson), {
     style: { color: stroke, weight: 2, fillColor: stroke, fillOpacity: 0.18 },
-    pointToLayer: (feature, latlng) => L.marker(latlng, { icon: createPin(stroke) }),
+    pointToLayer: (feature, latlng) => {
+      const properties = feature.properties ?? {};
+      const pinColor = properties.cor ? String(properties.cor) : stroke;
+      const icon = properties.icone ? String(properties.icone) : null;
+
+      return L.marker(latlng, {
+        icon: createPin(pinColor, icon),
+        title: properties.nome ? String(properties.nome) : '',
+        alt: properties.nome ? String(properties.nome) : '',
+      });
+    },
     onEachFeature: (feature, layer) => {
       layer.on('click', () => {
         instance.dotNetRef.invokeMethodAsync('HandleFeatureSelected', {

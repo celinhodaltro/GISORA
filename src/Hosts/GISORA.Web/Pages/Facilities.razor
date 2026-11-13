@@ -28,9 +28,9 @@
             <label class="facilities-form__field">
                 <span>Tipo</span>
                 <select class="facilities-form__select" @bind="_type">
-                    @foreach (var option in TypeOptions)
+                    @foreach (var option in FacilitySymbology.All)
                     {
-                        <option value="@option.Value">@option.Label</option>
+                        <option value="@option.Type">@option.Label</option>
                     }
                 </select>
             </label>
@@ -78,6 +78,8 @@
             <CoordinateControl />
             <DrawingTool @ref="_tool" OnPointPicked="SetPoint" />
         </MapView>
+
+        <MapLegend Layers="_layers" />
     </div>
 </div>
 
@@ -100,21 +102,9 @@
 </RadzenCard>
 
 @code {
-    private sealed record TypeOption(FacilityType Value, string Label);
-
-    private static readonly TypeOption[] TypeOptions =
-    [
-        new(FacilityType.School, "Escola"),
-        new(FacilityType.HealthCenter, "Unidade de saude"),
-        new(FacilityType.Hospital, "Hospital"),
-        new(FacilityType.Square, "Praca"),
-        new(FacilityType.Park, "Parque"),
-        new(FacilityType.PublicBuilding, "Predio publico"),
-        new(FacilityType.Other, "Outro"),
-    ];
-
     private MapView? _map;
     private DrawingTool? _tool;
+    private readonly List<MapLayer> _layers = [];
     private IReadOnlyList<FacilityListItem> _items = [];
     private IReadOnlyList<NeighborhoodListItem> _neighborhoods = [];
     private FacilityType _type = FacilityType.School;
@@ -206,11 +196,22 @@
         }
 
         var geoJson = FacilityMapProjector.ToFeatureCollection(mapItems, Serializer);
+        var layer = new MapLayer(
+            "facilities",
+            "Equipamentos",
+            geoJson,
+            Color: "#1351b4",
+            Legend: FacilityMapProjector.ToLegend(mapItems));
 
-        await _map.SetLayerAsync(new MapLayer("facilities", "Equipamentos", geoJson, Color: "#1351b4"));
+        _layers.Clear();
+        _layers.Add(layer);
+
+        await _map.SetLayerAsync(layer);
         await _map.FitBoundsAsync();
+
+        await InvokeAsync(StateHasChanged);
     }
 
     private static string TypeLabel(FacilityType type)
-        => TypeOptions.First(option => option.Value == type).Label;
+        => FacilitySymbology.For(type).Label;
 }

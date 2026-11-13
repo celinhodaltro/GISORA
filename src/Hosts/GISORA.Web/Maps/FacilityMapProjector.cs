@@ -13,16 +13,23 @@ public static class FacilityMapProjector
     {
         var features = items
             .OrderBy(item => item.Name, StringComparer.Ordinal)
-            .Select(item => (JsonNode)new JsonObject
+            .Select(item =>
             {
-                ["type"] = "Feature",
-                ["id"] = item.Id.Value.ToString(),
-                ["properties"] = new JsonObject
+                var symbol = FacilitySymbology.For(item.Type);
+
+                return (JsonNode)new JsonObject
                 {
-                    ["nome"] = item.Name,
-                    ["tipo"] = item.Type.ToString(),
-                },
-                ["geometry"] = JsonNode.Parse(serializer.Serialize(item.Location)),
+                    ["type"] = "Feature",
+                    ["id"] = item.Id.Value.ToString(),
+                    ["properties"] = new JsonObject
+                    {
+                        ["nome"] = item.Name,
+                        ["tipo"] = symbol.Label,
+                        ["icone"] = symbol.Icon,
+                        ["cor"] = symbol.Color,
+                    },
+                    ["geometry"] = JsonNode.Parse(serializer.Serialize(item.Location)),
+                };
             })
             .ToArray();
 
@@ -31,6 +38,18 @@ public static class FacilityMapProjector
             ["type"] = "FeatureCollection",
             ["features"] = new JsonArray(features),
         }.ToJsonString();
+    }
+
+    public static IReadOnlyList<MapLegendItem> ToLegend(IReadOnlyList<FacilityMapItem> items)
+    {
+        var symbols = items
+            .Select(item => FacilitySymbology.For(item.Type))
+            .DistinctBy(symbol => symbol.Type)
+            .OrderBy(symbol => symbol.Type)
+            .Select(symbol => new MapLegendItem(symbol.Label, symbol.Color, symbol.Icon))
+            .ToArray();
+
+        return symbols;
     }
 
     public static string ToCoordinateText(MapCoordinate coordinate)
