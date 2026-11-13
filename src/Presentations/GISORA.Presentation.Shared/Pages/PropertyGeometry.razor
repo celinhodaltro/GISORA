@@ -1,0 +1,220 @@
+@page "/properties/{PropertyId:guid}/geometry"
+@using GISORA.Application.Geospatial
+@using GISORA.Domain.Geospatial
+@using GISORA.Application.Properties
+@using GISORA.Application.Properties.Commands
+@using GISORA.Domain.Properties
+@using GISORA.Presentation.Shared.Maps
+@using GISORA.Presentation.Shared.Maps.Components
+@inject IPropertyQueries Queries
+@inject IGeoJsonSerializer Serializer
+@inject IGeometryValidator Validator
+@inject ISpatialOperations Spatial
+@inject UpdatePropertyGeometryHandler UpdateGeometry
+
+<PageHeader Title="Geometria do imovel" Description="Desenhe ou edite o poligono do lote." Icon="draw" />
+
+@if (_loading)
+{
+    <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+}
+else if (_view is null)
+{
+    <EmptyState Title="Imovel nao encontrado" Description="Volte para a listagem e selecione um imovel valido." />
+}
+else
+{
+    <p class="geometry-page__registration">Inscricao: <strong>@_view.Registration</strong></p>
+
+    <p class="geometry-page__hint">Use <strong>Desenhar</strong> e clique no mapa para adicionar vertices; <strong>Concluir desenho</strong> fecha o poligono.</p>
+
+    <div class="geometry-page">
+        <MapView @ref="_map" CenterLatitude="-7.95" CenterLongitude="-35.25" Zoom="16" Height="clamp(22rem, calc(100vh - 26rem), 34rem)">
+            <MapToolbar />
+            <CoordinateControl />
+            <DrawingTool @ref="_tool" OnCompleted="ApplyGeometryAsync" OnEdited="ApplyGeometryAsync" />
+        </MapView>
+    </div>
+
+    <div class="gisora-toolbar geometry-page__actions">
+        <RadzenButton Text="Desenhar" Variant="Variant.Outlined" Click="DrawAsync" />
+        <RadzenButton Text="Concluir desenho" Variant="Variant.Outlined" Click="FinishAsync" />
+        <RadzenButton Text="Editar geometria" Variant="Variant.Outlined" Disabled="@(_geometry is null && _view?.Geometry is null)" Click="EditAsync" />
+        <RadzenButton Text="Salvar geometria" ButtonStyle="ButtonStyle.Primary" Disabled="@(_geometry is null)" Click="SaveAsync" />
+        <RadzenButton Text="Cancelar" Variant="Variant.Outlined" Click="CancelAsync" />
+    </div>
+
+    @if (_areaSquareMeters is { } area)
+    {
+        <p class="geometry-page__area">Area calculada: @area.ToString("N2", System.Globalization.CultureInfo.InvariantCulture) m2</p>
+    }
+
+    @if (_error is not null)
+    {
+        <p class="geometry-page__error" role="alert">@_error</p>
+    }
+
+    @if (_message is not null)
+    {
+        <p class="geometry-page__message" role="status">@_message</p>
+    }
+}
+
+@code {
+    private MapView? _map;
+    private DrawingTool? _tool;
+    private PropertyGeometryView? _view;
+    private Geometry? _geometry;
+    private decimal? _areaSquareMeters;
+    private bool _loading = true;
+    private bool _layerApplied;
+    private string? _error;
+    private string? _message;
+
+    [Parameter]
+    public Guid PropertyId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _view = await Queries.GetGeometryAsync(new PropertyId(PropertyId));
+        _loading = false;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_loading || _layerApplied || _map is null)
+        {
+            return;
+        }
+
+        _layerApplied = true;
+
+        if (_view?.Geometry is null)
+        {
+            return;
+        }
+
+        await ShowGeometryAsync(_view.Geometry);
+    }
+
+    private async Task DrawAsync()
+    {
+        _error = null;
+        _message = null;
+
+        await _tool!.StartDrawingAsync();
+    }
+
+    private async Task EditAsync()
+    {
+        var geometry = _geometry ?? _view?.Geometry;
+
+        if (geometry is null)
+        {
+            _error = "Nao ha geometria para editar.";
+
+            return;
+        }
+
+        _error = null;
+        _message = null;
+        await _tool!.StartEditingAsync(Serializer.Serialize(geometry));
+    }
+
+    private async Task FinishAsync()
+    {
+        var completed = await _tool!.FinishDrawingAsync();
+
+        if (completed is false)
+        {
+            _error = "Informe ao menos tres pontos para fechar o poligono.";
+        }
+    }
+
+    private async Task ApplyGeometryAsync(string geoJson)
+    {
+        Geometry geometry;
+
+        try
+        {
+            geometry = Serializer.Deserialize(geoJson, SpatialReference.Wgs84);
+        }
+        catch (Exception)
+        {
+            _error = "Geometria invalida.";
+
+            return;
+        }
+
+        var validation = await Validator.ValidateAsync(geometry);
+
+        if (validation.IsValid is false)
+        {
+            _geometry = null;
+            _areaSquareMeters = null;
+            _error = string.Join(" ", validation.Errors);
+
+            return;
+        }
+
+        _geometry = geometry;
+        _error = null;
+        _message = null;
+        _areaSquareMeters = (await Spatial.AreaAsync(geometry)).SquareMeters;
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_geometry is not Polygon polygon)
+        {
+            _error = "Desenhe um poligono antes de salvar.";
+
+            return;
+        }
+
+        var result = await UpdateGeometry.HandleAsync(
+            new UpdatePropertyGeometryCommand(new PropertyId(PropertyId), polygon, null));
+
+        if (result.IsFailure)
+        {
+            _error = result.Error.Message;
+
+            return;
+        }
+
+        _error = null;
+        _message = "Geometria atualizada.";
+        await ShowGeometryAsync(polygon);
+    }
+
+    private async Task CancelAsync()
+    {
+        await _tool!.CancelAsync();
+        _error = null;
+        _message = null;
+    }
+
+    private async Task ShowGeometryAsync(Geometry geometry)
+    {
+        if (_map is null)
+        {
+            return;
+        }
+
+        var geoJson = Serializer.Serialize(geometry);
+        var feature = $$"""
+            {
+              "type": "FeatureCollection",
+              "features": [{
+                "type": "Feature",
+                "id": "{{PropertyId}}",
+                "properties": { "inscricao": "{{_view?.Registration}}" },
+                "geometry": {{geoJson}}
+              }]
+            }
+            """;
+
+        await _map.SetLayerAsync(new MapLayer("property-geometry", "Geometria", feature, Color: "#1f7a5c"));
+        await _map.FitBoundsAsync();
+    }
+}

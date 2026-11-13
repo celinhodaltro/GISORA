@@ -1,0 +1,380 @@
+@page "/territory"
+@using GISORA.Application.Territory
+@using GISORA.Application.Territory.Commands
+@using GISORA.Domain.Territory
+@using GISORA.Presentation.Shared.Layout
+@inject ITerritoryQueries Queries
+@inject IMunicipalityCatalog Catalog
+@inject CreateMunicipalityHandler CreateMunicipality
+@inject CreateDistrictHandler CreateDistrict
+@inject CreateNeighborhoodHandler CreateNeighborhood
+@inject CreateFiscalSectorHandler CreateFiscalSector
+@inject MunicipalityState Municipality
+
+<PageHeader Title="Territorio" Description="Municipio, distritos, bairros e setores fiscais." Icon="account_tree" />
+
+@if (_error is not null)
+{
+    <p class="territory__error" role="alert">@_error</p>
+}
+
+<div class="territory-grid">
+    <RadzenCard>
+        <h2 class="territory-grid__title">Municipio</h2>
+
+        <div class="territory-form">
+            <label class="territory-field territory-field--uf">
+                <span>UF</span>
+                <select class="territory-select" value="@_uf" @onchange="OnStateChanged">
+                    @foreach (var state in _states)
+                    {
+                        <option value="@state.Abbreviation">@state.Abbreviation - @state.Name</option>
+                    }
+                </select>
+            </label>
+
+            <div class="territory-field territory-field--search">
+                <span>Municipio</span>
+                <input class="territory-input"
+                       placeholder="Digite o nome do municipio"
+                       value="@_query"
+                       @oninput="OnQueryInput" />
+
+                @if (_suggestions.Count > 0)
+                {
+                    <ul class="territory-suggestions" role="listbox" aria-label="Sugestoes de municipio">
+                        @foreach (var option in _suggestions)
+                        {
+                            <li>
+                                <button type="button" role="option" @onclick="() => SelectMunicipality(option)">
+                                    <span>@option.Name</span>
+                                    <small>@option.Code</small>
+                                </button>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+
+            <label class="territory-field territory-field--code">
+                <span>Codigo IBGE</span>
+                <input class="territory-input" readonly value="@(_selected?.Code)" />
+            </label>
+
+            <RadzenButton Icon="add"
+                          aria-label="Adicionar municipio"
+                          title="Adicionar municipio"
+                          ButtonStyle="ButtonStyle.Primary"
+                          Disabled="@(_selected is null || _catalogLoading)"
+                          Click="CreateMunicipalityAsync" />
+        </div>
+
+        @if (_catalogLoading)
+        {
+            <p class="territory__hint">Carregando municipios do IBGE...</p>
+        }
+
+        @if (_catalogError is not null)
+        {
+            <p class="territory__error" role="alert">@_catalogError</p>
+        }
+
+        <RadzenDataGrid Data="@_municipalities" TItem="MunicipalityListItem" Density="Density.Compact" AllowPaging="false">
+            <Columns>
+                <RadzenDataGridColumn TItem="MunicipalityListItem" Property="Name" Title="Nome" />
+                <RadzenDataGridColumn TItem="MunicipalityListItem" Property="IbgeCode" Title="IBGE" Width="120px" />
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenCard>
+
+    <RadzenCard>
+        <h2 class="territory-grid__title">Distrito</h2>
+
+        <div class="territory-form">
+            <label class="territory-field territory-field--parent">
+                <span>Municipio</span>
+                <select class="territory-select" @bind="_municipalityId" @bind:after="ReloadAsync" aria-label="Municipio">
+                    @foreach (var municipality in _municipalities)
+                    {
+                        <option value="@municipality.Id.Value">@municipality.Name</option>
+                    }
+                </select>
+            </label>
+
+            <label class="territory-field territory-field--search" for="district-name">
+                <span>Nome do distrito</span>
+                <input id="district-name" class="territory-input" placeholder="Nome do distrito" @bind="_districtName" />
+            </label>
+
+            <RadzenButton Icon="add" aria-label="Adicionar distrito" title="Adicionar distrito" ButtonStyle="ButtonStyle.Primary" Click="CreateDistrictAsync" />
+        </div>
+
+        <RadzenDataGrid Data="@_districts" TItem="DistrictListItem" Density="Density.Compact" AllowPaging="false">
+            <Columns>
+                <RadzenDataGridColumn TItem="DistrictListItem" Property="Name" Title="Nome" />
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenCard>
+
+    <RadzenCard>
+        <h2 class="territory-grid__title">Bairro</h2>
+
+        <div class="territory-form">
+            <label class="territory-field territory-field--parent">
+                <span>Distrito</span>
+                <select class="territory-select" @bind="_districtId" @bind:after="ReloadNeighborhoodsAsync" aria-label="Distrito">
+                    @foreach (var district in _districts)
+                    {
+                        <option value="@district.Id.Value">@district.Name</option>
+                    }
+                </select>
+            </label>
+
+            <label class="territory-field territory-field--search" for="neighborhood-name">
+                <span>Nome do bairro</span>
+                <input id="neighborhood-name" class="territory-input" placeholder="Nome do bairro" @bind="_neighborhoodName" />
+            </label>
+
+            <RadzenButton Icon="add" aria-label="Adicionar bairro" title="Adicionar bairro" ButtonStyle="ButtonStyle.Primary" Click="CreateNeighborhoodAsync" />
+        </div>
+
+        <RadzenDataGrid Data="@_neighborhoods" TItem="NeighborhoodListItem" Density="Density.Compact" AllowPaging="false">
+            <Columns>
+                <RadzenDataGridColumn TItem="NeighborhoodListItem" Property="Name" Title="Nome" />
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenCard>
+
+    <RadzenCard>
+        <h2 class="territory-grid__title">Setor fiscal</h2>
+
+        <div class="territory-form">
+            <label class="territory-field territory-field--parent">
+                <span>Distrito</span>
+                <select class="territory-select" @bind="_sectorDistrictId" @bind:after="ReloadSectorsAsync" aria-label="Distrito do setor">
+                    @foreach (var district in _districts)
+                    {
+                        <option value="@district.Id.Value">@district.Name</option>
+                    }
+                </select>
+            </label>
+
+            <label class="territory-field territory-field--search" for="sector-code">
+                <span>Codigo do setor</span>
+                <input id="sector-code" class="territory-input" placeholder="Codigo do setor" @bind="_sectorCode" />
+            </label>
+
+            <RadzenButton Icon="add" aria-label="Adicionar setor" title="Adicionar setor" ButtonStyle="ButtonStyle.Primary" Click="CreateSectorAsync" />
+        </div>
+
+        <RadzenDataGrid Data="@_sectors" TItem="FiscalSectorListItem" Density="Density.Compact" AllowPaging="false">
+            <Columns>
+                <RadzenDataGridColumn TItem="FiscalSectorListItem" Property="Code" Title="Codigo" />
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenCard>
+</div>
+
+@code {
+    private IReadOnlyList<MunicipalityListItem> _municipalities = [];
+    private IReadOnlyList<DistrictListItem> _districts = [];
+    private IReadOnlyList<NeighborhoodListItem> _neighborhoods = [];
+    private IReadOnlyList<FiscalSectorListItem> _sectors = [];
+    private IReadOnlyList<StateOption> _states = [];
+    private IReadOnlyList<MunicipalityOption> _catalogMunicipalities = [];
+
+    private Guid? _municipalityId;
+    private Guid? _districtId;
+    private Guid? _sectorDistrictId;
+
+    private string _uf = "PE";
+    private string? _query;
+    private string? _districtName;
+    private string? _neighborhoodName;
+    private string? _sectorCode;
+    private string? _error;
+    private string? _catalogError;
+    private bool _catalogLoading;
+    private MunicipalityOption? _selected;
+
+    private IReadOnlyList<MunicipalityOption> _suggestions = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _states = await Catalog.GetStatesAsync();
+        await LoadCatalogAsync();
+        await ReloadAsync();
+    }
+
+    private async Task LoadCatalogAsync()
+    {
+        _catalogLoading = true;
+        _catalogError = null;
+        _suggestions = [];
+        _selected = null;
+
+        try
+        {
+            _catalogMunicipalities = await Catalog.GetMunicipalitiesAsync(_uf);
+        }
+        catch (MunicipalityCatalogException exception)
+        {
+            _catalogMunicipalities = [];
+            _catalogError = exception.Message;
+        }
+        finally
+        {
+            _catalogLoading = false;
+        }
+    }
+
+    private async Task OnStateChanged(ChangeEventArgs args)
+    {
+        if (args.Value is string state && state.Length == 2)
+        {
+            _uf = state;
+            _query = null;
+            await LoadCatalogAsync();
+        }
+    }
+
+    private void OnQueryInput(ChangeEventArgs args)
+    {
+        _query = args.Value?.ToString();
+        _selected = null;
+        _suggestions = MunicipalitySearch.Filter(_catalogMunicipalities, _query);
+    }
+
+    private void SelectMunicipality(MunicipalityOption option)
+    {
+        _selected = option;
+        _query = option.Name;
+        _suggestions = [];
+    }
+
+    private async Task ReloadAsync()
+    {
+        _municipalities = await Queries.ListMunicipalitiesAsync();
+        await ReloadDistrictsAsync();
+        await ReloadNeighborhoodsAsync();
+        await ReloadSectorsAsync();
+    }
+
+    private async Task ReloadDistrictsAsync()
+    {
+        if (_municipalityId is null && _municipalities.Count > 0)
+        {
+            _municipalityId = _municipalities[0].Id.Value;
+        }
+
+        _districts = await Queries.ListDistrictsAsync(
+            _municipalityId is { } municipalityId ? new MunicipalityId(municipalityId) : null);
+
+        if (_districtId is null && _districts.Count > 0)
+        {
+            _districtId = _districts[0].Id.Value;
+            _sectorDistrictId = _districtId;
+        }
+    }
+
+    private async Task ReloadNeighborhoodsAsync()
+        => _neighborhoods = await Queries.ListNeighborhoodsAsync(
+            _districtId is { } districtId ? new DistrictId(districtId) : null);
+
+    private async Task ReloadSectorsAsync()
+        => _sectors = await Queries.ListFiscalSectorsAsync(
+            _sectorDistrictId is { } districtId ? new DistrictId(districtId) : null);
+
+    private async Task CreateMunicipalityAsync()
+    {
+        if (_selected is null)
+        {
+            _error = "Selecione um municipio na lista do IBGE.";
+
+            return;
+        }
+
+        var result = await CreateMunicipality.HandleAsync(
+            new CreateMunicipalityCommand(_selected.Name, _selected.Code.ToString()));
+
+        if (result.IsFailure)
+        {
+            _error = result.Error.Message;
+
+            return;
+        }
+
+        _error = null;
+        _query = null;
+        _selected = null;
+        _suggestions = [];
+        _municipalityId = null;
+        _districtId = null;
+        _sectorDistrictId = null;
+
+        await ReloadAsync();
+        await Municipality.RefreshAsync();
+    }
+
+    private async Task CreateDistrictAsync()
+    {
+        if (_municipalityId is not { } municipalityId)
+        {
+            _error = "Cadastre um municipio antes de criar distritos.";
+
+            return;
+        }
+
+        var result = await CreateDistrict.HandleAsync(
+            new CreateDistrictCommand(new MunicipalityId(municipalityId), _districtName ?? string.Empty));
+
+        await HandleAsync(result.IsFailure ? result.Error.Message : null, () =>
+        {
+            _districtName = null;
+            _districtId = null;
+        });
+    }
+
+    private async Task CreateNeighborhoodAsync()
+    {
+        if (_districtId is not { } districtId)
+        {
+            _error = "Cadastre um distrito antes de criar bairros.";
+
+            return;
+        }
+
+        var result = await CreateNeighborhood.HandleAsync(
+            new CreateNeighborhoodCommand(new DistrictId(districtId), _neighborhoodName ?? string.Empty));
+
+        await HandleAsync(result.IsFailure ? result.Error.Message : null, () => _neighborhoodName = null);
+    }
+
+    private async Task CreateSectorAsync()
+    {
+        if (_sectorDistrictId is not { } districtId)
+        {
+            _error = "Cadastre um distrito antes de criar setores fiscais.";
+
+            return;
+        }
+
+        var result = await CreateFiscalSector.HandleAsync(
+            new CreateFiscalSectorCommand(new DistrictId(districtId), _sectorCode ?? string.Empty));
+
+        await HandleAsync(result.IsFailure ? result.Error.Message : null, () => _sectorCode = null);
+    }
+
+    private async Task HandleAsync(string? error, Action onSuccess)
+    {
+        _error = error;
+
+        if (error is not null)
+        {
+            return;
+        }
+
+        onSuccess();
+        await ReloadAsync();
+    }
+}

@@ -9,10 +9,15 @@ namespace GISORA.Infrastructure.Integrations;
 public static class CibIntegrationRegistration
 {
     public static IServiceCollection AddCibIntegration(this IServiceCollection services, IConfiguration configuration)
-    {
-        var mode = configuration["Cib:Mode"] ?? "Demo";
-        var proxyBaseUrl = configuration["Cib:ProxyBaseUrl"];
+        => services.AddCibIntegration(
+            configuration["Cib:Mode"] ?? "Demo",
+            configuration["Cib:ProxyBaseUrl"]);
 
+    public static IServiceCollection AddCibIntegration(
+        this IServiceCollection services,
+        string mode,
+        string? proxyBaseUrl = null)
+    {
         if (string.Equals(mode, "Production", StringComparison.OrdinalIgnoreCase))
         {
             if (Uri.TryCreate(proxyBaseUrl, UriKind.Absolute, out var baseAddress))

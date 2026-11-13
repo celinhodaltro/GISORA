@@ -44,7 +44,7 @@ jobs:
             nuget-${{ runner.os }}-
 
       - name: Publish
-        run: dotnet publish src/GISORA.Web -c Release -o build/web
+        run: dotnet publish src/Presentations/GISORA.Presentation -c Release -o build/web
 
       - name: Set base href
         run: sed -i 's#<base href="/" />#<base href="/GISORA/" />#' build/web/wwwroot/index.html

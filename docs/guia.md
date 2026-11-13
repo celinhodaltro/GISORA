@@ -7,7 +7,7 @@ Aplicacao web Blazor WebAssembly, local-first, para cadastro territorial. Roda s
 ## Como abrir
 
 - Publicado em https://celinhodaltro.github.io/GISORA/
-- Local: `dotnet run --project src/GISORA.Web`
+- Local: `dotnet run --project src/Presentations/GISORA.Presentation`
 
 ## Roteiro de demonstracao (3 minutos)
 
@@ -57,3 +57,15 @@ dotnet test tests/Architecture -c Release
 pwsh tests/E2E/GISORA.Web.E2ETests/bin/Release/net10.0/playwright.ps1 install chromium
 dotnet test tests/E2E/GISORA.Web.E2ETests -c Release
 ```
+
+## Host MAUI (Hybrid)
+
+O host `GISORA.Presentation.Hybrid` compartilha paginas, layout e componentes com o host Web.
+
+```bash
+dotnet workload install maui-android maui-windows
+dotnet build src/Presentations/GISORA.Presentation.Hybrid/GISORA.Presentation.Hybrid.csproj -f net10.0-windows10.0.19041.0
+dotnet build src/Presentations/GISORA.Presentation.Hybrid/GISORA.Presentation.Hybrid.csproj -f net10.0-android
+```
+
+A solucao `GISORA.Hybrid.slnx` inclui o host MAUI. Ela nao entra no CI principal porque exige workloads Android/iOS e, para iOS/macOS, um host macOS.

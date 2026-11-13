@@ -1,0 +1,46 @@
+@namespace GISORA.Presentation.Shared.Layout
+
+<header class="app-header">
+    <button type="button"
+            class="app-header__toggle"
+            aria-label="Alternar menu"
+            aria-expanded="@(!Collapsed)"
+            @onclick="OnToggle">
+        <RadzenIcon Icon="menu" />
+    </button>
+
+    <a class="app-brand" href="">
+        <span class="app-brand__mark" aria-hidden="true">
+            <img src="_content/GISORA.Presentation.Shared/img/brand/gisora-mark-128.png" alt="" />
+        </span>
+        <span class="app-brand__text">
+            <strong>GISORA</strong>
+            <small>Gestao territorial</small>
+        </span>
+    </a>
+
+    <div class="app-header__divider" aria-hidden="true"></div>
+
+    <div class="app-header__context">
+        <span class="app-header__label">Municipio</span>
+        <span class="app-header__municipality">@Municipality</span>
+    </div>
+
+    <div class="app-header__spacer"></div>
+
+    <span class="app-header__env">
+        <RadzenIcon Icon="storage" />
+        Base local
+    </span>
+</header>
+
+@code {
+    [Parameter]
+    public bool Collapsed { get; set; }
+
+    [Parameter]
+    public string Municipality { get; set; } = "Nao definido";
+
+    [Parameter]
+    public EventCallback OnToggle { get; set; }
+}

@@ -13,7 +13,8 @@ internal static class ArchitectureModel
             typeof(Entity<>).Assembly,
             typeof(Result<>).Assembly,
             typeof(Infrastructure.Persistence.BrowserLocalStore).Assembly,
-            typeof(Web.App).Assembly)
+            typeof(Presentation.App).Assembly,
+            typeof(Presentation.Shared.Routes).Assembly)
         .Build();
 
     public static IReadOnlyList<IType> TypesStartingWith(string prefix)

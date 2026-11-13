@@ -17,7 +17,7 @@ public class LayerRulesTests
 
         DependencyAssertions.AssertNoDependencyOn(
             domainTypes,
-            ["GISORA.Application", "GISORA.Infrastructure", "GISORA.Web", .. TechnologyLeaks],
+            ["GISORA.Application", "GISORA.Infrastructure", "GISORA.Presentation", .. TechnologyLeaks],
             "Domain");
     }
 
@@ -28,7 +28,7 @@ public class LayerRulesTests
 
         DependencyAssertions.AssertNoDependencyOn(
             applicationTypes,
-            ["GISORA.Infrastructure", "GISORA.Web", .. TechnologyLeaks],
+            ["GISORA.Infrastructure", "GISORA.Presentation", .. TechnologyLeaks],
             "Application");
     }
 
@@ -37,14 +37,14 @@ public class LayerRulesTests
     {
         var infrastructureTypes = ArchitectureModel.TypesStartingWith("GISORA.Infrastructure");
 
-        DependencyAssertions.AssertNoDependencyOn(infrastructureTypes, ["GISORA.Web"], "Infrastructure");
+        DependencyAssertions.AssertNoDependencyOn(infrastructureTypes, ["GISORA.Presentation"], "Infrastructure");
     }
 
     [Fact]
     public void WebTypesExceptCompositionRootDoNotTouchInfrastructure()
     {
-        var webTypes = ArchitectureModel.TypesStartingWith("GISORA.Web")
-            .Where(type => type.FullName != "GISORA.Web.Program")
+        var webTypes = ArchitectureModel.TypesStartingWith("GISORA.Presentation")
+            .Where(type => type.FullName != "GISORA.Presentation.Program")
             .ToArray();
 
         DependencyAssertions.AssertNoDependencyOn(webTypes, ["GISORA.Infrastructure"], "Web");

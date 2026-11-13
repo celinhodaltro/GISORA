@@ -59,7 +59,7 @@ Os codigos de dominio (`tipoImovel`, `tpArquitetonico`, `destinacaoImovel`, `pad
 
 ## Modos de operacao
 
-Configuracao em `src/GISORA.Web/wwwroot/appsettings.json`:
+Configuracao em `src/Presentations/GISORA.Presentation/wwwroot/appsettings.json`:
 
 ```json
 {
