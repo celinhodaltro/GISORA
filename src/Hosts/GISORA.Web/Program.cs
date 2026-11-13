@@ -25,6 +25,9 @@ using GISORA.Territory.Application;
 using GISORA.Territory.Application.Commands;
 using GISORA.Territory.Application.Queries;
 using GISORA.Territory.Domain;
+using GISORA.UrbanPlanning.Application;
+using GISORA.UrbanPlanning.Application.Commands;
+using GISORA.UrbanPlanning.Domain;
 using GISORA.Web;
 
 using Microsoft.AspNetCore.Components.Web;
@@ -74,6 +77,11 @@ builder.Services.AddScoped<CreateRuralPropertyHandler>();
 builder.Services.AddScoped<ImportRuralPropertyHandler>();
 builder.Services.AddScoped<AddPreservationAreaHandler>();
 builder.Services.AddScoped<DefineLegalReserveHandler>();
+builder.Services.AddScoped<IZoneRepository, LocalStorageZoneRepository>();
+builder.Services.AddScoped<IRestrictionRepository, LocalStorageRestrictionRepository>();
+builder.Services.AddScoped<IRegulationQueries, LocalStorageRegulationQueries>();
+builder.Services.AddScoped<CreateZoneHandler>();
+builder.Services.AddScoped<CreateRestrictionHandler>();
 builder.Services.AddScoped<IDemoDataSeeder, DemoDataSeeder>();
 builder.Services.AddScoped<GISORA.Web.Layout.MunicipalityState>();
 

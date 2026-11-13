@@ -26,6 +26,7 @@
     <ProjectReference Include="..\..\Modules\PublicFacilities\GISORA.PublicFacilities.Application\GISORA.PublicFacilities.Application.csproj" />
     <ProjectReference Include="..\..\Modules\Cemetery\GISORA.Cemetery.Application\GISORA.Cemetery.Application.csproj" />
     <ProjectReference Include="..\..\Modules\Rural\GISORA.Rural.Application\GISORA.Rural.Application.csproj" />
+    <ProjectReference Include="..\..\Modules\UrbanPlanning\GISORA.UrbanPlanning.Application\GISORA.UrbanPlanning.Application.csproj" />
   </ItemGroup>
 
 </Project>

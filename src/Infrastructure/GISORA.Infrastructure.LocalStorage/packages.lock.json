@@ -271,6 +271,22 @@
           "GISORA.BuildingBlocks.Domain": "[0.1.0, )",
           "GISORA.Geospatial.Domain": "[0.1.0, )"
         }
+      },
+      "gisora.urbanplanning.application": {
+        "type": "Project",
+        "dependencies": {
+          "GISORA.BuildingBlocks.Application": "[0.1.0, )",
+          "GISORA.Geospatial.Application": "[0.1.0, )",
+          "GISORA.Geospatial.Domain": "[0.1.0, )",
+          "GISORA.UrbanPlanning.Domain": "[0.1.0, )"
+        }
+      },
+      "gisora.urbanplanning.domain": {
+        "type": "Project",
+        "dependencies": {
+          "GISORA.BuildingBlocks.Domain": "[0.1.0, )",
+          "GISORA.Geospatial.Domain": "[0.1.0, )"
+        }
       }
     }
   }

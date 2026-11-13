@@ -1,0 +1,45 @@
+.planning-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gisora-space-2, 0.5rem);
+}
+
+.planning-area {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--gisora-ink-soft, #3b4b5a);
+    font-variant-numeric: tabular-nums;
+}
+
+.planning-incident {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.planning-incident__item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.5rem 0.65rem;
+    border: 1px solid var(--gisora-border, #dde4ec);
+    border-radius: var(--gisora-radius-sm, 6px);
+    background: var(--gisora-surface, #ffffff);
+    font-size: 0.82rem;
+}
+
+.planning-zone {
+    border-left: 3px solid #1d4ed8;
+}
+
+.planning-restriction {
+    border-left: 3px solid #b45309;
+}
+
+.planning-incident__detail {
+    color: var(--gisora-muted, #5a6b7b);
+    font-size: 0.75rem;
+}

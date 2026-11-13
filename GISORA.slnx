@@ -41,6 +41,10 @@
     <Project Path="src/Modules/Territory/GISORA.Territory.Application/GISORA.Territory.Application.csproj" />
     <Project Path="src/Modules/Territory/GISORA.Territory.Domain/GISORA.Territory.Domain.csproj" />
   </Folder>
+  <Folder Name="/src/Modules/UrbanPlanning/">
+    <Project Path="src/Modules/UrbanPlanning/GISORA.UrbanPlanning.Application/GISORA.UrbanPlanning.Application.csproj" />
+    <Project Path="src/Modules/UrbanPlanning/GISORA.UrbanPlanning.Domain/GISORA.UrbanPlanning.Domain.csproj" />
+  </Folder>
   <Folder Name="/src/Shared/">
     <Project Path="src/Shared/GISORA.Shared.DesignSystem/GISORA.Shared.DesignSystem.csproj" />
     <Project Path="src/Shared/GISORA.Shared.Maps/GISORA.Shared.Maps.csproj" />
@@ -62,6 +66,7 @@
     <Project Path="tests/Unit/GISORA.PublicFacilities.UnitTests/GISORA.PublicFacilities.UnitTests.csproj" />
     <Project Path="tests/Unit/GISORA.Roads.UnitTests/GISORA.Roads.UnitTests.csproj" />
     <Project Path="tests/Unit/GISORA.Rural.UnitTests/GISORA.Rural.UnitTests.csproj" />
+    <Project Path="tests/Unit/GISORA.UrbanPlanning.UnitTests/GISORA.UrbanPlanning.UnitTests.csproj" />
     <Project Path="tests/Unit/GISORA.Territory.UnitTests/GISORA.Territory.UnitTests.csproj" />
   </Folder>
 </Solution>
