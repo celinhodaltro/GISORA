@@ -3,7 +3,7 @@
 
 @if (Layers.Any())
 {
-    <div class="gisora-layer-control" aria-label="Camadas do mapa">
+    <div class="gisora-layer-control" role="group" aria-label="Camadas do mapa">
         @foreach (var group in Layers.GroupBy(layer => layer.Group))
         {
             <div class="gisora-layer-control__group">

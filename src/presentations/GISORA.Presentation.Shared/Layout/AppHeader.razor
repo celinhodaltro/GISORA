@@ -4,7 +4,8 @@
     <button type="button"
             class="app-header__toggle"
             aria-label="Alternar menu"
-            aria-expanded="@(!Collapsed)"
+            aria-expanded="@Expanded"
+            aria-controls="app-nav"
             @onclick="OnToggle">
         <RadzenIcon Icon="menu" />
     </button>
@@ -37,6 +38,9 @@
 @code {
     [Parameter]
     public bool Collapsed { get; set; }
+
+    [Parameter]
+    public bool Expanded { get; set; }
 
     [Parameter]
     public string Municipality { get; set; } = "Nao definido";
