@@ -86,6 +86,36 @@ public class PropertyHandlerTests
     }
 
     [Fact]
+    public async Task ClearGeometryFailsWhenPropertyIsMissing()
+    {
+        var handler = new ClearPropertyGeometryHandler(new InMemoryPropertyRepository());
+
+        var result = await handler.HandleAsync(new ClearPropertyGeometryCommand(PropertyId.New(), "remocao"));
+
+        Assert.True(result.IsFailure);
+        Assert.Equal("properties.not-found", result.Error.Code);
+    }
+
+    [Fact]
+    public async Task ClearGeometryPersistsRemovalAndHistory()
+    {
+        var repository = new InMemoryPropertyRepository();
+        var property = PropertyFactory.Create();
+        property.ChangeGeometry(PropertyFactory.Square(0, 0, 5), null);
+        await repository.AddAsync(property);
+        var handler = new ClearPropertyGeometryHandler(repository);
+
+        var result = await handler.HandleAsync(new ClearPropertyGeometryCommand(property.Id, "remocao"));
+
+        Assert.True(result.IsSuccess);
+        Assert.Null(property.Geometry);
+        var entry = property.History.Last();
+        Assert.Equal("geometry", entry.Field);
+        Assert.NotNull(entry.PreviousValue);
+        Assert.Null(entry.CurrentValue);
+    }
+
+    [Fact]
     public async Task AddOwnershipFailsWhenTaxpayerIsMissing()
     {
         var properties = new InMemoryPropertyRepository();

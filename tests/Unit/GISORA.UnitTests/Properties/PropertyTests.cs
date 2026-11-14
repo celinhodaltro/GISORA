@@ -102,6 +102,34 @@ public class PropertyTests
     }
 
     [Fact]
+    public void ClearGeometryRemovesGeometryAndRecordsHistory()
+    {
+        var property = PropertyFactory.Create();
+        property.ChangeGeometry(PropertyFactory.Square(0, 0, 10), "cadastro inicial");
+        property.DequeueDomainEvents();
+
+        property.ClearGeometry("remocao");
+
+        Assert.Null(property.Geometry);
+        var entry = property.History.Last();
+        Assert.Equal("geometry", entry.Field);
+        Assert.NotNull(entry.PreviousValue);
+        Assert.Null(entry.CurrentValue);
+        Assert.Single(property.DequeueDomainEvents().OfType<PropertyGeometryChanged>());
+    }
+
+    [Fact]
+    public void ClearGeometryWithoutGeometryDoesNotRecordHistory()
+    {
+        var property = PropertyFactory.Create();
+
+        property.ClearGeometry("remocao");
+
+        Assert.Empty(property.History);
+        Assert.Empty(property.DequeueDomainEvents().OfType<PropertyGeometryChanged>());
+    }
+
+    [Fact]
     public void OwnershipBalancesWithThreeShares()
     {
         var property = PropertyFactory.Create();

@@ -11,8 +11,9 @@
 @inject IGeometryValidator Validator
 @inject ISpatialOperations Spatial
 @inject UpdatePropertyGeometryHandler UpdateGeometry
+@inject ClearPropertyGeometryHandler ClearGeometry
 
-<PageHeader Title="Geometria do imovel" Description="Desenhe ou edite o poligono do lote." Icon="draw" />
+<PageHeader Title="Geometria do imovel" Description="Desenhe ponto, linha ou poligono do lote." Icon="draw" />
 
 @if (_loading)
 {
@@ -26,27 +27,46 @@ else
 {
     <p class="geometry-page__registration">Inscricao: <strong>@_view.Registration</strong></p>
 
-    <p class="geometry-page__hint">Use <strong>Desenhar</strong> e clique no mapa para adicionar vertices; <strong>Concluir desenho</strong> fecha o poligono.</p>
+    <p class="geometry-page__hint">Clique no mapa para adicionar vertices. Em <strong>ponto</strong> o clique conclui; em <strong>linha</strong> e <strong>poligono</strong> use <strong>Concluir desenho</strong>.</p>
 
     <div class="geometry-page">
         <MapView @ref="_map" CenterLatitude="-7.95" CenterLongitude="-35.25" Zoom="16" Height="clamp(22rem, calc(100vh - 26rem), 34rem)">
             <MapToolbar />
             <CoordinateControl />
-            <DrawingTool @ref="_tool" OnCompleted="ApplyGeometryAsync" OnEdited="ApplyGeometryAsync" />
+            <DrawingTool @ref="_tool" OnCompleted="CompleteGeometryAsync" OnEdited="ApplyGeometryAsync" />
         </MapView>
     </div>
 
     <div class="gisora-toolbar geometry-page__actions">
-        <RadzenButton Text="Desenhar" Variant="Variant.Outlined" Click="DrawAsync" />
+        <RadzenButton Text="Desenhar ponto" Variant="Variant.Outlined" Click="@(() => DrawAsync("Point"))" />
+        <RadzenButton Text="Desenhar linha" Variant="Variant.Outlined" Click="@(() => DrawAsync("LineString"))" />
+        <RadzenButton Text="Desenhar poligono" Variant="Variant.Outlined" Click="@(() => DrawAsync("Polygon"))" />
         <RadzenButton Text="Concluir desenho" Variant="Variant.Outlined" Click="FinishAsync" />
-        <RadzenButton Text="Editar geometria" Variant="Variant.Outlined" Disabled="@(_geometry is null && _view?.Geometry is null)" Click="EditAsync" />
-        <RadzenButton Text="Salvar geometria" ButtonStyle="ButtonStyle.Primary" Disabled="@(_geometry is null)" Click="SaveAsync" />
+        <RadzenButton Text="Desfazer ultimo vertice" Variant="Variant.Outlined" Click="UndoAsync" />
+        <RadzenButton Text="Editar geometria" Variant="Variant.Outlined" Disabled="@(_geometry is null && _view.Geometry is null)" Click="EditAsync" />
+        <RadzenButton Text="Salvar geometria" ButtonStyle="ButtonStyle.Primary" Disabled="@(_geometry is not Polygon)" Click="SaveAsync" />
+        <RadzenButton Text="Remover geometria" ButtonStyle="ButtonStyle.Danger" Disabled="@(_geometry is null && _view.Geometry is null)" Click="AskRemoveAsync" />
         <RadzenButton Text="Cancelar" Variant="Variant.Outlined" Click="CancelAsync" />
     </div>
+
+    @if (_confirmingRemoval)
+    {
+        <p class="geometry-page__error" role="alert">Confirma a remocao da geometria deste imovel?</p>
+
+        <div class="gisora-toolbar geometry-page__actions">
+            <RadzenButton Text="Confirmar remocao" ButtonStyle="ButtonStyle.Danger" Click="RemoveGeometryAsync" />
+            <RadzenButton Text="Cancelar remocao" Variant="Variant.Outlined" Click="CancelRemovalAsync" />
+        </div>
+    }
 
     @if (_areaSquareMeters is { } area)
     {
         <p class="geometry-page__area">Area calculada: @area.ToString("N2", System.Globalization.CultureInfo.InvariantCulture) m2</p>
+    }
+
+    @if (_summary is not null)
+    {
+        <p class="geometry-page__area">@_summary</p>
     }
 
     @if (_error is not null)
@@ -66,6 +86,9 @@ else
     private PropertyGeometryView? _view;
     private Geometry? _geometry;
     private decimal? _areaSquareMeters;
+    private string? _summary;
+    private string _drawingKind = "Polygon";
+    private bool _confirmingRemoval;
     private bool _loading = true;
     private bool _layerApplied;
     private string? _error;
@@ -97,12 +120,14 @@ else
         await ShowGeometryAsync(_view.Geometry);
     }
 
-    private async Task DrawAsync()
+    private async Task DrawAsync(string kind)
     {
         _error = null;
         _message = null;
+        _confirmingRemoval = false;
+        _drawingKind = kind;
 
-        await _tool!.StartDrawingAsync();
+        await _tool!.StartDrawingAsync(kind);
     }
 
     private async Task EditAsync()
@@ -112,6 +137,13 @@ else
         if (geometry is null)
         {
             _error = "Nao ha geometria para editar.";
+
+            return;
+        }
+
+        if (geometry is GISORA.Domain.Geospatial.Point)
+        {
+            _error = "Ponto nao possui vertices para editar.";
 
             return;
         }
@@ -127,11 +159,36 @@ else
 
         if (completed is false)
         {
-            _error = "Informe ao menos tres pontos para fechar o poligono.";
+            _error = _drawingKind switch
+            {
+                "Point" => "Clique no mapa para marcar o ponto.",
+                "LineString" => "Informe ao menos dois pontos para concluir a linha.",
+                _ => "Informe ao menos tres pontos para fechar o poligono.",
+            };
         }
     }
 
-    private async Task ApplyGeometryAsync(string geoJson)
+    private async Task UndoAsync()
+    {
+        _error = null;
+        await _tool!.UndoLastVertexAsync();
+    }
+
+    private async Task CompleteGeometryAsync(string geoJson)
+    {
+        var geometry = await ReadGeometryAsync(geoJson);
+
+        if (geometry is null)
+        {
+            return;
+        }
+
+        await ShowGeometryAsync(geometry);
+    }
+
+    private async Task ApplyGeometryAsync(string geoJson) => await ReadGeometryAsync(geoJson);
+
+    private async Task<Geometry?> ReadGeometryAsync(string geoJson)
     {
         Geometry geometry;
 
@@ -143,7 +200,7 @@ else
         {
             _error = "Geometria invalida.";
 
-            return;
+            return null;
         }
 
         var validation = await Validator.ValidateAsync(geometry);
@@ -152,22 +209,42 @@ else
         {
             _geometry = null;
             _areaSquareMeters = null;
+            _summary = null;
             _error = string.Join(" ", validation.Errors);
 
-            return;
+            return null;
         }
 
         _geometry = geometry;
         _error = null;
         _message = null;
-        _areaSquareMeters = (await Spatial.AreaAsync(geometry)).SquareMeters;
+        await UpdateMeasurementAsync(geometry);
+
+        return geometry;
     }
+
+    private async Task UpdateMeasurementAsync(Geometry geometry)
+    {
+        if (geometry is Polygon polygon)
+        {
+            _areaSquareMeters = (await Spatial.AreaAsync(polygon)).SquareMeters;
+            _summary = null;
+
+            return;
+        }
+
+        _areaSquareMeters = null;
+        _summary = $"Tipo: {geometry.Type} — coordenadas: {string.Join("; ", geometry.Coordinates.Select(FormatCoordinate))}";
+    }
+
+    private static string FormatCoordinate(Coordinate coordinate)
+        => $"({coordinate.X.ToString("0.#####", System.Globalization.CultureInfo.InvariantCulture)}, {coordinate.Y.ToString("0.#####", System.Globalization.CultureInfo.InvariantCulture)})";
 
     private async Task SaveAsync()
     {
         if (_geometry is not Polygon polygon)
         {
-            _error = "Desenhe um poligono antes de salvar.";
+            _error = "Poligono e o unico tipo persistido no cadastro do imovel.";
 
             return;
         }
@@ -184,7 +261,52 @@ else
 
         _error = null;
         _message = "Geometria atualizada.";
+        _view = _view is null ? null : _view with { Geometry = polygon };
         await ShowGeometryAsync(polygon);
+    }
+
+    private void AskRemoveAsync()
+    {
+        _error = null;
+        _message = null;
+        _confirmingRemoval = true;
+    }
+
+    private void CancelRemovalAsync()
+    {
+        _confirmingRemoval = false;
+    }
+
+    private async Task RemoveGeometryAsync()
+    {
+        _confirmingRemoval = false;
+
+        if (_view is not null && _view.Geometry is not null)
+        {
+            var result = await ClearGeometry.HandleAsync(new ClearPropertyGeometryCommand(
+                new PropertyId(PropertyId),
+                "remocao solicitada na tela de geometria do imovel"));
+
+            if (result.IsFailure)
+            {
+                _error = result.Error.Message;
+
+                return;
+            }
+
+            _view = _view with { Geometry = null };
+        }
+
+        _geometry = null;
+        _areaSquareMeters = null;
+        _summary = null;
+        _error = null;
+        _message = "Geometria removida.";
+
+        if (_map is not null)
+        {
+            await _map.RemoveLayerAsync("property-geometry");
+        }
     }
 
     private async Task CancelAsync()
