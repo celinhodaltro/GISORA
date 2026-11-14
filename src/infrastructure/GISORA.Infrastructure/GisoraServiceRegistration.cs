@@ -59,6 +59,7 @@ public static class GisoraServiceRegistration
         services.AddScoped<IStreetQueries, LocalStorageStreetQueries>();
         services.AddScoped<CreateStreetHandler>();
 
+        services.AddScoped<IGeometryImportLog, LocalStorageGeometryImportLog>();
         services.AddScoped<IPublicFacilityRepository, LocalStorageFacilityRepository>();
         services.AddScoped<IFacilityQueries, LocalStorageFacilityQueries>();
         services.AddScoped<CreateFacilityHandler>();
@@ -96,6 +97,9 @@ public static class GisoraServiceRegistration
         services.AddScoped<IGeometryValidator, TurfGeometryValidator>();
         services.AddScoped<ICoordinateTransformer, Proj4CoordinateTransformer>();
         services.AddScoped<ISpatialOperations, TurfSpatialOperations>();
+        services.AddScoped<GeoJsonExportService>();
+        services.AddScoped<PropertyGeoJsonExportHandler>();
+        services.AddScoped<ImportPropertyGeometryHandler>();
 
         services.AddScoped<CreateMunicipalityHandler>();
         services.AddScoped<CreateUrbanBlockHandler>();

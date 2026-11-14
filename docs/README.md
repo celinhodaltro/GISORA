@@ -11,6 +11,7 @@
 | [brand.md](brand.md) | Marca, ativos, dimensoes e regras de aplicacao |
 | [cib-integration.md](cib-integration.md) | Integracao SINTER/CIB: endpoints, modos, configuracao e limites |
 | [backup.md](backup.md) | Backup, restauracao, formato e limites do localStorage |
+| [geometry-formats.md](geometry-formats.md) | GeoJSON implementado e avaliacao de KML, GeoPackage e Shapefile no navegador |
 | [accessibility.md](accessibility.md) | Medidas de acessibilidade e verificacao automatizada |
 | [adr/](adr/) | Decisoes arquiteturais registradas |
 

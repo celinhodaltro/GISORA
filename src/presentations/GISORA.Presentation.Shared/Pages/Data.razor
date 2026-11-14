@@ -1,7 +1,12 @@
 @page "/data"
 @using System.Text.Json
 @using GISORA.Application.Common
+@using GISORA.Application.Geospatial
+@using GISORA.Application.Properties.Commands
 @inject IBackupService Backup
+@inject ImportPropertyGeometryHandler ImportGeometry
+@inject PropertyGeoJsonExportHandler ExportGeometry
+@inject IGeometryImportLog Imports
 @inject IJSRuntime Js
 
 <PageHeader Title="Dados e backup"
@@ -87,6 +92,137 @@
     </RadzenCard>
 </div>
 
+<div class="backup-layout">
+    <RadzenCard>
+        <h2 class="backup-title">Importar GeoJSON de imoveis</h2>
+
+        <p class="backup-text">
+            Atualiza a geometria de imoveis existentes identificados pelo <code>id</code> ou pela
+            <code>inscricao</code> da feicao. Nenhum imovel novo e criado: feicoes sem correspondencia
+            sao informadas e descartadas.
+        </p>
+
+        <InputFile OnChange="LoadGeoJsonAsync"
+                   accept=".geojson,.json,application/geo+json,application/json"
+                   class="backup-file"
+                   aria-label="Arquivo GeoJSON" />
+
+        @if (_geoJsonFileName is not null)
+        {
+            <p class="backup-file-name">Arquivo: <strong>@_geoJsonFileName</strong></p>
+        }
+
+        <label class="backup-field">
+            <span>CRS de origem</span>
+            <select class="backup-select" @bind="_importSourceCrs" aria-label="CRS de origem">
+                <option value="">Detectar nos metadados (padrao EPSG:4326)</option>
+                @foreach (var option in CrsCatalog.Supported)
+                {
+                    <option value="@option.Identifier">@option.Identifier - @option.Name</option>
+                }
+            </select>
+        </label>
+
+        <label class="backup-field">
+            <span>CRS de trabalho (saida)</span>
+            <select class="backup-select" @bind="_importTargetCrs" aria-label="CRS de trabalho">
+                @foreach (var option in CrsCatalog.Supported)
+                {
+                    <option value="@option.Identifier">@option.Identifier - @option.Name</option>
+                }
+            </select>
+        </label>
+
+        <RadzenButton Text="@(_importing ? "Importando..." : "Importar GeoJSON")"
+                      ButtonStyle="ButtonStyle.Primary"
+                      Disabled="@(_importing || _geoJson is null)"
+                      Click="ImportAsync" />
+
+        <p class="backup-hint">Limite de 10 MB e 5000 feicoes por arquivo.</p>
+
+        @if (_importError is not null)
+        {
+            <p class="workspace__error" role="alert">@_importError</p>
+        }
+
+        @if (_importMessage is not null)
+        {
+            <p class="workspace__message" role="status">@_importMessage</p>
+        }
+
+        @if (_importSkipped.Count > 0)
+        {
+            <ul class="backup-limits">
+                @foreach (var item in _importSkipped)
+                {
+                    <li>@item</li>
+                }
+            </ul>
+        }
+    </RadzenCard>
+
+    <RadzenCard>
+        <h2 class="backup-title">Exportar imoveis em GeoJSON</h2>
+
+        <p class="backup-text">
+            Gera um <code>FeatureCollection</code> com tipo, propriedades e metadados de origem, data e CRS.
+            O arquivo gerado pode ser reimportado nesta tela.
+        </p>
+
+        <label class="backup-field">
+            <span>Filtrar por inscricao</span>
+            <RadzenTextBox @bind-Value="_exportFilter" Placeholder="Filtro opcional" aria-label="Filtrar por inscricao" />
+        </label>
+
+        <label class="backup-field">
+            <span>CRS de saida</span>
+            <select class="backup-select" @bind="_exportCrs" aria-label="CRS de saida">
+                @foreach (var option in CrsCatalog.Supported)
+                {
+                    <option value="@option.Identifier">@option.Identifier - @option.Name</option>
+                }
+            </select>
+        </label>
+
+        <RadzenButton Text="Exportar GeoJSON"
+                      ButtonStyle="ButtonStyle.Primary"
+                      Click="ExportGeoJsonAsync" />
+
+        @if (_exportError is not null)
+        {
+            <p class="workspace__error" role="alert">@_exportError</p>
+        }
+
+        @if (_exportMessage is not null)
+        {
+            <p class="workspace__message" role="status">@_exportMessage</p>
+        }
+    </RadzenCard>
+</div>
+
+<RadzenCard>
+    <h2 class="backup-title">Importacoes de geometria</h2>
+
+    <RadzenDataGrid Data="@_imports"
+                    TItem="GeometryImportRecord"
+                    Density="Density.Compact"
+                    AllowPaging="false"
+                    EmptyText="Nenhuma importacao de geometria registrada.">
+        <Columns>
+            <RadzenDataGridColumn TItem="GeometryImportRecord" Property="Registration" Title="Inscricao" Width="180px" />
+            <RadzenDataGridColumn TItem="GeometryImportRecord" Property="Origin" Title="Origem" />
+            <RadzenDataGridColumn TItem="GeometryImportRecord" Property="SourceCrs" Title="CRS origem" Width="120px" />
+            <RadzenDataGridColumn TItem="GeometryImportRecord" Property="TargetCrs" Title="CRS destino" Width="120px" />
+            <RadzenDataGridColumn TItem="GeometryImportRecord" Property="FeatureCount" Title="Feicoes" Width="90px" />
+            <RadzenDataGridColumn TItem="GeometryImportRecord" Title="Importado em" Width="170px">
+                <Template Context="record">
+                    @record.ImportedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+                </Template>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+</RadzenCard>
+
 @code {
     private static readonly JsonSerializerOptions ExportOptions = new(JsonSerializerDefaults.Web)
     {
@@ -101,6 +237,119 @@
     private string? _message;
     private bool _confirmed;
     private bool _restoring;
+    private string? _geoJson;
+    private string? _geoJsonFileName;
+    private string _importSourceCrs = string.Empty;
+    private string _importTargetCrs = CrsCatalog.Wgs84.Identifier;
+    private bool _importing;
+    private string? _importError;
+    private string? _importMessage;
+    private IReadOnlyList<string> _importSkipped = [];
+    private IReadOnlyList<GeometryImportRecord> _imports = [];
+    private string? _exportFilter;
+    private string _exportCrs = CrsCatalog.Wgs84.Identifier;
+    private string? _exportError;
+    private string? _exportMessage;
+
+    protected override async Task OnInitializedAsync() => await LoadImportsAsync();
+
+    private async Task LoadImportsAsync() => _imports = await Imports.ListAsync();
+
+    private async Task LoadGeoJsonAsync(InputFileChangeEventArgs args)
+    {
+        _importError = null;
+        _importMessage = null;
+        _importSkipped = [];
+        _geoJson = null;
+        _geoJsonFileName = null;
+
+        try
+        {
+            using var stream = args.File.OpenReadStream(GeoJsonLimits.MaxBytes);
+            using var reader = new StreamReader(stream);
+
+            _geoJson = await reader.ReadToEndAsync();
+            _geoJsonFileName = args.File.Name;
+        }
+        catch (IOException)
+        {
+            _importError = $"Nao foi possivel ler o arquivo. O limite e de {GeoJsonLimits.MaxBytes / (1024 * 1024)} MB.";
+        }
+    }
+
+    private async Task ImportAsync()
+    {
+        if (_geoJson is null)
+        {
+            _importError = "Selecione um arquivo GeoJSON.";
+            return;
+        }
+
+        _importError = null;
+        _importMessage = null;
+        _importSkipped = [];
+        _importing = true;
+
+        try
+        {
+            var result = await ImportGeometry.HandleAsync(new ImportPropertyGeometryCommand(
+                _geoJsonFileName ?? "arquivo.geojson",
+                _geoJson,
+                string.IsNullOrWhiteSpace(_importSourceCrs) ? null : _importSourceCrs,
+                _importTargetCrs));
+
+            if (result.IsFailure)
+            {
+                _importError = result.Error.Message;
+                return;
+            }
+
+            _importMessage = $"{result.Value.Updated.Count} imovel(is) atualizado(s) de {result.Value.FeatureCount} feicao(oes) em {_importTargetCrs}.";
+            _importSkipped = result.Value.Skipped;
+            _geoJson = null;
+            _geoJsonFileName = null;
+
+            await LoadImportsAsync();
+        }
+        finally
+        {
+            _importing = false;
+        }
+    }
+
+    private async Task ExportGeoJsonAsync()
+    {
+        _exportError = null;
+        _exportMessage = null;
+
+        var result = await ExportGeometry.ExportSetAsync(_exportFilter, _exportCrs);
+
+        if (result.IsFailure)
+        {
+            _exportError = result.Error.Message;
+            return;
+        }
+
+        try
+        {
+            await DownloadAsync(result.Value.FileName, result.Value.Content);
+
+            _exportMessage = $"GeoJSON exportado com {result.Value.FeatureCount} feicao(oes) em {result.Value.TargetCrs}.";
+        }
+        catch (JSException)
+        {
+            _exportError = "Nao foi possivel gerar o arquivo GeoJSON neste navegador.";
+        }
+    }
+
+    private async Task DownloadAsync(string fileName, string content)
+    {
+        var module = await Js.InvokeAsync<IJSObjectReference>(
+            "import",
+            "./_content/GISORA.Infrastructure/js/localstore.js");
+
+        await module.InvokeVoidAsync("downloadText", fileName, content);
+    }
 
     private async Task ExportAsync()
     {

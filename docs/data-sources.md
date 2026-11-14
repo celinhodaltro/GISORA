@@ -31,8 +31,11 @@ Enquanto nao houver dado oficial, a aplicacao opera com base vazia. Nenhum dado 
 ## CRS
 
 - Armazenamento e visualizacao padrao: `EPSG:4326` (WGS 84).
-- Cadastro tecnico municipal tende a usar projecao local (SIRGAS 2000 / UTM zona 25S, `EPSG:31985`). A escolha sera registrada em ADR quando a base oficial chegar.
-- Transformacao sempre explicita; o CRS de origem fica no objeto de geometria.
+- Cadastro tecnico municipal tende a usar projecao local (SIRGAS 2000 / UTM zona 25S, `EPSG:31985`). A escolha da projecao oficial sera registrada em ADR quando a base oficial chegar.
+- CRS suportados na selecao de entrada, trabalho e saida: `EPSG:4326` e `EPSG:31978` a `EPSG:31985` (SIRGAS 2000 / UTM zonas 18S a 25S).
+- Transformacao sempre explicita via `ICoordinateTransformer` (Proj4js); CRS desconhecido falha com mensagem e nao ha conversao silenciosa.
+- O CRS de origem fica no objeto de geometria. Importacoes e exportacoes registram origem, CRS de origem, CRS de destino e data.
+- Detalhes de formato, limites e avaliacao de KML, GeoPackage e Shapefile em [geometry-formats.md](geometry-formats.md).
 
 ## Validacao
 
