@@ -16,10 +16,22 @@ public sealed record CreatePropertyCommand(
     decimal LandAreaSquareMeters,
     Polygon? Geometry);
 
-public sealed class CreatePropertyHandler(IPropertyRepository repository)
+public sealed class CreatePropertyHandler(
+    IPropertyRepository repository,
+    IPropertyGeometryValidator validator)
 {
     public async Task<Result<PropertyId>> HandleAsync(CreatePropertyCommand command, CancellationToken cancellationToken = default)
     {
+        if (command.Geometry is { } geometry)
+        {
+            var validation = await validator.ValidateAsync(geometry, null, cancellationToken);
+
+            if (validation.IsValid is false)
+            {
+                return Result.Fail<PropertyId>(PropertyGeometryValidationErrors.From(validation));
+            }
+        }
+
         try
         {
             var registration = PropertyRegistration.Create(command.Sector, command.Block, command.Lot, command.Unit);

@@ -25,9 +25,13 @@ public sealed class TurfGeometryValidator(GeospatialInterop interop) : IGeometry
         var result = await GeospatialCall.ExecuteAsync(
             () => interop.ValidateAsync(GeoJsonMapper.ToGeoJson(geometry), cancellationToken).AsTask());
 
+        var issues = result.Issues
+            .Select(issue => new GeometryIssue(issue.Code, issue.Message))
+            .ToArray();
+
         return result.Valid
             ? GeometryValidationResult.Valid
-            : GeometryValidationResult.Invalid(result.Errors);
+            : GeometryValidationResult.FromIssues(issues);
     }
 }
 

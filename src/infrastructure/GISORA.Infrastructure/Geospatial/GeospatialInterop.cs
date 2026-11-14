@@ -73,4 +73,8 @@ public sealed class GeospatialInterop(IJSRuntime jsRuntime) : IAsyncDisposable
 
 public sealed record InteropValidation(
     [property: JsonPropertyName("valid")] bool Valid,
-    [property: JsonPropertyName("errors")] string[] Errors);
+    [property: JsonPropertyName("issues")] InteropIssue[] Issues);
+
+public sealed record InteropIssue(
+    [property: JsonPropertyName("code")] string Code,
+    [property: JsonPropertyName("message")] string Message);

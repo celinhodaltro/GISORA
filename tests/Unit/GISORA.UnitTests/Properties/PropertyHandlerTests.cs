@@ -1,3 +1,4 @@
+using GISORA.Application.Geospatial;
 using GISORA.Application.Properties;
 using GISORA.Application.Properties.Commands;
 using GISORA.Application.Properties.Queries;
@@ -23,7 +24,7 @@ public class PropertyHandlerTests
     public async Task CreatePropertySucceeds()
     {
         var repository = new InMemoryPropertyRepository();
-        var handler = new CreatePropertyHandler(repository);
+        var handler = new CreatePropertyHandler(repository, new FakePropertyGeometryValidator());
 
         var result = await handler.HandleAsync(ValidCommand());
 
@@ -34,7 +35,7 @@ public class PropertyHandlerTests
     [Fact]
     public async Task CreatePropertyRejectsDuplicatedRegistration()
     {
-        var handler = new CreatePropertyHandler(new InMemoryPropertyRepository());
+        var handler = new CreatePropertyHandler(new InMemoryPropertyRepository(), new FakePropertyGeometryValidator());
         await handler.HandleAsync(ValidCommand());
 
         var result = await handler.HandleAsync(ValidCommand());
@@ -46,7 +47,7 @@ public class PropertyHandlerTests
     [Fact]
     public async Task CreatePropertyTranslatesInvariantIntoValidationError()
     {
-        var handler = new CreatePropertyHandler(new InMemoryPropertyRepository());
+        var handler = new CreatePropertyHandler(new InMemoryPropertyRepository(), new FakePropertyGeometryValidator());
 
         var result = await handler.HandleAsync(ValidCommand() with { LandAreaSquareMeters = 0m });
 
@@ -57,7 +58,7 @@ public class PropertyHandlerTests
     [Fact]
     public async Task UpdateGeometryFailsWhenPropertyIsMissing()
     {
-        var handler = new UpdatePropertyGeometryHandler(new InMemoryPropertyRepository());
+        var handler = new UpdatePropertyGeometryHandler(new InMemoryPropertyRepository(), new FakePropertyGeometryValidator());
 
         var result = await handler.HandleAsync(new UpdatePropertyGeometryCommand(
             PropertyId.New(),
@@ -74,7 +75,7 @@ public class PropertyHandlerTests
         var repository = new InMemoryPropertyRepository();
         var property = PropertyFactory.Create();
         await repository.AddAsync(property);
-        var handler = new UpdatePropertyGeometryHandler(repository);
+        var handler = new UpdatePropertyGeometryHandler(repository, new FakePropertyGeometryValidator());
 
         var result = await handler.HandleAsync(new UpdatePropertyGeometryCommand(
             property.Id,
@@ -83,6 +84,67 @@ public class PropertyHandlerTests
 
         Assert.True(result.IsSuccess);
         Assert.Single(property.History);
+    }
+
+    [Fact]
+    public async Task UpdateGeometryRejectsOverlapWithoutChangingProperty()
+    {
+        var repository = new InMemoryPropertyRepository();
+        var property = PropertyFactory.Create();
+        await repository.AddAsync(property);
+        var validator = new FakePropertyGeometryValidator
+        {
+            Result = GeometryValidationResult.Invalid(
+                new GeometryIssue(PropertyGeometryValidator.OverlapCode, "Geometria sobrepoe o imovel 001.002.004.")),
+        };
+        var handler = new UpdatePropertyGeometryHandler(repository, validator);
+
+        var result = await handler.HandleAsync(new UpdatePropertyGeometryCommand(
+            property.Id,
+            PropertyFactory.Square(0, 0, 5),
+            "retificacao"));
+
+        Assert.True(result.IsFailure);
+        Assert.Equal(PropertyGeometryValidator.OverlapCode, result.Error.Code);
+        Assert.Null(property.Geometry);
+        Assert.Empty(property.History);
+        Assert.Equal(property.Id, validator.LastExcludedPropertyId);
+    }
+
+    [Fact]
+    public async Task UpdateGeometryUsesPropertyIdAsExclusion()
+    {
+        var repository = new InMemoryPropertyRepository();
+        var property = PropertyFactory.Create();
+        await repository.AddAsync(property);
+        var validator = new FakePropertyGeometryValidator();
+        var handler = new UpdatePropertyGeometryHandler(repository, validator);
+
+        var result = await handler.HandleAsync(new UpdatePropertyGeometryCommand(
+            property.Id,
+            PropertyFactory.Square(0, 0, 5),
+            null));
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(property.Id, validator.LastExcludedPropertyId);
+    }
+
+    [Fact]
+    public async Task CreatePropertyRejectsInvalidGeometryWithoutPersisting()
+    {
+        var repository = new InMemoryPropertyRepository();
+        var validator = new FakePropertyGeometryValidator
+        {
+            Result = GeometryValidationResult.Invalid(
+                new GeometryIssue("geometry.ring.open", "Anel externo deve estar fechado.")),
+        };
+        var handler = new CreatePropertyHandler(repository, validator);
+
+        var result = await handler.HandleAsync(ValidCommand() with { Geometry = PropertyFactory.Square(0, 0, 5) });
+
+        Assert.True(result.IsFailure);
+        Assert.Equal("properties.geometry.invalid", result.Error.Code);
+        Assert.Empty(repository.Items);
     }
 
     [Fact]

@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text;
 
 using Microsoft.Playwright;
 
@@ -8,6 +9,7 @@ public sealed class WebAppFixture : IAsyncLifetime
 {
     private const int StartupTimeoutSeconds = 180;
 
+    private readonly StringBuilder _hostLog = new();
     private Process? _host;
     private IPlaywright _playwright = null!;
 
@@ -61,6 +63,7 @@ public sealed class WebAppFixture : IAsyncLifetime
             RedirectStandardError = true,
             UseShellExecute = false,
             CreateNoWindow = true,
+            WorkingDirectory = LocateRepositoryRoot(),
         };
 
         foreach (var argument in new[] { "run", "--project", projectPath, "-c", "Release", "--urls", BaseUrl })
@@ -69,6 +72,25 @@ public sealed class WebAppFixture : IAsyncLifetime
         }
 
         _host = Process.Start(startInfo) ?? throw new InvalidOperationException("Nao foi possivel iniciar o host web.");
+
+        _host.OutputDataReceived += (_, args) =>
+        {
+            if (args.Data is not null)
+            {
+                _hostLog.AppendLine(args.Data);
+            }
+        };
+
+        _host.ErrorDataReceived += (_, args) =>
+        {
+            if (args.Data is not null)
+            {
+                _hostLog.AppendLine(args.Data);
+            }
+        };
+
+        _host.BeginOutputReadLine();
+        _host.BeginErrorReadLine();
     }
 
     private async Task WaitForHostAsync()
@@ -81,8 +103,7 @@ public sealed class WebAppFixture : IAsyncLifetime
         {
             if (_host!.HasExited)
             {
-                var error = await _host.StandardError.ReadToEndAsync();
-                throw new InvalidOperationException($"Host web encerrou durante o startup. {error}");
+                throw new InvalidOperationException($"Host web encerrou durante o startup. {_hostLog}");
             }
 
             try
@@ -103,10 +124,13 @@ public sealed class WebAppFixture : IAsyncLifetime
             await Task.Delay(TimeSpan.FromSeconds(1));
         }
 
-        throw new TimeoutException($"Host web nao respondeu em {StartupTimeoutSeconds}s. Ultimo erro: {lastError}");
+        throw new TimeoutException($"Host web nao respondeu em {StartupTimeoutSeconds}s. Ultimo erro: {lastError}. Saida do host: {_hostLog}");
     }
 
     private static string LocateWebProject()
+        => Path.Combine(LocateRepositoryRoot(), "src", "presentations", "GISORA.Presentation", "GISORA.Presentation.csproj");
+
+    private static string LocateRepositoryRoot()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
 
@@ -120,7 +144,7 @@ public sealed class WebAppFixture : IAsyncLifetime
             throw new InvalidOperationException("GISORA.slnx nao encontrado a partir do diretorio de teste.");
         }
 
-        return Path.Combine(directory.FullName, "src", "presentations", "GISORA.Presentation", "GISORA.Presentation.csproj");
+        return directory.FullName;
     }
 }
 
