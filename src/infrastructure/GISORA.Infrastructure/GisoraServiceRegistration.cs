@@ -38,6 +38,7 @@ public static class GisoraServiceRegistration
     public static IServiceCollection AddGisoraCore(this IServiceCollection services)
     {
         services.AddScoped<ILocalStore, BrowserLocalStore>();
+        services.AddScoped<IBackupService, LocalStorageBackupService>();
         services.AddScoped<StorageSchemaMigrator>();
 
         services.AddScoped<IMunicipalityRepository, LocalStorageMunicipalityRepository>();

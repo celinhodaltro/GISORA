@@ -113,6 +113,7 @@ O basemap padrao e OpenStreetMap, configuravel por parametro. Producao municipal
 - um documento por agregado, com filhos embutidos;
 - indice denormalizado por colecao para listagem;
 - versionamento de schema em `gisora:meta:schema`;
+- backup e restauracao em `/data`, com validacao de schema e rollback; detalhes em `backup.md`;
 - binarios (raster, panorama, GeoPackage) nao entram aqui.
 
 ## Caminho de migracao

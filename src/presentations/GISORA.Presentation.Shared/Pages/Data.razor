@@ -1,0 +1,190 @@
+@page "/data"
+@using System.Text.Json
+@using GISORA.Application.Common
+@inject IBackupService Backup
+@inject IJSRuntime Js
+
+<PageHeader Title="Dados e backup"
+            Description="Exporte, valide e restaure o estado local do GISORA."
+            Icon="database" />
+
+<div class="backup-layout">
+    <RadzenCard>
+        <h2 class="backup-title">Backup do armazenamento local</h2>
+
+        <p class="backup-text">
+            O backup inclui todos os registros do GISORA no <code>localStorage</code> deste navegador,
+            com a versao do schema de dados.
+        </p>
+
+        <div class="backup-actions">
+            <RadzenButton Text="Exportar backup" ButtonStyle="ButtonStyle.Primary" Click="ExportAsync" />
+            <span class="backup-hint">Arquivo JSON gerado localmente, sem envio para servidor.</span>
+        </div>
+
+        <hr class="backup-divider" />
+
+        <h3 class="backup-subtitle">Restaurar backup</h3>
+
+        <InputFile OnChange="LoadAsync" accept=".json,application/json" class="backup-file" />
+
+        @if (_fileName is not null)
+        {
+            <p class="backup-file-name">Arquivo: <strong>@_fileName</strong></p>
+        }
+
+        @if (_validation is { } validation)
+        {
+            <div class="backup-validation">
+                <p><strong>Versao do backup:</strong> @validation.Manifest?.SchemaVersion / atual @validation.CurrentSchemaVersion</p>
+                <p><strong>Registros:</strong> @(validation.Manifest?.Records.Count ?? 0)</p>
+                @if (validation.Manifest is { } manifest)
+                {
+                    <p><strong>Exportado em:</strong> @manifest.ExportedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</p>
+                }
+            </div>
+        }
+
+        <label class="backup-field">
+            <span>Modo de restauracao</span>
+            <select class="backup-select" @bind="_mode" aria-label="Modo de restauracao">
+                <option value="@BackupRestoreMode.Merge">Mesclar (preserva dados existentes)</option>
+                <option value="@BackupRestoreMode.Replace">Substituir (apaga os dados atuais)</option>
+            </select>
+        </label>
+
+        <label class="backup-check">
+            <input type="checkbox" @bind="_confirmed" />
+            <span>Confirmo que a restauracao altera os dados locais deste navegador.</span>
+        </label>
+
+        <RadzenButton Text="@(_restoring ? "Restaurando..." : "Restaurar backup")"
+                      ButtonStyle="ButtonStyle.Primary"
+                      Disabled="@(_restoring || _confirmed is false || _validation is not { IsValid: true })"
+                      Click="RestoreAsync" />
+
+        @if (_error is not null)
+        {
+            <p class="workspace__error" role="alert">@_error</p>
+        }
+
+        @if (_message is not null)
+        {
+            <p class="workspace__message" role="status">@_message</p>
+        }
+    </RadzenCard>
+
+    <RadzenCard>
+        <h2 class="backup-title">Limites do armazenamento local</h2>
+
+        <ul class="backup-limits">
+            <li>Os dados ficam apenas neste navegador e neste perfil; nao ha sincronizacao entre dispositivos.</li>
+            <li>O <code>localStorage</code> nao e um mecanismo seguro e pode ser apagado manualmente.</li>
+            <li>O limite varia por navegador e costuma ser de poucos megabytes; backups grandes podem falhar.</li>
+            <li>A restauracao substitui ou mescla os registros conforme o modo escolhido.</li>
+            <li>Arquivos de imagem e outros binarios nao entram no backup.</li>
+        </ul>
+    </RadzenCard>
+</div>
+
+@code {
+    private static readonly JsonSerializerOptions ExportOptions = new(JsonSerializerDefaults.Web)
+    {
+        WriteIndented = true,
+    };
+
+    private BackupRestoreMode _mode = BackupRestoreMode.Merge;
+    private BackupValidation? _validation;
+    private string? _fileName;
+    private string? _json;
+    private string? _error;
+    private string? _message;
+    private bool _confirmed;
+    private bool _restoring;
+
+    private async Task ExportAsync()
+    {
+        _error = null;
+        _message = null;
+
+        try
+        {
+            var manifest = await Backup.ExportAsync();
+            var json = JsonSerializer.Serialize(manifest, ExportOptions);
+            var module = await Js.InvokeAsync<IJSObjectReference>(
+                "import",
+                "./_content/GISORA.Infrastructure/js/localstore.js");
+
+            await module.InvokeVoidAsync(
+                "downloadText",
+                $"gisora-backup-{DateTime.Now:yyyyMMdd-HHmm}.json",
+                json);
+
+            _message = $"Backup exportado com {manifest.Records.Count} registros.";
+        }
+        catch (JSException)
+        {
+            _error = "Nao foi possivel gerar o arquivo de backup neste navegador.";
+        }
+    }
+
+    private async Task LoadAsync(InputFileChangeEventArgs args)
+    {
+        _error = null;
+        _message = null;
+        _validation = null;
+        _confirmed = false;
+
+        try
+        {
+            using var stream = args.File.OpenReadStream(5 * 1024 * 1024);
+            using var reader = new StreamReader(stream);
+
+            _json = await reader.ReadToEndAsync();
+            _fileName = args.File.Name;
+            _validation = await Backup.ValidateAsync(_json);
+
+            if (_validation.IsValid is false)
+            {
+                _error = string.Join(" ", _validation.Errors);
+            }
+        }
+        catch (IOException)
+        {
+            _error = "Nao foi possivel ler o arquivo selecionado.";
+        }
+    }
+
+    private async Task RestoreAsync()
+    {
+        if (_json is null || _validation is not { IsValid: true })
+        {
+            return;
+        }
+
+        _error = null;
+        _message = null;
+        _restoring = true;
+
+        try
+        {
+            var result = await Backup.RestoreAsync(_json, _mode);
+
+            if (result.Success is false)
+            {
+                _error = result.Error;
+                return;
+            }
+
+            _message = $"{result.Restored} registros restaurados. Recarregue a pagina para ver os dados.";
+            _validation = null;
+            _json = null;
+            _fileName = null;
+            _confirmed = false;
+        }
+        finally
+        {
+            _restoring = false;
+        }
+    }
+}
