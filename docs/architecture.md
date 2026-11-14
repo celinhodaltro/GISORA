@@ -35,12 +35,12 @@ src/
     UrbanPlanning/      zonas e restricoes
   GISORA.Application/
     Common/             Result, Error, PagedResult
-    Geospatial/         ports de geometria, CRS e operacoes espaciais
+    Geospatial/         ports de geometria, CRS, catalogo de CRS, GeoJSON e exportacao de feicoes
     Territory/ ...      Commands, Queries, Handlers e contratos de cada contexto
     Integration/        contratos tipados do SINTER/CIB
   GISORA.Infrastructure/
     Persistence/        ILocalStore, documentos, indices, repositorios e consultas
-    Geospatial/         Turf.js, Proj4js, GeoJSON
+    Geospatial/         Turf.js, Proj4js, GeoJSON (geometria e FeatureCollection)
     Integrations/       IBGE e SINTER/CIB
   presentations/
     GISORA.Presentation.Shared/   Pages/ Layout/ Components/ Maps/ DesignSystem/ wwwroot/
@@ -99,12 +99,29 @@ Dois contratos por agregado:
 ## Nucleo geografico
 
 - `GISORA.Domain.Geospatial`: `SpatialReference`, `Coordinate`, `Geometry` e derivados, `BoundingBox`, `Area`, `Distance`.
-- `GISORA.Application.Geospatial`: `IGeometryValidator`, `ICoordinateTransformer`, `ISpatialOperations`, `IGeoJsonSerializer`, `GeometryDiagnostics`.
-- `GISORA.Application.Properties`: `IPropertyGeometryValidator` valida estrutura e sobreposicao antes de criar ou alterar geometria de imovel.
-- `GISORA.Infrastructure.Geospatial`: implementacao via Turf.js 7.4 e Proj4js 2.2, vendorizados e carregados por modulo ES.
+- `GISORA.Application.Geospatial`: `IGeometryValidator`, `ICoordinateTransformer`, `ISpatialOperations`, `IGeoJsonSerializer`, `GeometryDiagnostics`, `CrsCatalog` (CRS suportados) e `GeoJsonExportService` (feicoes com metadados e transformacao).
+- `GISORA.Application.Properties`: `IPropertyGeometryValidator` valida estrutura e sobreposicao antes de criar ou alterar geometria de imovel; `ImportPropertyGeometryHandler` e `PropertyGeoJsonExportHandler` tratam importacao e exportacao de imoveis.
+- `GISORA.Infrastructure.Geospatial`: implementacao via Turf.js 7.4 e Proj4js 2.2, vendorizados e carregados por modulo ES. `GeoJsonMapper` le e escreve geometria e `FeatureCollection`.
 - `GISORA.Presentation.Shared.Maps`: componentes Leaflet e `js/map.js`; nao conhece contexto de negocio.
 
 O basemap padrao e OpenStreetMap, configuravel por parametro. Producao municipal deve apontar para servico oficial de tiles.
+
+## Importacao e exportacao GeoJSON
+
+```
+Arquivo -> Componente Razor -> ImportPropertyGeometryHandler
+        -> IGeoJsonSerializer (parse) -> CrsCatalog -> ICoordinateTransformer
+        -> IPropertyGeometryValidator -> Property.ChangeGeometry -> IPropertyRepository
+        -> IGeometryImportLog (origem, CRS e data)
+
+IPropertyQueries/IPropertyMapQueries -> PropertyGeoJsonExportHandler -> GeoJsonExportService
+        -> ICoordinateTransformer -> IGeoJsonSerializer -> download no navegador
+```
+
+- A importacao atualiza somente imoveis existentes, identificados por `id` ou `inscricao`; feicoes sem correspondencia sao descartadas com motivo.
+- O CRS de origem e o de destino sao explicitos; a transformacao so ocorre quando sao diferentes.
+- O arquivo exportado e um `FeatureCollection` com membro `gisora` (origem, CRS de origem, CRS de destino, data e quantidade) e e reimportavel.
+- Limites de 10 MB e 5000 feicoes; detalhes e avaliacao de KML, GeoPackage e Shapefile em `geometry-formats.md`.
 
 ## Persistencia atual
 
@@ -142,6 +159,7 @@ Domain, Application e os contratos publicos dos modulos permanecem.
 | `/rural` | Propriedades rurais, CAR/SIGEF e APP |
 | `/planning` | Zoneamento e restricoes incidentes |
 | `/cib` | Consulta CIB no SINTER (demo/producao) |
+| `/data` | Backup, restauracao, importacao e exportacao GeoJSON |
 
 ## O que ainda nao existe
 

@@ -33,7 +33,7 @@ public class BackupTests(WebAppFixture fixture)
         await page.EvaluateAsync("() => window.localStorage.clear()");
         await page.ReloadAsync();
 
-        await page.Locator("input[type=file]").SetInputFilesAsync(backupPath);
+        await page.GetByLabel("Arquivo de backup").SetInputFilesAsync(backupPath);
         await Expect(page.Locator(".backup-validation")).ToContainTextAsync("Registros:");
 
         await page.Locator("select[aria-label='Modo de restauracao']").SelectOptionAsync("Replace");
@@ -59,7 +59,7 @@ public class BackupTests(WebAppFixture fixture)
             records = new Dictionary<string, string> { ["gisora:meta:schema"] = "99" },
         });
 
-        await page.Locator("input[type=file]").SetInputFilesAsync(new FilePayload
+        await page.GetByLabel("Arquivo de backup").SetInputFilesAsync(new FilePayload
         {
             Name = "backup-incompativel.json",
             MimeType = "application/json",

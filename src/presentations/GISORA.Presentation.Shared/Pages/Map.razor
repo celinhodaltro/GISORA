@@ -2,11 +2,14 @@
 @using GISORA.Application.Geospatial
 @using GISORA.Application.Properties
 @using GISORA.Application.PublicFacilities
+@using GISORA.Domain.Geospatial
 @using GISORA.Presentation.Shared.Maps
 @using GISORA.Presentation.Shared.Maps.Components
 @inject IPropertyMapQueries PropertyMapQueries
 @inject IFacilityQueries FacilityQueries
 @inject IGeoJsonSerializer Serializer
+@inject GeoJsonExportService ExportService
+@inject IJSRuntime Js
 
 <PageHeader Title="Mapa"
             Description="Ambiente cartografico: camadas, legenda, selecao e atributos."
@@ -44,6 +47,45 @@
                 <FeatureInspector Feature="_selected" Title="Atributos" />
             }
         </RadzenCard>
+
+        <RadzenCard class="workspace__panel">
+            <h2 class="workspace__panel-title">Exportar camada</h2>
+
+            @if (_layers.Count == 0)
+            {
+                <p class="workspace__panel-text">Nenhuma camada carregada.</p>
+            }
+            else
+            {
+                <select class="territory-select" @bind="_exportLayerId" aria-label="Camada para exportar">
+                    @foreach (var layer in _layers)
+                    {
+                        <option value="@layer.Id">@layer.Name</option>
+                    }
+                </select>
+
+                <select class="territory-select" @bind="_exportCrs" aria-label="CRS de saida da camada">
+                    @foreach (var option in CrsCatalog.Supported)
+                    {
+                        <option value="@option.Identifier">@option.Identifier - @option.Name</option>
+                    }
+                </select>
+
+                <RadzenButton Text="Exportar GeoJSON"
+                              Variant="Variant.Outlined"
+                              Click="ExportLayerAsync" />
+            }
+
+            @if (_exportError is not null)
+            {
+                <p class="workspace__error" role="alert">@_exportError</p>
+            }
+
+            @if (_exportMessage is not null)
+            {
+                <p class="workspace__message" role="status">@_exportMessage</p>
+            }
+        </RadzenCard>
     </aside>
 </div>
 
@@ -52,6 +94,10 @@
     private readonly List<MapLayer> _layers = [];
     private MapFeature? _selected;
     private bool _applied;
+    private string? _exportLayerId;
+    private string _exportCrs = CrsCatalog.Wgs84.Identifier;
+    private string? _exportError;
+    private string? _exportMessage;
 
     protected override async Task OnInitializedAsync()
     {
@@ -98,5 +144,45 @@
     {
         _selected = feature;
         StateHasChanged();
+    }
+
+    private async Task ExportLayerAsync()
+    {
+        _exportError = null;
+        _exportMessage = null;
+
+        var layer = _layers.FirstOrDefault(candidate => candidate.Id == _exportLayerId);
+
+        if (layer is null)
+        {
+            _exportError = "Selecione uma camada.";
+            return;
+        }
+
+        if (CrsCatalog.TryResolve(_exportCrs, out var target, out var crsError) is false)
+        {
+            _exportError = crsError;
+            return;
+        }
+
+        try
+        {
+            var collection = Serializer.DeserializeFeatures(layer.GeoJson, SpatialReference.Wgs84);
+            var content = await ExportService.ExportAsync(
+                collection.Features,
+                new GeoJsonExportMetadata(layer.Name, SpatialReference.Wgs84, target, DateTimeOffset.UtcNow));
+
+            var module = await Js.InvokeAsync<IJSObjectReference>(
+                "import",
+                "./_content/GISORA.Infrastructure/js/localstore.js");
+
+            await module.InvokeVoidAsync("downloadText", $"camada-{layer.Id}.geojson", content);
+
+            _exportMessage = $"Camada exportada com {collection.Features.Count} feicao(oes) em {target}.";
+        }
+        catch (JSException)
+        {
+            _exportError = "Nao foi possivel gerar o arquivo GeoJSON neste navegador.";
+        }
     }
 }

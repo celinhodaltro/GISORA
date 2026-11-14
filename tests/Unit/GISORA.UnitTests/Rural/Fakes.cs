@@ -106,6 +106,14 @@ internal sealed class FakeGeoJsonSerializer(Geometry? geometry) : IGeoJsonSerial
     public string Serialize(Geometry geometry) => "{}";
 
     public Geometry Deserialize(string geoJson, SpatialReference reference) => geometry!;
+
+    public string SerializeFeatures(GeoJsonFeatureSet collection) => "{}";
+
+    public GeoJsonFeatureSet DeserializeFeatures(string geoJson, SpatialReference reference)
+        => new([new GeoJsonFeature(null, geometry!, new Dictionary<string, string?>())]);
+
+    public GeoJsonParseResult TryDeserializeFeatures(string geoJson, SpatialReference reference)
+        => GeoJsonParseResult.Ok(DeserializeFeatures(geoJson, reference));
 }
 
 internal sealed class FakeGeometryValidator(bool isValid = true) : IGeometryValidator

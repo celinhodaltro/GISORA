@@ -11,8 +11,10 @@
 @inject IGeoJsonSerializer Serializer
 @inject IPropertyGeometryValidator Validator
 @inject ISpatialOperations Spatial
+@inject PropertyGeoJsonExportHandler ExportHandler
 @inject UpdatePropertyGeometryHandler UpdateGeometry
 @inject ClearPropertyGeometryHandler ClearGeometry
+@inject IJSRuntime Js
 
 <PageHeader Title="Geometria do imovel" Description="Desenhe ponto, linha ou poligono do lote." Icon="draw" />
 
@@ -48,6 +50,19 @@ else
         <RadzenButton Text="Salvar geometria" ButtonStyle="ButtonStyle.Primary" Disabled="@(_geometry is not Polygon || _diagnostics.Count > 0)" Click="SaveAsync" />
         <RadzenButton Text="Remover geometria" ButtonStyle="ButtonStyle.Danger" Disabled="@(_geometry is null && _view.Geometry is null)" Click="AskRemoveAsync" />
         <RadzenButton Text="Cancelar" Variant="Variant.Outlined" Click="CancelAsync" />
+    </div>
+
+    <div class="gisora-toolbar geometry-page__actions">
+        <label class="geometry-page__field">
+            <span>CRS de saida</span>
+            <select class="territory-select" @bind="_exportCrs" aria-label="CRS de saida">
+                @foreach (var option in CrsCatalog.Supported)
+                {
+                    <option value="@option.Identifier">@option.Identifier - @option.Name</option>
+                }
+            </select>
+        </label>
+        <RadzenButton Text="Exportar GeoJSON" Variant="Variant.Outlined" Disabled="@(_view?.Geometry is null && _geometry is null)" Click="ExportAsync" />
     </div>
 
     @if (_confirmingRemoval)
@@ -108,6 +123,7 @@ else
     private string? _error;
     private string? _message;
     private IReadOnlyList<GeometryIssue> _diagnostics = [];
+    private string _exportCrs = CrsCatalog.Wgs84.Identifier;
 
     [Parameter]
     public Guid PropertyId { get; set; }
@@ -370,6 +386,35 @@ else
         _error = null;
         _message = null;
         _diagnostics = [];
+    }
+
+    private async Task ExportAsync()
+    {
+        _error = null;
+        _message = null;
+
+        var result = await ExportHandler.ExportPropertyAsync(new PropertyId(PropertyId), _exportCrs);
+
+        if (result.IsFailure)
+        {
+            _error = result.Error.Message;
+            return;
+        }
+
+        try
+        {
+            var module = await Js.InvokeAsync<IJSObjectReference>(
+                "import",
+                "./_content/GISORA.Infrastructure/js/localstore.js");
+
+            await module.InvokeVoidAsync("downloadText", result.Value.FileName, result.Value.Content);
+
+            _message = $"GeoJSON exportado com {result.Value.FeatureCount} feicao(oes) em {result.Value.TargetCrs}.";
+        }
+        catch (JSException)
+        {
+            _error = "Nao foi possivel gerar o arquivo GeoJSON neste navegador.";
+        }
     }
 
     private async Task ShowGeometryAsync(Geometry geometry)
