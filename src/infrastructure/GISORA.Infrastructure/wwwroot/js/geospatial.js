@@ -68,19 +68,67 @@ function toFeature(geometry) {
   return turf.feature(geometry);
 }
 
+function samePosition(first, second) {
+  return first[0] === second[0] && first[1] === second[1];
+}
+
+function validateRing(ring, name) {
+  const issues = [];
+
+  if (ring.length < 4) {
+    issues.push({
+      code: 'geometry.ring.minimum',
+      message: `${name} exige ao menos 4 coordenadas. Atual: ${ring.length}.`,
+    });
+  }
+
+  if (ring.length > 1 && samePosition(ring[0], ring[ring.length - 1]) === false) {
+    issues.push({
+      code: 'geometry.ring.open',
+      message: `${name} deve estar fechado (primeira e ultima coordenadas iguais).`,
+    });
+  }
+
+  const last = ring.length > 1 && samePosition(ring[0], ring[ring.length - 1])
+    ? ring.length - 1
+    : ring.length;
+  const seen = new Set();
+
+  for (let index = 0; index < last; index++) {
+    const key = `${ring[index][0]}|${ring[index][1]}`;
+
+    if (seen.has(key)) {
+      issues.push({
+        code: 'geometry.duplicate-vertex',
+        message: `${name} possui vertice duplicado na posicao ${index + 1}.`,
+      });
+    }
+
+    seen.add(key);
+  }
+
+  return issues;
+}
+
 export function validate(geometryJson) {
   const geometry = JSON.parse(geometryJson);
-  const errors = [];
+  const issues = [];
 
   if (geometry.type === 'Polygon') {
     if (turf.kinks(toFeature(geometry)).features.length > 0) {
-      errors.push('A geometria possui auto-intersecao.');
+      issues.push({
+        code: 'geometry.self-intersection',
+        message: 'A geometria possui auto-intersecao.',
+      });
     }
   }
 
   if (geometry.type === 'MultiPolygon') {
     if (turf.kinks(turf.multiPolygon(geometry.coordinates)).features.length > 0) {
-      errors.push('A geometria possui auto-intersecao.');
+      issues.push({
+        code: 'geometry.self-intersection',
+        message: 'A geometria possui auto-intersecao.',
+      });
     }
   }
 
@@ -88,13 +136,14 @@ export function validate(geometryJson) {
     const polygons = geometry.type === 'Polygon' ? [geometry.coordinates] : geometry.coordinates;
 
     for (const polygon of polygons) {
-      if (polygon[0].length < 4) {
-        errors.push('Anel externo com menos de 4 coordenadas.');
-      }
+      polygon.forEach((ring, index) => {
+        const name = index === 0 ? 'Anel externo' : `Anel interno ${index}`;
+        issues.push(...validateRing(ring, name));
+      });
     }
   }
 
-  return { valid: errors.length === 0, errors };
+  return { valid: issues.length === 0, issues };
 }
 
 export function transform(geometryJson, sourceCode, targetCode) {
@@ -143,10 +192,10 @@ export function contains(containerJson, containedJson) {
 }
 
 export function intersection(firstJson, secondJson) {
-  const result = turf.intersect(
+  const result = turf.intersect(turf.featureCollection([
     toFeature(JSON.parse(firstJson)),
     toFeature(JSON.parse(secondJson)),
-  );
+  ]));
 
   return result === null ? null : JSON.stringify(result.geometry);
 }

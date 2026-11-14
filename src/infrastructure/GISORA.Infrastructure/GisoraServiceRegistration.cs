@@ -53,6 +53,7 @@ public static class GisoraServiceRegistration
         services.AddScoped<ITaxpayerRepository, LocalStorageTaxpayerRepository>();
         services.AddScoped<IPropertyQueries, LocalStoragePropertyQueries>();
         services.AddScoped<IPropertyMapQueries, LocalStoragePropertyMapQueries>();
+        services.AddScoped<IPropertyGeometryValidator, PropertyGeometryValidator>();
 
         services.AddScoped<IStreetRepository, LocalStorageStreetRepository>();
         services.AddScoped<IStreetQueries, LocalStorageStreetQueries>();

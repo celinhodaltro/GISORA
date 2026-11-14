@@ -99,7 +99,8 @@ Dois contratos por agregado:
 ## Nucleo geografico
 
 - `GISORA.Domain.Geospatial`: `SpatialReference`, `Coordinate`, `Geometry` e derivados, `BoundingBox`, `Area`, `Distance`.
-- `GISORA.Application.Geospatial`: `IGeometryValidator`, `ICoordinateTransformer`, `ISpatialOperations`, `IGeoJsonSerializer`.
+- `GISORA.Application.Geospatial`: `IGeometryValidator`, `ICoordinateTransformer`, `ISpatialOperations`, `IGeoJsonSerializer`, `GeometryDiagnostics`.
+- `GISORA.Application.Properties`: `IPropertyGeometryValidator` valida estrutura e sobreposicao antes de criar ou alterar geometria de imovel.
 - `GISORA.Infrastructure.Geospatial`: implementacao via Turf.js 7.4 e Proj4js 2.2, vendorizados e carregados por modulo ES.
 - `GISORA.Presentation.Shared.Maps`: componentes Leaflet e `js/map.js`; nao conhece contexto de negocio.
 

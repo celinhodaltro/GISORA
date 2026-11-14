@@ -37,7 +37,9 @@ Enquanto nao houver dado oficial, a aplicacao opera com base vazia. Nenhum dado 
 ## Validacao
 
 - Kernel valida estrutura: anel fechado, minimo de coordenadas, CRS unico.
-- Validacao topologica (auto-interseccao, sobreposicao) depende de `IGeometryValidator`, implementado com Turf.js no cliente e PostGIS no servidor.
+- `GeometryDiagnostics` aponta anel aberto, vertices insuficientes ou duplicados e auto-interseccao, com localizacao quando disponivel.
+- `IPropertyGeometryValidator` combina validacao estrutural (Turf.js no cliente) com sobreposicao entre imoveis, ignorando o proprio imovel.
+- Sobreposicao relevante e rejeitada antes da persistencia com o codigo `properties.geometry.overlap`; nada e corrigido automaticamente.
 - Divergencia entre area declarada e area calculada e registrada, nunca corrigida silenciosamente.
 
 ## Dados pessoais

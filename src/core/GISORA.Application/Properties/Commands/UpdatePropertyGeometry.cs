@@ -7,7 +7,9 @@ namespace GISORA.Application.Properties.Commands;
 
 public sealed record UpdatePropertyGeometryCommand(PropertyId PropertyId, Polygon Geometry, string? Reason);
 
-public sealed class UpdatePropertyGeometryHandler(IPropertyRepository repository)
+public sealed class UpdatePropertyGeometryHandler(
+    IPropertyRepository repository,
+    IPropertyGeometryValidator validator)
 {
     public async Task<Result> HandleAsync(UpdatePropertyGeometryCommand command, CancellationToken cancellationToken = default)
     {
@@ -15,6 +17,13 @@ public sealed class UpdatePropertyGeometryHandler(IPropertyRepository repository
         if (property is null)
         {
             return Result.Fail(Error.NotFound("Imovel nao encontrado.", "properties.not-found"));
+        }
+
+        var validation = await validator.ValidateAsync(command.Geometry, command.PropertyId, cancellationToken);
+
+        if (validation.IsValid is false)
+        {
+            return Result.Fail(PropertyGeometryValidationErrors.From(validation));
         }
 
         try

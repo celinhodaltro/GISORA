@@ -30,6 +30,25 @@
     font-size: 0.875rem;
 }
 
+.geometry-page__diagnostics {
+    margin: 0 0 var(--gisora-space-2, 0.5rem);
+    padding: var(--gisora-space-2, 0.5rem) var(--gisora-space-3, 0.75rem);
+    border-radius: var(--gisora-radius-sm, 4px);
+    background: #fdecea;
+    color: var(--gisora-color-danger, #b3261e);
+    font-size: 0.875rem;
+}
+
+.geometry-page__diagnostics p {
+    margin: 0 0 var(--gisora-space-1, 0.25rem);
+    font-weight: 600;
+}
+
+.geometry-page__diagnostics ul {
+    margin: 0;
+    padding-left: 1.25rem;
+}
+
 .geometry-page__message {
     margin: 0;
     padding: var(--gisora-space-2, 0.5rem) var(--gisora-space-3, 0.75rem);

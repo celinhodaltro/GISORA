@@ -6,6 +6,7 @@ using GISORA.Application.Territory.Commands;
 using GISORA.Infrastructure.Persistence.Demo;
 using GISORA.Infrastructure.Persistence.Repositories;
 using GISORA.UnitTests.Infrastructure.LocalStorage.Fakes;
+using GISORA.UnitTests.Properties.Fakes;
 
 namespace GISORA.UnitTests.Infrastructure.LocalStorage;
 
@@ -24,7 +25,7 @@ public class DemoDataSeederTests
             new CreateFiscalSectorHandler(new LocalStorageFiscalSectorRepository(store)),
             new CreateUrbanBlockHandler(new LocalStorageUrbanBlockRepository(store)),
             new CreateStreetHandler(new LocalStorageStreetRepository(store)),
-            new CreatePropertyHandler(new LocalStoragePropertyRepository(store)),
+            new CreatePropertyHandler(new LocalStoragePropertyRepository(store), new FakePropertyGeometryValidator()),
             new CreateFacilityHandler(new LocalStorageFacilityRepository(store)));
 
         var result = await seeder.SeedAsync();
@@ -51,7 +52,7 @@ public class DemoDataSeederTests
             new CreateFiscalSectorHandler(new LocalStorageFiscalSectorRepository(store)),
             new CreateUrbanBlockHandler(new LocalStorageUrbanBlockRepository(store)),
             new CreateStreetHandler(new LocalStorageStreetRepository(store)),
-            new CreatePropertyHandler(new LocalStoragePropertyRepository(store)),
+            new CreatePropertyHandler(new LocalStoragePropertyRepository(store), new FakePropertyGeometryValidator()),
             new CreateFacilityHandler(new LocalStorageFacilityRepository(store)));
 
         await seeder.SeedAsync();
