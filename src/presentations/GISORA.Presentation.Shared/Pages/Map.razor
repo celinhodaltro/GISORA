@@ -2,11 +2,13 @@
 @using GISORA.Application.Geospatial
 @using GISORA.Application.Properties
 @using GISORA.Application.PublicFacilities
+@using GISORA.Application.Territory
 @using GISORA.Domain.Geospatial
 @using GISORA.Presentation.Shared.Maps
 @using GISORA.Presentation.Shared.Maps.Components
 @inject IPropertyMapQueries PropertyMapQueries
 @inject IFacilityQueries FacilityQueries
+@inject IUrbanBlockQueries UrbanBlockQueries
 @inject IGeoJsonSerializer Serializer
 @inject GeoJsonExportService ExportService
 @inject IJSRuntime Js
@@ -103,6 +105,7 @@
     {
         var propertyItems = await PropertyMapQueries.GetMapItemsAsync();
         var facilityItems = await FacilityQueries.GetMapItemsAsync();
+        var urbanBlocks = await UrbanBlockQueries.GetMapItemsAsync();
 
         if (propertyItems.Count > 0)
         {
@@ -120,6 +123,21 @@
                 "Equipamentos",
                 FacilityMapProjector.ToFeatureCollection(facilityItems, Serializer),
                 Color: "#1351b4"));
+        }
+
+        if (urbanBlocks.Count > 0)
+        {
+            _layers.Add(new MapLayer(
+                "urban-blocks",
+                "Quadras",
+                UrbanBlockMapProjector.ToBlockFeatureCollection(urbanBlocks),
+                Color: "#b45309"));
+
+            _layers.Add(new MapLayer(
+                "urban-block-faces",
+                "Faces de quadra",
+                UrbanBlockMapProjector.ToFaceFeatureCollection(urbanBlocks),
+                Color: "#7c2d12"));
         }
     }
 

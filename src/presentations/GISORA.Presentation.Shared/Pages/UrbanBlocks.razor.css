@@ -1,0 +1,35 @@
+.urban-blocks {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(24rem, 1fr));
+    gap: var(--gisora-space-4, 1rem);
+    margin-bottom: var(--gisora-space-4, 1rem);
+}
+
+.urban-blocks__title {
+    margin: 0 0 var(--gisora-space-3, 0.75rem);
+    font-size: 1rem;
+}
+
+.urban-blocks__subtitle {
+    margin: var(--gisora-space-4, 1rem) 0 var(--gisora-space-2, 0.5rem);
+    font-size: 0.875rem;
+}
+
+.urban-blocks__summary,
+.urban-blocks__hint,
+.urban-blocks__message {
+    margin: 0 0 var(--gisora-space-3, 0.75rem);
+    font-size: 0.875rem;
+    color: var(--gisora-muted, #5a6b7b);
+}
+
+.urban-blocks__message {
+    padding: var(--gisora-space-2, 0.5rem) var(--gisora-space-3, 0.75rem);
+    border-radius: var(--gisora-radius-sm, 4px);
+    background: #e8f5ee;
+    color: #145c3d;
+}
+
+.urban-blocks__map {
+    margin-bottom: var(--gisora-space-4, 1rem);
+}

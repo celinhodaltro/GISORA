@@ -61,6 +61,26 @@ public sealed class LocalStorageUrbanBlockRepository(ILocalStore store) : IUrban
         await UpsertIndexAsync(urbanBlock, cancellationToken);
     }
 
+    public async Task DeleteAsync(UrbanBlockId id, CancellationToken cancellationToken = default)
+    {
+        if (await store.ExistsAsync(StorageNamespaces.Territory, Key(id), cancellationToken) is false)
+        {
+            throw new StorageException($"Quadra '{id}' nao encontrada no armazenamento local.");
+        }
+
+        await store.RemoveAsync(StorageNamespaces.Territory, Key(id), cancellationToken);
+
+        var ids = await ReadIdsAsync(cancellationToken);
+        if (ids.Remove(id.Value))
+        {
+            await store.SetAsync(StorageNamespaces.Territory, IdsKey, ids, cancellationToken);
+        }
+
+        var index = await ReadIndexAsync(cancellationToken);
+        index.RemoveAll(entry => entry.Id == id.Value);
+        await store.SetAsync(StorageNamespaces.Territory, IndexKey, index, cancellationToken);
+    }
+
     public async Task RebuildIndexAsync(CancellationToken cancellationToken = default)
     {
         var ids = await ReadIdsAsync(cancellationToken);

@@ -2,10 +2,12 @@
 @using GISORA.Application.Properties.Commands
 @using GISORA.Application.Roads
 @using GISORA.Application.Territory
+@using GISORA.Application.Territory.Queries
 @inject NavigationManager Navigation
 @inject CreatePropertyHandler CreateProperty
 @inject ITerritoryQueries Territory
 @inject IStreetQueries Streets
+@inject SearchUrbanBlocksHandler SearchUrbanBlocks
 
 <PageHeader Title="Novo imovel" Description="Cadastro cadastral do lote." Icon="home_work" />
 
@@ -22,7 +24,20 @@
 
     <label class="property-form__field">
         <span>Quadra</span>
-        <RadzenTextBox @bind-Value="_block" Placeholder="Quadra" />
+        @if (_blocks.Count > 0)
+        {
+            <select class="property-form__select" aria-label="Quadra" @bind="_selectedBlockId" @bind:after="ApplyBlockAsync">
+                <option value="">Selecione a quadra</option>
+                @foreach (var block in _blocks)
+                {
+                    <option value="@block.Id.Value">@BlockLabel(block)</option>
+                }
+            </select>
+        }
+        else
+        {
+            <RadzenTextBox @bind-Value="_block" Placeholder="Quadra" />
+        }
     </label>
 
     <label class="property-form__field">
@@ -79,8 +94,11 @@
 @code {
     private IReadOnlyList<NeighborhoodListItem> _neighborhoods = [];
     private IReadOnlyList<StreetListItem> _streets = [];
+    private IReadOnlyList<FiscalSectorListItem> _sectors = [];
+    private IReadOnlyList<UrbanBlockListItem> _blocks = [];
     private Guid? _neighborhoodId;
     private Guid? _streetId;
+    private Guid? _selectedBlockId;
     private string? _sector;
     private string? _block;
     private string? _lot;
@@ -93,10 +111,42 @@
     protected override async Task OnInitializedAsync()
     {
         _neighborhoods = await Territory.ListNeighborhoodsAsync();
+        _sectors = await Territory.ListFiscalSectorsAsync();
         _streets = (await Streets.SearchAsync(new StreetFilter { PageSize = 500 })).Items;
+
+        var blocks = await SearchUrbanBlocks.HandleAsync(new SearchUrbanBlocksQuery(new UrbanBlockFilter { PageSize = 200 }));
+        _blocks = blocks.IsSuccess ? blocks.Value.Items : [];
 
         _neighborhoodId = _neighborhoods.FirstOrDefault()?.Id.Value;
         _streetId = _streets.FirstOrDefault()?.Id.Value;
+    }
+
+    private void ApplyBlockAsync()
+    {
+        if (_selectedBlockId is not { } blockId)
+        {
+            return;
+        }
+
+        var block = _blocks.FirstOrDefault(candidate => candidate.Id.Value == blockId);
+        if (block is null)
+        {
+            return;
+        }
+
+        _block = block.Code;
+
+        if (_sectors.FirstOrDefault(sector => sector.Id == block.FiscalSectorId) is { } sector)
+        {
+            _sector = sector.Code;
+        }
+    }
+
+    private string BlockLabel(UrbanBlockListItem block)
+    {
+        var sector = _sectors.FirstOrDefault(candidate => candidate.Id == block.FiscalSectorId);
+
+        return sector is null ? block.Code : $"{sector.Code} - {block.Code}";
     }
 
     private async Task SaveAsync()

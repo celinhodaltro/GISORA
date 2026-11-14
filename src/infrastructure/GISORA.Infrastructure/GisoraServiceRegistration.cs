@@ -104,6 +104,8 @@ public static class GisoraServiceRegistration
         services.AddScoped<CreateMunicipalityHandler>();
         services.AddScoped<CreateUrbanBlockHandler>();
         services.AddScoped<AddBlockFaceHandler>();
+        services.AddScoped<UpdateUrbanBlockGeometryHandler>();
+        services.AddScoped<DeleteUrbanBlockHandler>();
         services.AddScoped<CreateDistrictHandler>();
         services.AddScoped<CreateNeighborhoodHandler>();
         services.AddScoped<CreateFiscalSectorHandler>();

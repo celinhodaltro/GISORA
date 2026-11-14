@@ -1,5 +1,7 @@
 using GISORA.Application.Common;
+using GISORA.Application.Geospatial;
 using GISORA.Application.Territory;
+using GISORA.Domain.Geospatial;
 using GISORA.Domain.Territory;
 
 namespace GISORA.UnitTests.Territory.Fakes;
@@ -57,6 +59,13 @@ internal sealed class InMemoryUrbanBlockRepository : IUrbanBlockRepository
 
         return Task.CompletedTask;
     }
+
+    public Task DeleteAsync(UrbanBlockId id, CancellationToken cancellationToken = default)
+    {
+        _items.Remove(id);
+
+        return Task.CompletedTask;
+    }
 }
 
 internal sealed class FakeUrbanBlockQueries : IUrbanBlockQueries
@@ -71,5 +80,24 @@ internal sealed class FakeUrbanBlockQueries : IUrbanBlockQueries
         LastFilter = filter;
 
         return Task.FromResult(new PagedResult<UrbanBlockListItem>([], filter.PageNumber, filter.PageSize, 0));
+    }
+
+    public Task<IReadOnlyList<UrbanBlockMapItem>> GetMapItemsAsync(CancellationToken cancellationToken = default)
+        => Task.FromResult<IReadOnlyList<UrbanBlockMapItem>>([]);
+}
+
+internal sealed class TerritoryGeometryValidator(bool isValid = true) : IGeometryValidator
+{
+    public GeometryValidationResult Result { get; set; } = isValid
+        ? GeometryValidationResult.Valid
+        : GeometryValidationResult.Invalid("geometria invalida");
+
+    public int Calls { get; private set; }
+
+    public Task<GeometryValidationResult> ValidateAsync(Geometry geometry, CancellationToken cancellationToken = default)
+    {
+        Calls++;
+
+        return Task.FromResult(Result);
     }
 }

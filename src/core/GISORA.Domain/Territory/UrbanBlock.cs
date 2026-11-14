@@ -7,22 +7,25 @@ public sealed class UrbanBlock : AggregateRoot<UrbanBlockId>
 {
     private readonly List<BlockFace> _faces = [];
 
-    private UrbanBlock(UrbanBlockId id, FiscalSectorId fiscalSectorId, string code)
+    private UrbanBlock(UrbanBlockId id, FiscalSectorId fiscalSectorId, string code, Polygon? geometry)
         : base(id)
     {
         FiscalSectorId = Guard.NotNull(fiscalSectorId, nameof(fiscalSectorId));
         Code = Guard.NotNullOrWhiteSpace(code, nameof(code)).Trim();
+        Geometry = geometry;
     }
 
     public FiscalSectorId FiscalSectorId { get; }
 
     public string Code { get; }
 
+    public Polygon? Geometry { get; private set; }
+
     public IReadOnlyCollection<BlockFace> Faces => _faces.AsReadOnly();
 
-    public static UrbanBlock Create(FiscalSectorId fiscalSectorId, string code)
+    public static UrbanBlock Create(FiscalSectorId fiscalSectorId, string code, Polygon? geometry = null)
     {
-        var urbanBlock = new UrbanBlock(UrbanBlockId.New(), fiscalSectorId, code);
+        var urbanBlock = new UrbanBlock(UrbanBlockId.New(), fiscalSectorId, code, geometry);
         urbanBlock.Raise(new UrbanBlockCreated(urbanBlock.Id, fiscalSectorId, urbanBlock.Code));
 
         return urbanBlock;
@@ -49,9 +52,20 @@ public sealed class UrbanBlock : AggregateRoot<UrbanBlockId>
         return blockFace;
     }
 
-    internal static UrbanBlock Rehydrate(UrbanBlockId id, FiscalSectorId fiscalSectorId, string code, IEnumerable<BlockFace> faces)
+    public void ChangeGeometry(Polygon geometry)
     {
-        var urbanBlock = new UrbanBlock(id, fiscalSectorId, code);
+        Geometry = Guard.NotNull(geometry, nameof(geometry));
+        Raise(new UrbanBlockGeometryChanged(Id));
+    }
+
+    internal static UrbanBlock Rehydrate(
+        UrbanBlockId id,
+        FiscalSectorId fiscalSectorId,
+        string code,
+        Polygon? geometry,
+        IEnumerable<BlockFace> faces)
+    {
+        var urbanBlock = new UrbanBlock(id, fiscalSectorId, code, geometry);
         urbanBlock._faces.AddRange(faces);
 
         return urbanBlock;

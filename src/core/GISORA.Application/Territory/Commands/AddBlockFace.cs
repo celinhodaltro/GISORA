@@ -1,4 +1,5 @@
 using GISORA.Application.Common;
+using GISORA.Application.Geospatial;
 using GISORA.Domain.Common;
 using GISORA.Domain.Geospatial;
 using GISORA.Domain.Territory;
@@ -7,7 +8,9 @@ namespace GISORA.Application.Territory.Commands;
 
 public sealed record AddBlockFaceCommand(UrbanBlockId UrbanBlockId, Guid StreetId, LineString Geometry, decimal FrontageMeters);
 
-public sealed class AddBlockFaceHandler(IUrbanBlockRepository repository)
+public sealed class AddBlockFaceHandler(
+    IUrbanBlockRepository repository,
+    IGeometryValidator geometryValidator)
 {
     public async Task<Result<Guid>> HandleAsync(AddBlockFaceCommand command, CancellationToken cancellationToken = default)
     {
@@ -15,6 +18,12 @@ public sealed class AddBlockFaceHandler(IUrbanBlockRepository repository)
         if (urbanBlock is null)
         {
             return Result.Fail<Guid>(Error.NotFound("Quadra nao encontrada.", "territory.urbanblock.not-found"));
+        }
+
+        var validation = await geometryValidator.ValidateAsync(command.Geometry, cancellationToken);
+        if (validation.IsValid is false)
+        {
+            return Result.Fail<Guid>(UrbanBlockGeometryErrors.From(validation));
         }
 
         try

@@ -17,4 +17,6 @@ public sealed record UrbanBlockFilter
 public interface IUrbanBlockQueries
 {
     Task<PagedResult<UrbanBlockListItem>> SearchAsync(UrbanBlockFilter filter, CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<UrbanBlockMapItem>> GetMapItemsAsync(CancellationToken cancellationToken = default);
 }

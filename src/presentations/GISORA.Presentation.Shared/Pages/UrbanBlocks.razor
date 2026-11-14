@@ -1,0 +1,554 @@
+@page "/urban-blocks"
+@using GISORA.Application.Geospatial
+@using GISORA.Application.Roads
+@using GISORA.Application.Territory
+@using GISORA.Application.Territory.Commands
+@using GISORA.Application.Territory.Queries
+@using CoordinateDto = GISORA.Application.Territory.CoordinateDto
+@using GISORA.Domain.Geospatial
+@using GISORA.Domain.Territory
+@using GISORA.Presentation.Shared.Maps
+@using GISORA.Presentation.Shared.Maps.Components
+@inject ITerritoryQueries Territory
+@inject IStreetQueries Streets
+@inject SearchUrbanBlocksHandler SearchBlocks
+@inject GetUrbanBlockHandler GetBlock
+@inject CreateUrbanBlockHandler CreateUrbanBlock
+@inject AddBlockFaceHandler AddBlockFace
+@inject UpdateUrbanBlockGeometryHandler UpdateBlockGeometry
+@inject DeleteUrbanBlockHandler DeleteUrbanBlock
+@inject IGeoJsonSerializer Serializer
+
+<PageHeader Title="Quadras" Description="Quadras fiscais e faces vinculadas aos logradouros." Icon="grid_view" />
+
+@if (_error is not null)
+{
+    <p class="territory__error" role="alert">@_error</p>
+}
+
+@if (_message is not null)
+{
+    <p class="urban-blocks__message" role="status">@_message</p>
+}
+
+<div class="urban-blocks">
+    <RadzenCard>
+        <h2 class="urban-blocks__title">Nova quadra</h2>
+
+        <div class="territory-form">
+            <label class="territory-field">
+                <span>Setor fiscal</span>
+                <select class="territory-select" aria-label="Setor fiscal da quadra" @bind="_sectorId" @bind:after="OnSectorChangedAsync">
+                    @foreach (var sector in _sectors)
+                    {
+                        <option value="@sector.Id.Value">@SectorLabel(sector)</option>
+                    }
+                </select>
+            </label>
+
+            <label class="territory-field territory-field--search" for="urban-block-code">
+                <span>Codigo da quadra</span>
+                <input id="urban-block-code" class="territory-input" placeholder="Codigo da quadra" @bind="_code" />
+            </label>
+
+            <RadzenButton Text="Desenhar contorno" Variant="Variant.Outlined" aria-label="Desenhar contorno da quadra" Click="DrawBlockAsync" />
+            <RadzenButton Text="Concluir desenho" Variant="Variant.Outlined" aria-label="Concluir contorno da quadra" Click="FinishDrawingAsync" />
+            <RadzenButton Icon="add" Text="Cadastrar quadra" ButtonStyle="ButtonStyle.Primary" Click="CreateBlockAsync" />
+        </div>
+
+        @if (_sectors.Count == 0)
+        {
+            <p class="urban-blocks__hint">Cadastre um setor fiscal em Territorio antes de criar quadras.</p>
+        }
+
+        @if (_drawnBlock is not null)
+        {
+            <p class="urban-blocks__hint">Contorno desenhado com @_drawnBlock.Rings[0].Coordinates.Count vertice(s).</p>
+        }
+
+        <RadzenDataGrid TItem="UrbanBlockListItem"
+                        Data="@_blocks"
+                        Density="Density.Compact"
+                        AllowPaging="false"
+                        EmptyText="Nenhuma quadra cadastrada neste setor.">
+            <Columns>
+                <RadzenDataGridColumn TItem="UrbanBlockListItem" Property="Code" Title="Quadra" />
+                <RadzenDataGridColumn TItem="UrbanBlockListItem" Property="FaceCount" Title="Faces" Width="90px" />
+                <RadzenDataGridColumn TItem="UrbanBlockListItem" Property="HasGeometry" Title="Geometria" Width="110px" />
+                <RadzenDataGridColumn TItem="UrbanBlockListItem" Title="Acoes" Width="110px">
+                    <Template Context="block">
+                        <RadzenButton Text="Abrir"
+                                      Size="ButtonSize.ExtraSmall"
+                                      Variant="Variant.Outlined"
+                                      aria-label="@($"Abrir quadra {block.Code}")"
+                                      Click="() => SelectBlockAsync(block.Id)" />
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenCard>
+
+    <RadzenCard>
+        <h2 class="urban-blocks__title">Quadra selecionada</h2>
+
+        @if (_selected is null)
+        {
+            <p class="urban-blocks__hint">Selecione uma quadra na lista para ver as faces e a geometria.</p>
+        }
+        else
+        {
+            <p class="urban-blocks__summary">
+                Quadra <strong>@_selected.Code</strong> — @_selected.Faces.Count face(s).
+            </p>
+
+            <div class="territory-form">
+                <RadzenButton Text="Desenhar contorno" Variant="Variant.Outlined" aria-label="Desenhar contorno da quadra selecionada" Click="DrawBlockGeometryAsync" />
+                <RadzenButton Text="Concluir desenho" Variant="Variant.Outlined" aria-label="Concluir contorno da quadra selecionada" Click="FinishDrawingAsync" />
+                <RadzenButton Text="Salvar geometria" Variant="Variant.Outlined" Disabled="@(_drawnBlock is null)" Click="SaveBlockGeometryAsync" />
+                <RadzenButton Text="Excluir quadra" ButtonStyle="ButtonStyle.Danger" Click="AskDeleteBlock" />
+            </div>
+
+            @if (_confirmDelete)
+            {
+                <p class="territory__error" role="alert">Confirma a exclusao da quadra @_selected.Code?</p>
+
+                <div class="territory-form">
+                    <RadzenButton Text="Confirmar exclusao" ButtonStyle="ButtonStyle.Danger" Click="DeleteBlockAsync" />
+                    <RadzenButton Text="Cancelar exclusao" Variant="Variant.Outlined" Click="CancelDeleteBlock" />
+                </div>
+            }
+
+            <h3 class="urban-blocks__subtitle">Nova face</h3>
+
+            <div class="territory-form">
+                <label class="territory-field">
+                    <span>Logradouro</span>
+                    <select class="territory-select" aria-label="Logradouro da face" @bind="_streetId">
+                        <option value="">Selecione</option>
+                        @foreach (var street in _streets)
+                        {
+                            <option value="@street.Id.Value">@street.Name</option>
+                        }
+                    </select>
+                </label>
+
+                <label class="territory-field">
+                    <span>Testada (m)</span>
+                    <RadzenNumeric TValue="decimal" @bind-Value="_frontage" Min="0.01m" />
+                </label>
+
+                <RadzenButton Text="Desenhar face" Variant="Variant.Outlined" aria-label="Desenhar linha da face" Click="DrawFaceAsync" />
+                <RadzenButton Text="Concluir desenho" Variant="Variant.Outlined" aria-label="Concluir linha da face" Click="FinishDrawingAsync" />
+                <RadzenButton Text="Salvar face" ButtonStyle="ButtonStyle.Primary" Click="AddFaceAsync" />
+            </div>
+
+            @if (_faceLine is not null)
+            {
+                <p class="urban-blocks__hint">Linha da face desenhada com @_faceLine.Coordinates.Count vertice(s).</p>
+            }
+
+            <RadzenDataGrid TItem="BlockFaceDto"
+                            Data="@_selected.Faces"
+                            Density="Density.Compact"
+                            AllowPaging="false"
+                            EmptyText="Nenhuma face cadastrada.">
+                <Columns>
+                    <RadzenDataGridColumn TItem="BlockFaceDto" Title="Logradouro">
+                        <Template Context="face">@StreetName(face.StreetId)</Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="BlockFaceDto" Property="FrontageMeters" Title="Testada (m)" Width="120px" />
+                    <RadzenDataGridColumn TItem="BlockFaceDto" Title="Vertices" Width="100px">
+                        <Template Context="face">@face.Coordinates.Count</Template>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
+        }
+    </RadzenCard>
+</div>
+
+<div class="urban-blocks__map">
+    <MapView @ref="_map" CenterLatitude="-7.95" CenterLongitude="-35.25" Zoom="16" Height="clamp(22rem, calc(100vh - 30rem), 34rem)">
+        <MapToolbar />
+        <CoordinateControl />
+        <DrawingTool @ref="_tool" OnCompleted="OnDrawingCompletedAsync" />
+    </MapView>
+</div>
+
+@code {
+    private IReadOnlyList<DistrictListItem> _districts = [];
+    private IReadOnlyList<FiscalSectorListItem> _sectors = [];
+    private IReadOnlyList<StreetListItem> _streets = [];
+    private IReadOnlyList<UrbanBlockListItem> _blocks = [];
+
+    private Guid? _sectorId;
+    private Guid? _selectedBlockId;
+    private Guid? _streetId;
+    private UrbanBlockDto? _selected;
+    private Polygon? _drawnBlock;
+    private LineString? _faceLine;
+    private MapView? _map;
+    private DrawingTool? _tool;
+    private string? _drawingTarget;
+    private string? _code;
+    private decimal _frontage = 10m;
+    private string? _error;
+    private string? _message;
+    private bool _confirmDelete;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _districts = await Territory.ListDistrictsAsync();
+        _sectors = await Territory.ListFiscalSectorsAsync();
+        _streets = (await Streets.SearchAsync(new StreetFilter { PageSize = 500 })).Items;
+        _sectorId = _sectors.FirstOrDefault()?.Id.Value;
+
+        await ReloadBlocksAsync();
+    }
+
+    private async Task OnSectorChangedAsync()
+    {
+        await ClearSelectionAsync();
+        await ReloadBlocksAsync();
+    }
+
+    private async Task ReloadBlocksAsync()
+    {
+        if (_sectorId is not { } sectorId)
+        {
+            _blocks = [];
+
+            return;
+        }
+
+        var result = await SearchBlocks.HandleAsync(new SearchUrbanBlocksQuery(new UrbanBlockFilter
+        {
+            FiscalSectorId = new FiscalSectorId(sectorId),
+            PageSize = 200,
+        }));
+
+        if (result.IsFailure)
+        {
+            _error = result.Error.Message;
+
+            return;
+        }
+
+        _blocks = result.Value.Items;
+
+        if (_selectedBlockId is { } selected && _blocks.All(block => block.Id.Value != selected))
+        {
+            await ClearSelectionAsync();
+        }
+    }
+
+    private async Task SelectBlockAsync(UrbanBlockId id)
+    {
+        var result = await GetBlock.HandleAsync(new GetUrbanBlockQuery(id));
+
+        if (result.IsFailure)
+        {
+            _error = result.Error.Message;
+
+            return;
+        }
+
+        _selected = result.Value;
+        _selectedBlockId = id.Value;
+        _faceLine = null;
+        _drawnBlock = null;
+        _confirmDelete = false;
+        _error = null;
+
+        await ShowOnMapAsync();
+    }
+
+    private async Task ClearSelectionAsync()
+    {
+        _selected = null;
+        _selectedBlockId = null;
+        _faceLine = null;
+        _confirmDelete = false;
+
+        if (_map is not null)
+        {
+            await _map.RemoveLayerAsync("urban-block");
+        }
+    }
+
+    private async Task CreateBlockAsync()
+    {
+        _error = null;
+        _message = null;
+
+        if (_sectorId is not { } sectorId)
+        {
+            _error = "Cadastre um setor fiscal antes de criar quadras.";
+
+            return;
+        }
+
+        var result = await CreateUrbanBlock.HandleAsync(
+            new CreateUrbanBlockCommand(new FiscalSectorId(sectorId), _code ?? string.Empty, _drawnBlock));
+
+        if (result.IsFailure)
+        {
+            _error = result.Error.Message;
+
+            return;
+        }
+
+        _code = null;
+        _drawnBlock = null;
+        _message = "Quadra cadastrada.";
+
+        await ReloadBlocksAsync();
+        await SelectBlockAsync(result.Value);
+    }
+
+    private async Task AddFaceAsync()
+    {
+        _error = null;
+        _message = null;
+
+        if (_selected is null)
+        {
+            _error = "Selecione uma quadra antes de adicionar faces.";
+
+            return;
+        }
+
+        if (_streetId is not { } streetId)
+        {
+            _error = "Selecione o logradouro da face.";
+
+            return;
+        }
+
+        if (_faceLine is null)
+        {
+            _error = "Desenhe a linha da face no mapa.";
+
+            return;
+        }
+
+        var result = await AddBlockFace.HandleAsync(
+            new AddBlockFaceCommand(_selected.Id, streetId, _faceLine, _frontage));
+
+        if (result.IsFailure)
+        {
+            _error = result.Error.Message;
+
+            return;
+        }
+
+        _faceLine = null;
+        _message = "Face adicionada.";
+
+        await SelectBlockAsync(_selected.Id);
+    }
+
+    private async Task SaveBlockGeometryAsync()
+    {
+        _error = null;
+        _message = null;
+
+        if (_selected is null || _drawnBlock is null)
+        {
+            _error = "Desenhe o contorno da quadra antes de salvar.";
+
+            return;
+        }
+
+        var result = await UpdateBlockGeometry.HandleAsync(
+            new UpdateUrbanBlockGeometryCommand(_selected.Id, _drawnBlock));
+
+        if (result.IsFailure)
+        {
+            _error = result.Error.Message;
+
+            return;
+        }
+
+        _drawnBlock = null;
+        _message = "Geometria da quadra atualizada.";
+
+        await SelectBlockAsync(_selected.Id);
+    }
+
+    private void AskDeleteBlock()
+    {
+        _error = null;
+        _message = null;
+        _confirmDelete = true;
+    }
+
+    private void CancelDeleteBlock() => _confirmDelete = false;
+
+    private async Task DeleteBlockAsync()
+    {
+        _confirmDelete = false;
+
+        if (_selected is null)
+        {
+            return;
+        }
+
+        var result = await DeleteUrbanBlock.HandleAsync(new DeleteUrbanBlockCommand(_selected.Id));
+
+        if (result.IsFailure)
+        {
+            _error = result.Error.Message;
+
+            return;
+        }
+
+        _message = "Quadra excluida.";
+
+        await ClearSelectionAsync();
+        await ReloadBlocksAsync();
+    }
+
+    private async Task DrawBlockAsync()
+    {
+        _drawingTarget = "block";
+        await _tool!.StartDrawingAsync("Polygon");
+    }
+
+    private async Task DrawBlockGeometryAsync()
+    {
+        _drawingTarget = "block";
+        await _tool!.StartDrawingAsync("Polygon");
+    }
+
+    private async Task DrawFaceAsync()
+    {
+        _drawingTarget = "face";
+        await _tool!.StartDrawingAsync("LineString");
+    }
+
+    private async Task FinishDrawingAsync()
+    {
+        var completed = await _tool!.FinishDrawingAsync();
+
+        if (completed is false)
+        {
+            _error = _drawingTarget == "face"
+                ? "Informe ao menos dois pontos para concluir a face."
+                : "Informe ao menos tres pontos para fechar o contorno da quadra.";
+        }
+    }
+
+    private async Task OnDrawingCompletedAsync(string geoJson)
+    {
+        Geometry geometry;
+
+        try
+        {
+            geometry = Serializer.Deserialize(geoJson, SpatialReference.Wgs84);
+        }
+        catch (Exception)
+        {
+            _error = "Geometria invalida.";
+
+            return;
+        }
+
+        if (_drawingTarget == "face" && geometry is LineString line)
+        {
+            _faceLine = line;
+            _error = null;
+
+            return;
+        }
+
+        if (geometry is Polygon polygon)
+        {
+            _drawnBlock = polygon;
+            _error = null;
+
+            return;
+        }
+
+        _error = _drawingTarget == "face"
+            ? "A face exige uma linha."
+            : "O contorno da quadra exige um poligono.";
+    }
+
+    private async Task ShowOnMapAsync()
+    {
+        if (_map is null || _selected is null)
+        {
+            return;
+        }
+
+        var features = new System.Text.Json.Nodes.JsonArray();
+
+        if (_selected.Rings.Count > 0)
+        {
+            features.Add(new System.Text.Json.Nodes.JsonObject
+            {
+                ["type"] = "Feature",
+                ["id"] = _selected.Id.Value.ToString(),
+                ["properties"] = new System.Text.Json.Nodes.JsonObject { ["quadra"] = _selected.Code },
+                ["geometry"] = new System.Text.Json.Nodes.JsonObject
+                {
+                    ["type"] = "Polygon",
+                    ["coordinates"] = ToJsonCoordinates(_selected.Rings),
+                },
+            });
+        }
+
+        foreach (var face in _selected.Faces)
+        {
+            features.Add(new System.Text.Json.Nodes.JsonObject
+            {
+                ["type"] = "Feature",
+                ["id"] = face.Id.ToString(),
+                ["properties"] = new System.Text.Json.Nodes.JsonObject
+                {
+                    ["quadra"] = _selected.Code,
+                    ["logradouro"] = StreetName(face.StreetId),
+                    ["testada"] = face.FrontageMeters.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                },
+                ["geometry"] = new System.Text.Json.Nodes.JsonObject
+                {
+                    ["type"] = "LineString",
+                    ["coordinates"] = new System.Text.Json.Nodes.JsonArray(face.Coordinates
+                        .Select(coordinate => (System.Text.Json.Nodes.JsonNode)new System.Text.Json.Nodes.JsonArray(coordinate.X, coordinate.Y))
+                        .ToArray()),
+                },
+            });
+        }
+
+        if (features.Count == 0)
+        {
+            await _map.RemoveLayerAsync("urban-block");
+
+            return;
+        }
+
+        var collection = new System.Text.Json.Nodes.JsonObject
+        {
+            ["type"] = "FeatureCollection",
+            ["features"] = features,
+        };
+
+        await _map.SetLayerAsync(new MapLayer("urban-block", $"Quadra {_selected.Code}", collection.ToJsonString(), Color: "#b45309"));
+        await _map.FitBoundsAsync();
+    }
+
+    private static System.Text.Json.Nodes.JsonArray ToJsonCoordinates(IReadOnlyList<IReadOnlyList<CoordinateDto>> rings)
+        => new(rings
+            .Select(ring => (System.Text.Json.Nodes.JsonNode)new System.Text.Json.Nodes.JsonArray(
+                ring.Select(coordinate => (System.Text.Json.Nodes.JsonNode)new System.Text.Json.Nodes.JsonArray(coordinate.X, coordinate.Y)).ToArray()))
+            .ToArray());
+
+    private string SectorLabel(FiscalSectorListItem sector)
+        => _districts.FirstOrDefault(district => district.Id == sector.DistrictId) is { } district
+            ? $"{district.Name} / {sector.Code}"
+            : sector.Code;
+
+    private string StreetName(Guid streetId)
+        => _streets.FirstOrDefault(street => street.Id.Value == streetId)?.Name ?? streetId.ToString();
+}
+
