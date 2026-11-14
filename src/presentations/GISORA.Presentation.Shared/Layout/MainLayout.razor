@@ -2,25 +2,29 @@
 @implements IDisposable
 @inject NavigationManager Navigation
 @inject MunicipalityState Municipality
+@inject IJSRuntime Js
+
+<a class="app-skip-link" href="#main-content" @onclick="FocusMainAsync" @onclick:preventDefault>Ir para o conteudo principal</a>
 
 <div class="app-shell @(Collapsed ? "app-shell--collapsed" : null)">
-    <AppHeader Collapsed="Collapsed" Municipality="@Municipality.Name" OnToggle="Toggle" />
+    <AppHeader Collapsed="Collapsed" Expanded="@(!Collapsed || MobileOpen)" Municipality="@Municipality.Name" OnToggle="Toggle" />
 
     <div class="app-body">
         <NavMenu Collapsed="Collapsed" MobileOpen="MobileOpen" OnNavigate="CloseMobile" />
 
         @if (MobileOpen)
         {
-            <div class="app-backdrop" @onclick="CloseMobile" aria-hidden="true"></div>
+            <button type="button" class="app-backdrop" aria-label="Fechar menu" @onclick="CloseMobile"></button>
         }
 
-        <main class="app-content">
+        <main id="main-content" @ref="_mainContent" class="app-content" tabindex="-1">
             @Body
         </main>
     </div>
 </div>
 
 @code {
+    private ElementReference _mainContent;
     private bool _collapsed;
     private bool _mobileOpen;
 
@@ -57,4 +61,13 @@
     }
 
     private void CloseMobile() => _mobileOpen = false;
+
+    private async Task FocusMainAsync()
+    {
+        var module = await Js.InvokeAsync<IJSObjectReference>(
+            "import",
+            "./_content/GISORA.Presentation.Shared/js/a11y.js");
+
+        await module.InvokeVoidAsync("focus", _mainContent);
+    }
 }

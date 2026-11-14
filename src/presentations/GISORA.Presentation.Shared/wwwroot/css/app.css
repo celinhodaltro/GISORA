@@ -448,3 +448,73 @@ body {
         --map-height-map: 26rem;
     }
 }
+
+/* Acessibilidade */
+
+.app-skip-link {
+    position: fixed;
+    top: -4rem;
+    left: 1rem;
+    z-index: 2000;
+    padding: 0.55rem 0.9rem;
+    border: 2px solid var(--gisora-blue-700, #1351b4);
+    border-radius: 6px;
+    background: #ffffff;
+    color: var(--gisora-blue-700, #1351b4);
+    font-weight: 600;
+    text-decoration: none;
+    box-shadow: 0 4px 14px rgba(18, 33, 47, 0.18);
+}
+
+.app-skip-link:focus {
+    top: 0.75rem;
+}
+
+:focus-visible {
+    outline: 3px solid var(--gisora-blue-500, #2f7fb5);
+    outline-offset: 2px;
+}
+
+#main-content:focus {
+    outline: none;
+}
+
+@media (max-width: 60rem) {
+    .app-nav {
+        visibility: hidden;
+    }
+
+    .app-nav--open {
+        visibility: visible;
+    }
+}
+
+@media (max-width: 30rem) {
+    .app-header {
+        gap: 0.5rem;
+        padding: 0 0.65rem;
+    }
+
+    .app-brand__text small {
+        display: none;
+    }
+
+    .app-content {
+        padding: 0.9rem 0.65rem 2rem;
+    }
+
+    .gisora-page-header {
+        flex-wrap: wrap;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
