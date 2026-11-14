@@ -107,6 +107,7 @@ public static class GisoraServiceRegistration
 
         services.AddScoped<CreatePropertyHandler>();
         services.AddScoped<UpdatePropertyGeometryHandler>();
+        services.AddScoped<ClearPropertyGeometryHandler>();
         services.AddScoped<AddOwnershipHandler>();
         services.AddScoped<GetPropertyHandler>();
         services.AddScoped<SearchPropertiesHandler>();

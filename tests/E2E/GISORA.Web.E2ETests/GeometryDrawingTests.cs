@@ -18,7 +18,7 @@ public class GeometryDrawingTests(WebAppFixture fixture)
         await Expect(page.Locator(".geometry-page__registration")).ToHaveCountAsync(1);
         await Expect(page.Locator(".leaflet-container")).ToBeVisibleAsync();
 
-        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Desenhar" }).ClickAsync();
+        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Desenhar poligono" }).ClickAsync();
         await ClickMapAsync(page, 0.30, 0.30);
         await ClickMapAsync(page, 0.65, 0.30);
         await ClickMapAsync(page, 0.65, 0.65);
@@ -56,6 +56,58 @@ public class GeometryDrawingTests(WebAppFixture fixture)
 
         await page.GotoAsync($"{fixture.BaseUrl}/map");
         await Expect(page.Locator("path.leaflet-interactive")).ToHaveCountAsync(1);
+    }
+
+    [Fact]
+    public async Task DrawsPointAndLineThenRemovesGeometryWithConfirmation()
+    {
+        var page = await fixture.NewPageAsync();
+        await SeedAsync(page);
+
+        await page.GotoAsync($"{fixture.BaseUrl}/properties");
+        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Geometria" }).First.ClickAsync();
+        await Expect(page.Locator(".geometry-page__registration")).ToHaveCountAsync(1);
+        await Expect(page.Locator(".leaflet-container")).ToBeVisibleAsync();
+
+        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Desenhar ponto" }).ClickAsync();
+        await ClickMapAsync(page, 0.45, 0.45);
+        await Expect(page.GetByText("Tipo: Point")).ToBeVisibleAsync();
+
+        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Desenhar linha" }).ClickAsync();
+        await ClickMapAsync(page, 0.30, 0.30);
+        await ClickMapAsync(page, 0.55, 0.40);
+        await ClickMapAsync(page, 0.70, 0.55);
+        await Expect(page.Locator(".gisora-map-vertex")).ToHaveCountAsync(3);
+
+        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Desfazer ultimo vertice" }).ClickAsync();
+        await Expect(page.Locator(".gisora-map-vertex")).ToHaveCountAsync(2);
+
+        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Concluir desenho" }).ClickAsync();
+        await Expect(page.GetByText("Tipo: LineString")).ToBeVisibleAsync();
+
+        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Desenhar poligono" }).ClickAsync();
+        await ClickMapAsync(page, 0.30, 0.30);
+        await ClickMapAsync(page, 0.65, 0.30);
+        await ClickMapAsync(page, 0.65, 0.65);
+        await ClickMapAsync(page, 0.30, 0.65);
+        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Concluir desenho" }).ClickAsync();
+        await Expect(page.GetByText("Area calculada")).ToBeVisibleAsync();
+
+        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Salvar geometria" }).ClickAsync();
+        await Expect(page.GetByText("Geometria atualizada.")).ToBeVisibleAsync();
+
+        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Remover geometria" }).ClickAsync();
+        await Expect(page.GetByText("Confirma a remocao da geometria deste imovel?")).ToBeVisibleAsync();
+
+        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Cancelar remocao" }).ClickAsync();
+        await Expect(page.GetByText("Confirma a remocao da geometria deste imovel?")).ToHaveCountAsync(0);
+
+        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Remover geometria" }).ClickAsync();
+        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Confirmar remocao" }).ClickAsync();
+        await Expect(page.GetByText("Geometria removida.")).ToBeVisibleAsync();
+
+        await page.ReloadAsync();
+        await Expect(page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Editar geometria" })).ToBeDisabledAsync();
     }
 
     private static async Task ClickMapAsync(IPage page, double relativeX, double relativeY)

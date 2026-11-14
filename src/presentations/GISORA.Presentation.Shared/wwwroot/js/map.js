@@ -172,14 +172,59 @@ export function invalidateSize(elementId) {
 
 const vertexIcon = L.divIcon({ className: 'gisora-map-vertex', iconSize: [12, 12] });
 
+function normalizeKind(kind) {
+  const value = String(kind ?? 'Polygon').toLowerCase();
+
+  if (value === 'point') {
+    return 'Point';
+  }
+
+  if (value === 'linestring' || value === 'line') {
+    return 'LineString';
+  }
+
+  return 'Polygon';
+}
+
+function toPosition(latlng) {
+  return [latlng.lng, latlng.lat];
+}
+
+function toRing(points) {
+  const ring = points.map(toPosition);
+  ring.push(toPosition(points[0]));
+
+  return ring;
+}
+
+function buildGeometry(kind, points) {
+  if (kind === 'Point') {
+    return { type: 'Point', coordinates: toPosition(points[0]) };
+  }
+
+  if (kind === 'LineString') {
+    return { type: 'LineString', coordinates: points.map(toPosition) };
+  }
+
+  return { type: 'Polygon', coordinates: [toRing(points)] };
+}
+
+function minimumPoints(kind) {
+  if (kind === 'Point') {
+    return 1;
+  }
+
+  return kind === 'LineString' ? 2 : 3;
+}
+
 function disableDraw(elementId) {
   const instance = instances.get(elementId);
   if (!instance || !instance.draw) {
     return;
   }
 
-  if (instance.draw.line) {
-    instance.draw.line.remove();
+  if (instance.draw.preview) {
+    instance.draw.preview.remove();
   }
 
   if (instance.draw.handles) {
@@ -190,10 +235,6 @@ function disableDraw(elementId) {
     instance.draw.marker.remove();
   }
 
-  if (instance.draw.polygon) {
-    instance.draw.polygon.remove();
-  }
-
   if (instance.draw.onMapClick) {
     instance.map.off('click', instance.draw.onMapClick);
   }
@@ -201,7 +242,7 @@ function disableDraw(elementId) {
   instance.draw = null;
 }
 
-export function enableDraw(elementId, dotNetRef) {
+export function enableDraw(elementId, dotNetRef, kind) {
   const instance = instances.get(elementId);
   if (!instance) {
     return false;
@@ -209,15 +250,36 @@ export function enableDraw(elementId, dotNetRef) {
 
   disableDraw(elementId);
 
-  const state = { points: [], line: null, polygon: null, handles: null, dotNetRef };
+  const geometryKind = normalizeKind(kind);
+  const state = { kind: geometryKind, points: [], preview: null, marker: null, handles: [], dotNetRef };
+
+  state.render = () => {
+    if (state.preview === null) {
+      state.preview = geometryKind === 'Polygon'
+        ? L.polygon(state.points, { color: '#1f6f4a', weight: 3, fillOpacity: 0.12 }).addTo(instance.map)
+        : L.polyline(state.points, { color: '#1f6f4a', weight: 3 }).addTo(instance.map);
+    } else {
+      state.preview.setLatLngs(state.points);
+    }
+
+    state.handles.forEach((handle) => handle.remove());
+    state.handles = state.points.map((point) => L.marker(point, { icon: vertexIcon }).addTo(instance.map));
+  };
+
   state.onMapClick = (event) => {
     state.points.push(event.latlng);
 
-    if (state.line === null) {
-      state.line = L.polyline(state.points, { color: '#1f6f4a', weight: 3 }).addTo(instance.map);
-    } else {
-      state.line.setLatLngs(state.points);
+    if (geometryKind === 'Point') {
+      const geometry = buildGeometry(geometryKind, state.points);
+      const notify = state.dotNetRef;
+
+      disableDraw(elementId);
+      notify.invokeMethodAsync('HandleGeometryCompleted', JSON.stringify(geometry));
+
+      return;
     }
+
+    state.render();
   };
 
   instance.draw = state;
@@ -226,19 +288,34 @@ export function enableDraw(elementId, dotNetRef) {
   return true;
 }
 
-export function finishDraw(elementId) {
+export function undoLastVertex(elementId) {
   const instance = instances.get(elementId);
-  if (!instance || !instance.draw || instance.draw.points.length < 3) {
+  if (!instance || !instance.draw || instance.draw.kind === 'Point' || instance.draw.points.length === 0) {
     return false;
   }
 
-  const points = instance.draw.points;
-  const dotNetRef = instance.draw.dotNetRef;
-  const ring = points.map((point) => [point.lng, point.lat]);
-  ring.push([points[0].lng, points[0].lat]);
+  instance.draw.points.pop();
+  instance.draw.render();
+
+  return true;
+}
+
+export function finishDraw(elementId) {
+  const instance = instances.get(elementId);
+  if (!instance || !instance.draw) {
+    return false;
+  }
+
+  const state = instance.draw;
+  if (state.points.length < minimumPoints(state.kind)) {
+    return false;
+  }
+
+  const geometry = buildGeometry(state.kind, state.points);
+  const dotNetRef = state.dotNetRef;
 
   disableDraw(elementId);
-  dotNetRef.invokeMethodAsync('HandleGeometryCompleted', JSON.stringify({ type: 'Polygon', coordinates: [ring] }));
+  dotNetRef.invokeMethodAsync('HandleGeometryCompleted', JSON.stringify(geometry));
 
   return true;
 }
@@ -283,24 +360,33 @@ export function enableEdit(elementId, geoJson, dotNetRef) {
   disableDraw(elementId);
 
   const geometry = JSON.parse(geoJson);
-  const outer = geometry.coordinates[0];
-  const latlngs = outer.slice(0, outer.length - 1).map(([lng, lat]) => L.latLng(lat, lng));
-  const polygon = L.polygon(latlngs, { color: '#2f7fb5', weight: 3 }).addTo(instance.map);
+  if (geometry.type === 'Point') {
+    return false;
+  }
+
+  const isLine = geometry.type === 'LineString';
+  const coordinates = isLine ? geometry.coordinates : geometry.coordinates[0];
+  const positions = isLine ? coordinates : coordinates.slice(0, coordinates.length - 1);
+  const latlngs = positions.map(([lng, lat]) => L.latLng(lat, lng));
+  const shape = isLine
+    ? L.polyline(latlngs, { color: '#2f7fb5', weight: 3 }).addTo(instance.map)
+    : L.polygon(latlngs, { color: '#2f7fb5', weight: 3 }).addTo(instance.map);
 
   const handles = latlngs.map((latlng) => L.marker(latlng, { draggable: true, icon: vertexIcon }).addTo(instance.map));
   const notify = () => {
     const points = handles.map((handle) => handle.getLatLng());
-    polygon.setLatLngs(points);
+    shape.setLatLngs(points);
 
-    const ring = points.map((point) => [point.lng, point.lat]);
-    ring.push([points[0].lng, points[0].lat]);
-    dotNetRef.invokeMethodAsync('HandleGeometryEdited', JSON.stringify({ type: 'Polygon', coordinates: [ring] }));
+    const edited = isLine
+      ? { type: 'LineString', coordinates: points.map(toPosition) }
+      : { type: 'Polygon', coordinates: [toRing(points)] };
+    dotNetRef.invokeMethodAsync('HandleGeometryEdited', JSON.stringify(edited));
   };
 
   handles.forEach((handle) => handle.on('drag', notify));
 
-  instance.draw = { points: [], line: null, polygon, handles, onMapClick: null, dotNetRef };
-  instance.map.fitBounds(polygon.getBounds(), { padding: [24, 24], animate: false });
+  instance.draw = { kind: geometry.type, points: [], preview: shape, marker: null, handles, dotNetRef };
+  instance.map.fitBounds(shape.getBounds(), { padding: [24, 24], animate: false });
 
   return true;
 }

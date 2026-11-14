@@ -256,6 +256,25 @@ public class LocalRepositoryTests
             repository.AddAsync(Municipality.Register("Outro", IbgeCode.Parse("2610509"))));
     }
 
+    [Fact]
+    public async Task PropertyGeometryRemovalRoundTripPreservesNullGeometry()
+    {
+        var store = new InMemoryLocalStore();
+        var repository = new LocalStoragePropertyRepository(store);
+        var property = NewProperty();
+        await repository.AddAsync(property);
+
+        property.ClearGeometry("remocao");
+        await repository.UpdateAsync(property);
+
+        var loaded = await repository.FindAsync(property.Id);
+
+        Assert.NotNull(loaded);
+        Assert.Null(loaded.Geometry);
+        Assert.Single(loaded.History);
+        Assert.Null(loaded.History.Single().CurrentValue);
+    }
+
     private readonly record struct GeoSize(double X, double Y)
     {
         public static GeoSize Origin => new(0, 0);

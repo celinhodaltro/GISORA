@@ -22,12 +22,12 @@
     [Inject]
     private IJSRuntime Js { get; set; } = default!;
 
-    public async Task StartDrawingAsync()
+    public async Task StartDrawingAsync(string kind = "Polygon")
     {
         var module = await ModuleAsync();
         _reference ??= DotNetObjectReference.Create(this);
 
-        await module.InvokeVoidAsync("enableDraw", Map!.ElementId, _reference);
+        await module.InvokeVoidAsync("enableDraw", Map!.ElementId, _reference, kind);
     }
 
     public async Task<bool> FinishDrawingAsync()
@@ -35,6 +35,13 @@
         var module = await ModuleAsync();
 
         return await module.InvokeAsync<bool>("finishDraw", Map!.ElementId);
+    }
+
+    public async Task UndoLastVertexAsync()
+    {
+        var module = await ModuleAsync();
+
+        await module.InvokeVoidAsync("undoLastVertex", Map!.ElementId);
     }
 
     public async Task StartPickingPointAsync()

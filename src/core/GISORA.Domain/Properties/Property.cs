@@ -86,6 +86,24 @@ public sealed class Property : AggregateRoot<PropertyId>
         Raise(new PropertyGeometryChanged(Id));
     }
 
+    public void ClearGeometry(string reason, DateTimeOffset? changedAt = null)
+    {
+        if (Geometry is null)
+        {
+            return;
+        }
+
+        _history.Add(new CadastralHistoryEntry(
+            Guid.CreateVersion7(),
+            changedAt ?? DateTimeOffset.UtcNow,
+            "geometry",
+            Describe(Geometry),
+            null));
+
+        Geometry = null;
+        Raise(new PropertyGeometryChanged(Id));
+    }
+
     public void ChangeAddress(Address address, DateTimeOffset? changedAt = null)
     {
         Guard.NotNull(address, nameof(address));
