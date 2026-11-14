@@ -1,0 +1,96 @@
+.backup-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: var(--gisora-space-4, 1rem);
+    align-items: start;
+}
+
+.backup-title {
+    margin: 0 0 var(--gisora-space-2, 0.5rem);
+    font-size: 1rem;
+}
+
+.backup-subtitle {
+    margin: var(--gisora-space-3, 0.75rem) 0 var(--gisora-space-2, 0.5rem);
+    font-size: 0.9rem;
+}
+
+.backup-text,
+.backup-hint {
+    color: var(--gisora-muted, #5a6b7b);
+    font-size: 0.85rem;
+}
+
+.backup-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--gisora-space-3, 0.75rem);
+}
+
+.backup-divider {
+    margin: var(--gisora-space-4, 1rem) 0;
+    border: none;
+    border-top: 1px solid var(--gisora-border, #dde4ec);
+}
+
+.backup-file {
+    display: block;
+    margin-bottom: var(--gisora-space-2, 0.5rem);
+    font-size: 0.85rem;
+}
+
+.backup-file-name,
+.backup-validation p {
+    margin: 0.2rem 0;
+    font-size: 0.82rem;
+}
+
+.backup-validation {
+    padding: 0.55rem 0.7rem;
+    margin: var(--gisora-space-2, 0.5rem) 0;
+    border: 1px solid var(--gisora-border, #dde4ec);
+    border-radius: var(--gisora-radius-sm, 6px);
+    background: var(--gisora-surface-alt, #f7f9fc);
+}
+
+.backup-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin: var(--gisora-space-2, 0.5rem) 0;
+    font-size: 0.85rem;
+}
+
+.backup-select {
+    padding: 0.4rem 0.5rem;
+    border: 1px solid var(--gisora-border, #d9e0dc);
+    border-radius: var(--gisora-radius-sm, 4px);
+    background: #ffffff;
+    font: inherit;
+}
+
+.backup-check {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin: var(--gisora-space-2, 0.5rem) 0 var(--gisora-space-3, 0.75rem);
+    font-size: 0.82rem;
+    color: var(--gisora-ink-soft, #3b4b5a);
+}
+
+.backup-limits {
+    margin: 0;
+    padding-left: 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    font-size: 0.83rem;
+    color: var(--gisora-ink-soft, #3b4b5a);
+}
+
+@media (max-width: 900px) {
+    .backup-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
