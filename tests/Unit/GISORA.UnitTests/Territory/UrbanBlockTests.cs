@@ -11,6 +11,15 @@ internal static class Geo
             new Coordinate(x1, y1, SpatialReference.Wgs84),
             new Coordinate(x2, y2, SpatialReference.Wgs84),
         ]));
+
+    public static Polygon Square(double x, double y, double size)
+        => new([new CoordinateSequence([
+            new Coordinate(x, y, SpatialReference.Wgs84),
+            new Coordinate(x + size, y, SpatialReference.Wgs84),
+            new Coordinate(x + size, y + size, SpatialReference.Wgs84),
+            new Coordinate(x, y + size, SpatialReference.Wgs84),
+            new Coordinate(x, y, SpatialReference.Wgs84),
+        ])]);
 }
 
 public class UrbanBlockTests
@@ -90,5 +99,26 @@ public class UrbanBlockTests
 
         Assert.Throws<DomainException>(() =>
             block.AddFace(Guid.Empty, Geo.Segment(0, 0, 10, 0), Distance.FromMeters(10)));
+    }
+
+    [Fact]
+    public void KeepsGeometryInformedOnCreation()
+    {
+        var geometry = Geo.Square(0, 0, 10);
+
+        var block = UrbanBlock.Create(Sector, "Q-01", geometry);
+
+        Assert.Same(geometry, block.Geometry);
+    }
+
+    [Fact]
+    public void ChangeGeometryRaisesEvent()
+    {
+        var block = UrbanBlock.Create(Sector, "Q-01");
+
+        block.ChangeGeometry(Geo.Square(0, 0, 10));
+
+        Assert.NotNull(block.Geometry);
+        Assert.IsType<UrbanBlockGeometryChanged>(block.DomainEvents.Last());
     }
 }

@@ -23,7 +23,7 @@ public class DemoDataSeederTests
             new CreateDistrictHandler(new LocalStorageDistrictRepository(store)),
             new CreateNeighborhoodHandler(new LocalStorageNeighborhoodRepository(store)),
             new CreateFiscalSectorHandler(new LocalStorageFiscalSectorRepository(store)),
-            new CreateUrbanBlockHandler(new LocalStorageUrbanBlockRepository(store)),
+            new CreateUrbanBlockHandler(new LocalStorageUrbanBlockRepository(store), new GISORA.UnitTests.Properties.Fakes.FakeGeometryValidator()),
             new CreateStreetHandler(new LocalStorageStreetRepository(store)),
             new CreatePropertyHandler(new LocalStoragePropertyRepository(store), new FakePropertyGeometryValidator()),
             new CreateFacilityHandler(new LocalStorageFacilityRepository(store)));
@@ -50,7 +50,7 @@ public class DemoDataSeederTests
             new CreateDistrictHandler(new LocalStorageDistrictRepository(store)),
             new CreateNeighborhoodHandler(new LocalStorageNeighborhoodRepository(store)),
             new CreateFiscalSectorHandler(new LocalStorageFiscalSectorRepository(store)),
-            new CreateUrbanBlockHandler(new LocalStorageUrbanBlockRepository(store)),
+            new CreateUrbanBlockHandler(new LocalStorageUrbanBlockRepository(store), new GISORA.UnitTests.Properties.Fakes.FakeGeometryValidator()),
             new CreateStreetHandler(new LocalStorageStreetRepository(store)),
             new CreatePropertyHandler(new LocalStoragePropertyRepository(store), new FakePropertyGeometryValidator()),
             new CreateFacilityHandler(new LocalStorageFacilityRepository(store)));

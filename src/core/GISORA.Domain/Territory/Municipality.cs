@@ -9,6 +9,8 @@ public sealed record UrbanBlockCreated(UrbanBlockId UrbanBlockId, FiscalSectorId
 
 public sealed record BlockFaceAdded(UrbanBlockId UrbanBlockId, Guid BlockFaceId) : DomainEvent;
 
+public sealed record UrbanBlockGeometryChanged(UrbanBlockId UrbanBlockId) : DomainEvent;
+
 public sealed class Municipality : AggregateRoot<MunicipalityId>
 {
     private Municipality(MunicipalityId id, string name, IbgeCode ibgeCode, Geometry? boundary)

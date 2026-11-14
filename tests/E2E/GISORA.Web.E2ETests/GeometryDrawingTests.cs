@@ -70,6 +70,7 @@ public class GeometryDrawingTests(WebAppFixture fixture)
         await Expect(page.Locator(".leaflet-container")).ToBeVisibleAsync();
 
         await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Desenhar ponto" }).ClickAsync();
+        await page.WaitForTimeoutAsync(400);
         await ClickMapAsync(page, 0.45, 0.45);
         await Expect(page.GetByText("Tipo: Point")).ToBeVisibleAsync();
 

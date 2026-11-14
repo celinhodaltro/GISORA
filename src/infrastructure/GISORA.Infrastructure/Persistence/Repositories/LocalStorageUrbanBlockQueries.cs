@@ -8,6 +8,7 @@ namespace GISORA.Infrastructure.Persistence.Repositories;
 public sealed class LocalStorageUrbanBlockQueries(ILocalStore store) : IUrbanBlockQueries
 {
     private const string IndexKey = "urbanblock-index";
+    private const string IdsKey = "urbanblock-ids";
 
     public async Task<PagedResult<UrbanBlockListItem>> SearchAsync(UrbanBlockFilter filter, CancellationToken cancellationToken = default)
     {
@@ -33,9 +34,28 @@ public sealed class LocalStorageUrbanBlockQueries(ILocalStore store) : IUrbanBlo
                 new UrbanBlockId(entry.Id),
                 new FiscalSectorId(entry.FiscalSectorId),
                 entry.Code,
-                entry.FaceCount))
+                entry.FaceCount,
+                entry.HasGeometry))
             .ToArray();
 
         return new PagedResult<UrbanBlockListItem>(items, filter.PageNumber, filter.PageSize, ordered.Length);
+    }
+
+    public async Task<IReadOnlyList<UrbanBlockMapItem>> GetMapItemsAsync(CancellationToken cancellationToken = default)
+    {
+        var ids = await store.GetAsync<List<Guid>>(StorageNamespaces.Territory, IdsKey, cancellationToken) ?? [];
+        var items = new List<UrbanBlockMapItem>();
+
+        foreach (var id in ids)
+        {
+            var document = await store.GetAsync<UrbanBlockDocument>(StorageNamespaces.Territory, $"urbanblock-{id}", cancellationToken);
+
+            if (document is not null)
+            {
+                items.Add(UrbanBlockMapItem.From(document.ToDomain()));
+            }
+        }
+
+        return items;
     }
 }

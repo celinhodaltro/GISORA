@@ -111,12 +111,15 @@ internal sealed class UrbanBlockDocument
 
     public string Code { get; init; } = string.Empty;
 
+    public GeometryDocument? Geometry { get; init; }
+
     public List<BlockFaceDocument> Faces { get; init; } = [];
 
     public UrbanBlock ToDomain() => UrbanBlock.Rehydrate(
         new UrbanBlockId(Id),
         new FiscalSectorId(FiscalSectorId),
         Code,
+        Geometry?.ToDomain() is Polygon boundary ? boundary : null,
         Faces.Select(face => face.ToDomain()));
 
     public static UrbanBlockDocument FromDomain(UrbanBlock block) => new()
@@ -124,6 +127,7 @@ internal sealed class UrbanBlockDocument
         Id = block.Id.Value,
         FiscalSectorId = block.FiscalSectorId.Value,
         Code = block.Code,
+        Geometry = block.Geometry is null ? null : GeometryDocument.FromDomain(block.Geometry),
         Faces = block.Faces.Select(BlockFaceDocument.FromDomain).ToList(),
     };
 }
@@ -140,6 +144,8 @@ internal sealed record UrbanBlockIndexEntry
 
     public int FaceCount { get; init; }
 
+    public bool HasGeometry { get; init; }
+
     public static UrbanBlockIndexEntry FromDomain(UrbanBlock block) => new()
     {
         Id = block.Id.Value,
@@ -147,5 +153,6 @@ internal sealed record UrbanBlockIndexEntry
         Code = block.Code,
         CodeSearch = block.Code.ToUpperInvariant(),
         FaceCount = block.Faces.Count,
+        HasGeometry = block.Geometry is not null,
     };
 }

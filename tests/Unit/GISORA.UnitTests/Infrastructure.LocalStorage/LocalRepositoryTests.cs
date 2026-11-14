@@ -217,6 +217,36 @@ public class LocalRepositoryTests
     }
 
     [Fact]
+    public async Task UrbanBlockRoundTripPreservesGeometryAndDeleteRemovesIndex()
+    {
+        var store = new InMemoryLocalStore();
+        var repository = new LocalStorageUrbanBlockRepository(store);
+        var queries = new LocalStorageUrbanBlockQueries(store);
+        var block = UrbanBlock.Create(FiscalSectorId.New(), "Q-05", new Polygon(new CoordinateSequence[]
+        {
+            new([
+                new Coordinate(0, 0, SpatialReference.Wgs84),
+                new Coordinate(10, 0, SpatialReference.Wgs84),
+                new Coordinate(10, 10, SpatialReference.Wgs84),
+                new Coordinate(0, 0, SpatialReference.Wgs84),
+            ]),
+        }));
+
+        await repository.AddAsync(block);
+        var loaded = await repository.FindAsync(block.Id);
+
+        Assert.NotNull(loaded);
+        Assert.NotNull(loaded.Geometry);
+        Assert.True((await queries.SearchAsync(new UrbanBlockFilter { PageSize = 10 })).Items[0].HasGeometry);
+
+        await repository.DeleteAsync(block.Id);
+
+        Assert.Null(await repository.FindAsync(block.Id));
+        Assert.Empty((await queries.SearchAsync(new UrbanBlockFilter { PageSize = 10 })).Items);
+        Assert.Empty(await queries.GetMapItemsAsync());
+    }
+
+    [Fact]
     public async Task TaxpayerRoundTripKeepsDocumentValid()
     {
         var store = new InMemoryLocalStore();

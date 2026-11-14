@@ -9,4 +9,6 @@ public interface IUrbanBlockRepository
     Task AddAsync(UrbanBlock urbanBlock, CancellationToken cancellationToken = default);
 
     Task UpdateAsync(UrbanBlock urbanBlock, CancellationToken cancellationToken = default);
+
+    Task DeleteAsync(UrbanBlockId id, CancellationToken cancellationToken = default);
 }
