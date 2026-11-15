@@ -103,9 +103,9 @@ public class AccessibilityTests(WebAppFixture fixture)
 
         await Expect(page.Locator("#app-nav")).ToBeVisibleAsync();
 
-        await page.GetByRole(AriaRole.Link, new PageGetByRoleOptions { Name = "Imoveis" }).ClickAsync();
+        await page.GetByRole(AriaRole.Link, new PageGetByRoleOptions { Name = "Cadastro no mapa" }).ClickAsync();
 
-        await Expect(page).ToHaveURLAsync(new Regex("/cadastro/imoveis$"));
+        await Expect(page).ToHaveURLAsync(new Regex("/cadastro/quadras$"));
         await Expect(page.Locator("#app-nav")).ToBeHiddenAsync();
     }
 }

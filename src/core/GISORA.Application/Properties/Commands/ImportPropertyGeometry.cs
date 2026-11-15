@@ -120,13 +120,13 @@ public sealed class ImportPropertyGeometryHandler(
                     ? feature.Geometry
                     : await transformer.TransformAsync(feature.Geometry, target, cancellationToken);
 
-                if (geometry is not Polygon polygon)
+                if (geometry is not (Polygon or MultiPolygon))
                 {
                     skipped.Add($"Imovel {property.Registration.Formatted}: tipo {geometry.Type} nao suportado.");
                     continue;
                 }
 
-                var validation = await validator.ValidateAsync(polygon, property.Id, cancellationToken);
+                var validation = await validator.ValidateAsync(geometry, property.Id, cancellationToken);
 
                 if (validation.IsValid is false)
                 {
@@ -134,7 +134,7 @@ public sealed class ImportPropertyGeometryHandler(
                     continue;
                 }
 
-                property.ChangeGeometry(polygon, $"importacao GeoJSON {origin} ({source} -> {target})");
+                property.ChangeGeometry(geometry, $"importacao GeoJSON {origin} ({source} -> {target})");
                 await repository.UpdateAsync(property, cancellationToken);
 
                 await log.RecordAsync(

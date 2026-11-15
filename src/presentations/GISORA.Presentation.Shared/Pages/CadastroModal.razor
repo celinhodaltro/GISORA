@@ -245,6 +245,7 @@
     private string GeometrySummary => Form.Geometry switch
     {
         null => string.Empty,
+        MultiPolygon multiPolygon => $"Geometria: multi-poligono com {multiPolygon.Polygons.Count} parte(s).",
         Polygon polygon => $"Geometria: poligono com {polygon.Rings[0].Coordinates.Count - 1} vertice(s).",
         GISORA.Domain.Geospatial.Point => "Geometria: ponto.",
         _ => $"Geometria: {Form.Geometry.Type}.",
