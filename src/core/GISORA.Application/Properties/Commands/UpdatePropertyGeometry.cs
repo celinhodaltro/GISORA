@@ -1,11 +1,11 @@
-using GISORA.Application.Common;
+﻿using GISORA.Application.Common;
 using GISORA.Domain.Common;
 using GISORA.Domain.Geospatial;
 using GISORA.Domain.Properties;
 
 namespace GISORA.Application.Properties.Commands;
 
-public sealed record UpdatePropertyGeometryCommand(PropertyId PropertyId, Polygon Geometry, string? Reason);
+public sealed record UpdatePropertyGeometryCommand(PropertyId PropertyId, Geometry Geometry, string? Reason);
 
 public sealed class UpdatePropertyGeometryHandler(
     IPropertyRepository repository,

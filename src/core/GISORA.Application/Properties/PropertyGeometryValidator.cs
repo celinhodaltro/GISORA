@@ -16,23 +16,50 @@ public sealed class PropertyGeometryValidator(
     private const decimal OverlapToleranceSquareMeters = 1m;
 
     public async Task<GeometryValidationResult> ValidateAsync(
-        Polygon geometry,
+        Geometry geometry,
         PropertyId? excludedPropertyId = null,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(geometry);
 
-        var issues = new List<GeometryIssue>(GeometryDiagnostics.Inspect(geometry));
-        var structural = await geometryValidator.ValidateAsync(geometry, cancellationToken);
-
-        foreach (var issue in structural.Issues)
+        var polygons = geometry switch
         {
-            if (issues.Any(existing => existing.Code == issue.Code))
+            Polygon polygon => [polygon],
+            MultiPolygon multiPolygon => multiPolygon.Polygons,
+            _ => [],
+        };
+
+        if (polygons.Count == 0)
+        {
+            return GeometryValidationResult.FromIssues(
+                [new GeometryIssue("properties.geometry.type", "Geometria deve ser poligono ou multipoligono.", null)]);
+        }
+
+        var issues = new List<GeometryIssue>();
+
+        foreach (var polygon in polygons)
+        {
+            foreach (var issue in GeometryDiagnostics.Inspect(polygon))
             {
-                continue;
+                if (issues.Any(existing => existing.Code == issue.Code))
+                {
+                    continue;
+                }
+
+                issues.Add(issue);
             }
 
-            issues.Add(issue);
+            var structural = await geometryValidator.ValidateAsync(polygon, cancellationToken);
+
+            foreach (var issue in structural.Issues)
+            {
+                if (issues.Any(existing => existing.Code == issue.Code))
+                {
+                    continue;
+                }
+
+                issues.Add(issue);
+            }
         }
 
         if (issues.Count > 0)
@@ -59,24 +86,27 @@ public sealed class PropertyGeometryValidator(
                 continue;
             }
 
-            var intersection = await spatial.IntersectionAsync(geometry, candidate.Geometry, cancellationToken);
-
-            if (intersection is null)
+            foreach (var polygon in polygons)
             {
-                continue;
+                var intersection = await spatial.IntersectionAsync(polygon, candidate.Geometry, cancellationToken);
+
+                if (intersection is null)
+                {
+                    continue;
+                }
+
+                var overlapArea = (await spatial.AreaAsync(intersection, cancellationToken)).SquareMeters;
+
+                if (overlapArea <= OverlapToleranceSquareMeters)
+                {
+                    continue;
+                }
+
+                issues.Add(new GeometryIssue(
+                    OverlapCode,
+                    $"Geometria sobrepoe o imovel {candidate.Registration} em {overlapArea.ToString("N2", CultureInfo.InvariantCulture)} m2.",
+                    intersection.Coordinates.Count > 0 ? intersection.Coordinates[0] : null));
             }
-
-            var overlapArea = (await spatial.AreaAsync(intersection, cancellationToken)).SquareMeters;
-
-            if (overlapArea <= OverlapToleranceSquareMeters)
-            {
-                continue;
-            }
-
-            issues.Add(new GeometryIssue(
-                OverlapCode,
-                $"Geometria sobrepoe o imovel {candidate.Registration} em {overlapArea.ToString("N2", CultureInfo.InvariantCulture)} m2.",
-                intersection.Coordinates.Count > 0 ? intersection.Coordinates[0] : null));
         }
 
         return GeometryValidationResult.FromIssues(issues);

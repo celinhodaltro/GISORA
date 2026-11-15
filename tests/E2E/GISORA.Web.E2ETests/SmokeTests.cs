@@ -16,7 +16,7 @@ public class SmokeTests(WebAppFixture fixture)
 
         await Expect(page).ToHaveTitleAsync("GISORA");
         await Expect(page.Locator(".app-brand")).ToContainTextAsync("GISORA");
-        await Expect(page.GetByRole(AriaRole.Link, new PageGetByRoleOptions { Name = "Imoveis" })).ToBeVisibleAsync();
+        await Expect(page.GetByRole(AriaRole.Link, new PageGetByRoleOptions { Name = "Cadastro no mapa" })).ToBeVisibleAsync();
         await Expect(page.GetByRole(AriaRole.Heading, new PageGetByRoleOptions { Name = "Painel territorial" })).ToBeVisibleAsync();
     }
 
@@ -26,11 +26,13 @@ public class SmokeTests(WebAppFixture fixture)
         var page = await fixture.NewPageAsync();
         await page.GotoAsync(fixture.BaseUrl);
 
-        await page.GetByRole(AriaRole.Link, new PageGetByRoleOptions { Name = "Imoveis" }).ClickAsync();
+        await page.GetByRole(AriaRole.Link, new PageGetByRoleOptions { Name = "Cadastro no mapa" }).ClickAsync();
 
-        await Expect(page).ToHaveURLAsync(new System.Text.RegularExpressions.Regex("/cadastro/imoveis$"));
+        await Expect(page).ToHaveURLAsync(new System.Text.RegularExpressions.Regex("/cadastro/quadras$"));
         await Expect(page.Locator(".leaflet-container")).ToBeVisibleAsync();
         await Expect(page.Locator(".cadastro-bar__item")).ToHaveCountAsync(4);
+        await Expect(page.GetByText("Cadastro territorial", new PageGetByTextOptions { Exact = true })).ToBeVisibleAsync();
+        await Expect(page.Locator(".app-nav").GetByRole(AriaRole.Link, new LocatorGetByRoleOptions { Name = "Imoveis", Exact = true })).ToHaveCountAsync(0);
     }
 
     [Fact]

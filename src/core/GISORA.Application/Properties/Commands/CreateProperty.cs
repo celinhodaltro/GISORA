@@ -1,4 +1,4 @@
-using GISORA.Application.Common;
+﻿using GISORA.Application.Common;
 using GISORA.Domain.Common;
 using GISORA.Domain.Geospatial;
 using GISORA.Domain.Properties;
@@ -14,7 +14,7 @@ public sealed record CreatePropertyCommand(
     string Number,
     Guid NeighborhoodId,
     decimal LandAreaSquareMeters,
-    Polygon? Geometry);
+    Geometry? Geometry);
 
 public sealed class CreatePropertyHandler(
     IPropertyRepository repository,
