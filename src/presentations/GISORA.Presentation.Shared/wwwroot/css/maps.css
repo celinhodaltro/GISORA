@@ -200,6 +200,11 @@
     color: var(--gisora-ink-soft, #3b4b5a);
 }
 
+.gisora-layer-control__item--locked {
+    cursor: not-allowed;
+    opacity: 0.68;
+}
+
 .gisora-feature-inspector {
     padding: 1rem;
     background: var(--gisora-surface, #ffffff);

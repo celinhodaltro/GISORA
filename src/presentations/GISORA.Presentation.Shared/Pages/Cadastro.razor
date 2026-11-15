@@ -1,0 +1,179 @@
+@page "/cadastro"
+@page "/cadastro/{ModuleSlug}"
+@using GISORA.Application.Geospatial
+@using GISORA.Application.Properties
+@using GISORA.Application.PublicFacilities
+@using GISORA.Application.Rural
+@using GISORA.Application.Territory
+@using GISORA.Presentation.Shared.Maps
+@using GISORA.Presentation.Shared.Maps.Components
+@inject IPropertyMapQueries PropertyMapQueries
+@inject IFacilityQueries FacilityQueries
+@inject IUrbanBlockQueries UrbanBlockQueries
+@inject IRuralPropertyQueries RuralQueries
+@inject IGeoJsonSerializer Serializer
+@inject NavigationManager Navigation
+
+<div class="cadastro">
+    <MapView @ref="_map"
+             CenterLatitude="-7.95"
+             CenterLongitude="-35.25"
+             Zoom="14"
+             Height="100%"
+             OnReady="ApplyLayersAsync">
+        <nav class="cadastro-bar" aria-label="Modulos de cadastro">
+            @foreach (var module in Modules)
+            {
+                <a class="cadastro-bar__item @(IsActive(module) ? "cadastro-bar__item--active" : null)"
+                   href="@($"cadastro/{module.Slug}")"
+                   title="@module.Label"
+                   aria-label="@module.Label"
+                   aria-current="@(IsActive(module) ? "page" : null)">
+                    <RadzenIcon Icon="@module.Icon" />
+                </a>
+            }
+        </nav>
+
+        <MapToolbar />
+        <LayerControl Layers="_layers" LockedLayerIds="LockedLayerIds" />
+        <CoordinateControl Crs="EPSG:4326" />
+    </MapView>
+</div>
+
+@code {
+    private sealed record CadastroModule(string Slug, string Label, string Icon, string[] LayerIds);
+
+    private static readonly CadastroModule[] Modules =
+    [
+        new CadastroModule("quadras", "Quadras", "grid_view", ["cadastro-quadras", "cadastro-quadras-faces"]),
+        new CadastroModule("imoveis", "Imoveis", "home_work", ["cadastro-imoveis"]),
+        new CadastroModule("equipamentos", "Equipamentos", "school", ["cadastro-equipamentos"]),
+        new CadastroModule("rurais", "Rurais", "agriculture", ["cadastro-rurais", "cadastro-rurais-app"]),
+    ];
+
+    private readonly List<MapLayer> _layers = [];
+
+    private MapView? _map;
+    private CadastroModule _activeModule = Modules[0];
+
+    private IReadOnlyList<PropertyMapItem> _properties = [];
+    private IReadOnlyList<FacilityMapItem> _facilities = [];
+    private IReadOnlyList<UrbanBlockMapItem> _urbanBlocks = [];
+    private IReadOnlyList<RuralPropertyMapItem> _ruralProperties = [];
+    private IReadOnlyList<PreservationAreaMapItem> _preservationAreas = [];
+
+    private IReadOnlyCollection<string> LockedLayerIds => _activeModule.LayerIds;
+
+    [Parameter]
+    public string? ModuleSlug { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (string.IsNullOrWhiteSpace(ModuleSlug))
+        {
+            Navigation.NavigateTo($"cadastro/{Modules[0].Slug}", replace: true);
+
+            return;
+        }
+
+        var slug = ModuleSlug.Trim().ToLowerInvariant();
+        var module = Modules.FirstOrDefault(candidate => candidate.Slug == slug);
+
+        if (module is null)
+        {
+            Navigation.NavigateTo($"cadastro/{Modules[0].Slug}", replace: true);
+
+            return;
+        }
+
+        _activeModule = module;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _properties = await PropertyMapQueries.GetMapItemsAsync();
+        _facilities = await FacilityQueries.GetMapItemsAsync();
+        _urbanBlocks = await UrbanBlockQueries.GetMapItemsAsync();
+        _ruralProperties = await RuralQueries.GetMapItemsAsync();
+        _preservationAreas = await RuralQueries.GetPreservationAreaMapItemsAsync();
+
+        BuildLayers();
+    }
+
+    private bool IsActive(CadastroModule module) => _activeModule.Slug == module.Slug;
+
+    private void BuildLayers()
+    {
+        _layers.Clear();
+
+        if (_urbanBlocks.Any(block => block.Rings.Count > 0))
+        {
+            _layers.Add(new MapLayer(
+                "cadastro-quadras",
+                "Quadras",
+                UrbanBlockMapProjector.ToBlockFeatureCollection(_urbanBlocks),
+                Color: "#b45309"));
+        }
+
+        if (_urbanBlocks.Any(block => block.Faces.Count > 0))
+        {
+            _layers.Add(new MapLayer(
+                "cadastro-quadras-faces",
+                "Faces de quadra",
+                UrbanBlockMapProjector.ToFaceFeatureCollection(_urbanBlocks),
+                Color: "#7c2d12"));
+        }
+
+        if (_properties.Count > 0)
+        {
+            _layers.Add(new MapLayer(
+                "cadastro-imoveis",
+                "Imoveis",
+                PropertyMapProjector.ToFeatureCollection(_properties, Serializer),
+                Color: "#1f7a5c"));
+        }
+
+        if (_facilities.Count > 0)
+        {
+            _layers.Add(new MapLayer(
+                "cadastro-equipamentos",
+                "Equipamentos",
+                FacilityMapProjector.ToFeatureCollection(_facilities, Serializer),
+                Color: "#1351b4",
+                Legend: FacilityMapProjector.ToLegend(_facilities)));
+        }
+
+        if (_ruralProperties.Count > 0)
+        {
+            _layers.Add(new MapLayer(
+                "cadastro-rurais",
+                "Rurais",
+                RuralMapProjector.PropertiesToFeatureCollection(_ruralProperties, Serializer),
+                Color: "#7c5a12"));
+        }
+
+        if (_preservationAreas.Count > 0)
+        {
+            _layers.Add(new MapLayer(
+                "cadastro-rurais-app",
+                "APP",
+                RuralMapProjector.PreservationAreasToFeatureCollection(_preservationAreas, Serializer),
+                Color: "#0f766e"));
+        }
+    }
+
+    private async Task ApplyLayersAsync()
+    {
+        if (_map is null)
+        {
+            return;
+        }
+
+        foreach (var layer in _layers)
+        {
+            await _map.SetLayerAsync(layer);
+        }
+
+        await _map.FitBoundsAsync();
+    }
+}

@@ -38,8 +38,8 @@ Restricoes atuais:
 
 ### Camada ativa
 
-- `LayerControl` ganha o contrato de bloqueio (`LockedLayerIds`): enquanto houver criacao ou edicao em um modulo, a camada desse modulo fica visivel e o checkbox desabilitado, com explicacao acessivel.
-- Ao finalizar ou cancelar, o estado de visibilidade anterior e restaurado.
+- `LayerControl` ganha o contrato de bloqueio (`LockedLayerIds`): enquanto um modulo esta ativo, as camadas desse modulo ficam visiveis e o checkbox desabilitado, com explicacao acessivel. O modulo ativo e o contexto de cadastro corrente, e a regra continua valendo durante criacao e edicao.
+- Ao trocar de modulo, o estado de visibilidade anterior e restaurado.
 
 ### Criacao
 

@@ -1,0 +1,64 @@
+.cadastro {
+    position: relative;
+    height: calc(100dvh - 3.75rem);
+    margin: -1.75rem -2rem -3rem;
+    overflow: hidden;
+    background: #eef2f6;
+}
+
+.cadastro ::deep .gisora-map-wrapper {
+    height: 100%;
+    min-height: 0;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.cadastro-bar {
+    position: absolute;
+    top: 0.75rem;
+    left: 0.75rem;
+    z-index: 650;
+    display: flex;
+    gap: 0.25rem;
+    padding: 0.3rem;
+    border: 1px solid var(--gisora-border, #dde4ec);
+    border-radius: var(--gisora-radius-md, 10px);
+    background: #ffffff;
+    box-shadow: 0 4px 14px rgba(18, 33, 47, 0.14);
+}
+
+.cadastro-bar__item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.3rem;
+    height: 2.3rem;
+    border-radius: var(--gisora-radius-sm, 6px);
+    color: #2c3e50;
+    text-decoration: none;
+}
+
+.cadastro-bar__item:hover {
+    background: var(--gisora-blue-50, #f3f7fd);
+    color: var(--gisora-blue-700, #1351b4);
+}
+
+.cadastro-bar__item--active {
+    background: var(--gisora-blue-700, #1351b4);
+    color: #ffffff;
+}
+
+.cadastro-bar__item--active:hover {
+    background: var(--gisora-blue-700, #1351b4);
+    color: #ffffff;
+}
+
+.cadastro-bar__item ::deep .rzi {
+    font-size: 1.2rem;
+    --rz-icon-size: 1.2rem;
+}
+
+.cadastro ::deep .gisora-layer-control {
+    top: 4.05rem;
+}

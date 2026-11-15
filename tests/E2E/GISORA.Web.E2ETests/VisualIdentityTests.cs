@@ -18,7 +18,7 @@ public class VisualIdentityTests(WebAppFixture fixture)
         await Expect(page.Locator(".app-header__env")).ToContainTextAsync("Base local");
         await Expect(page.Locator(".app-header__municipality")).ToHaveTextAsync("Nao definido");
         await Expect(page.GetByRole(AriaRole.Link, new PageGetByRoleOptions { Name = "Territorio" })).ToBeVisibleAsync();
-        await Expect(page.GetByRole(AriaRole.Link, new PageGetByRoleOptions { Name = "Mapa" })).ToBeVisibleAsync();
+        await Expect(page.GetByRole(AriaRole.Link, new PageGetByRoleOptions { Name = "Mapa", Exact = true })).ToBeVisibleAsync();
     }
 
     [Fact]
@@ -51,7 +51,7 @@ public class VisualIdentityTests(WebAppFixture fixture)
         await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Alternar menu" }).ClickAsync();
         await Expect(page.Locator(".app-nav")).ToHaveClassAsync(new System.Text.RegularExpressions.Regex("app-nav--open"));
 
-        await page.GetByRole(AriaRole.Link, new PageGetByRoleOptions { Name = "Mapa" }).ClickAsync();
+        await page.GetByRole(AriaRole.Link, new PageGetByRoleOptions { Name = "Mapa", Exact = true }).ClickAsync();
         await Expect(page).ToHaveURLAsync(new System.Text.RegularExpressions.Regex("/map$"));
     }
 
