@@ -65,6 +65,29 @@ public class RuralPropertyTests
     }
 
     [Fact]
+    public void ChangeBoundaryUpdatesArea()
+    {
+        var property = RuralFactory.New();
+        var boundary = RuralFactory.Square(0.01);
+
+        property.ChangeBoundary(boundary, Area.FromHectares(80m));
+
+        Assert.Same(boundary, property.Boundary);
+        Assert.Equal(80m, property.Area.Hectares);
+    }
+
+    [Fact]
+    public void ChangeBoundaryRejectsAreaSmallerThanConstraints()
+    {
+        var property = RuralFactory.New(constrained: 60m);
+
+        var exception = Assert.Throws<DomainException>(
+            () => property.ChangeBoundary(RuralFactory.Square(0.01), Area.FromHectares(50m)));
+
+        Assert.Equal("rural.constraints.exceeds-property", exception.Code);
+    }
+
+    [Fact]
     public void ConstrainedAreaSumsReserveAndPreservationAreas()
     {
         var property = RuralFactory.New(constrained: 20m);

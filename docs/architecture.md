@@ -106,6 +106,18 @@ Dois contratos por agregado:
 
 O basemap padrao e OpenStreetMap, configuravel por parametro. Producao municipal deve apontar para servico oficial de tiles.
 
+## Cadastro unificado
+
+A rota `/cadastro/{modulo}` concentra Quadras, Imoveis, Equipamentos e Rurais em uma unica interface centrada no mapa (ADR 0008).
+
+- `Cadastro` e o shell: modulo ativo, camadas, selecao, rascunho, modal e edicao geometrica.
+- `CadastroModal` isola o formulario de cada modulo; modulos nao conhecem persistencia.
+- `LayerControl` recebe `LockedLayerIds` e mantem a camada do modulo ativo visivel durante o cadastro.
+- Popups e acoes do mapa passam por `map.js` e `MapView` (`ShowPopupAsync`, `OnPopupAction`), sem acoplar a pagina ao Leaflet.
+- Criacao usa rascunho em memoria; a persistencia ocorre apenas no salvamento do modal, via handlers de Application.
+- Handlers de atualizacao por modulo: `UpdateUrbanBlockGeometry`, `UpdatePropertyDetails`/`UpdatePropertyGeometry`, `UpdateFacility`, `UpdateRuralProperty`/`UpdateRuralPropertyBoundary`.
+- As rotas antigas de listagem continuam disponiveis para fluxos avancados (importacao GeoJSON, faces de quadra) ate a consolidacao completa.
+
 ## Importacao e exportacao GeoJSON
 
 ```

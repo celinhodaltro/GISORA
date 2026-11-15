@@ -21,15 +21,16 @@ public class SmokeTests(WebAppFixture fixture)
     }
 
     [Fact]
-    public async Task NavigatesToPropertiesAndShowsEmptyState()
+    public async Task NavigatesToUnifiedCadastroAndShowsMap()
     {
         var page = await fixture.NewPageAsync();
         await page.GotoAsync(fixture.BaseUrl);
 
         await page.GetByRole(AriaRole.Link, new PageGetByRoleOptions { Name = "Imoveis" }).ClickAsync();
 
-        await Expect(page).ToHaveURLAsync(new System.Text.RegularExpressions.Regex("/properties$"));
-        await Expect(page.GetByText("Nenhum imovel cadastrado neste dispositivo.")).ToBeVisibleAsync();
+        await Expect(page).ToHaveURLAsync(new System.Text.RegularExpressions.Regex("/cadastro/imoveis$"));
+        await Expect(page.Locator(".leaflet-container")).ToBeVisibleAsync();
+        await Expect(page.Locator(".cadastro-bar__item")).ToHaveCountAsync(4);
     }
 
     [Fact]

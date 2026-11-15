@@ -48,11 +48,16 @@ public sealed partial class MapView : IAsyncDisposable
     public EventCallback<MapFeature> OnFeatureSelected { get; set; }
 
     [Parameter]
+    public EventCallback<MapPopupAction> OnPopupAction { get; set; }
+
+    [Parameter]
     public EventCallback OnReady { get; set; }
 
     public event Action<MapCoordinate>? CoordinateChanged;
 
     public event Action<MapFeature>? FeatureSelected;
+
+    public event Action<MapPopupAction>? PopupActioned;
 
     public event Action? DrawingStateChanged;
 
@@ -141,6 +146,26 @@ public sealed partial class MapView : IAsyncDisposable
         await _module.InvokeVoidAsync("removeLayer", _elementId, layerId);
     }
 
+    public async Task<bool> ShowPopupAsync(string layerId, string featureId, MapPopupModel popup)
+    {
+        if (_module is null)
+        {
+            return false;
+        }
+
+        return await _module.InvokeAsync<bool>("showPopup", _elementId, layerId, featureId, popup);
+    }
+
+    public async Task HidePopupAsync()
+    {
+        if (_module is null)
+        {
+            return;
+        }
+
+        await _module.InvokeVoidAsync("hidePopup", _elementId);
+    }
+
     public async Task FitBoundsAsync()
     {
         if (_module is null)
@@ -170,6 +195,14 @@ public sealed partial class MapView : IAsyncDisposable
     {
         FeatureSelected?.Invoke(feature);
         await OnFeatureSelected.InvokeAsync(feature);
+    }
+
+    [JSInvokable]
+    public async Task HandlePopupAction(string layerId, string featureId, string action)
+    {
+        var payload = new MapPopupAction(layerId, featureId, action);
+        PopupActioned?.Invoke(payload);
+        await OnPopupAction.InvokeAsync(payload);
     }
 
     [JSInvokable]

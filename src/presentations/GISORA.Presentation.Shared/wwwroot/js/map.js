@@ -58,7 +58,8 @@ export function create(elementId, options, dotNetRef) {
   L.control.scale({ position: 'bottomleft', imperial: false, maxWidth: 130 }).addTo(map);
 
   const layers = new Map();
-  const instance = { map, layers, dotNetRef, draw: null, onKeyDown: null };
+  const featureLayers = new Map();
+  const instance = { map, layers, featureLayers, dotNetRef, draw: null, onKeyDown: null };
 
   map.on('mousemove', (event) => {
     dotNetRef.invokeMethodAsync('HandleCoordinateChanged', event.latlng.lat, event.latlng.lng);
@@ -104,9 +105,14 @@ export function setLayer(elementId, layerId, geoJson, color) {
       });
     },
     onEachFeature: (feature, layer) => {
+      const featureId = String(feature.id ?? feature.properties?.id ?? '');
+
+      instance.featureLayers.set(`${layerId}:${featureId}`, layer);
+
       layer.on('click', () => {
         instance.dotNetRef.invokeMethodAsync('HandleFeatureSelected', {
-          id: String(feature.id ?? feature.properties?.id ?? ''),
+          id: featureId,
+          layerId,
           properties: normalizeProperties(feature.properties),
         });
       });
@@ -129,8 +135,110 @@ export function removeLayer(elementId, layerId) {
     return false;
   }
 
+  clearPopupDom(instance);
   layer.remove();
   instance.layers.delete(layerId);
+
+  for (const key of instance.featureLayers.keys()) {
+    if (key.startsWith(`${layerId}:`)) {
+      instance.featureLayers.delete(key);
+    }
+  }
+
+  return true;
+}
+
+function clearPopupDom(instance) {
+  instance.map.closePopup();
+
+  instance.map.getContainer()
+    .querySelectorAll('.gisora-popup-container')
+    .forEach((node) => node.remove());
+}
+
+export function showPopup(elementId, layerId, featureId, popup) {
+  const instance = instances.get(elementId);
+  if (!instance) {
+    return false;
+  }
+
+  const layer = instance.featureLayers.get(`${layerId}:${featureId}`);
+  if (!layer) {
+    return false;
+  }
+
+  clearPopupDom(instance);
+
+  const content = document.createElement('div');
+  content.className = 'gisora-popup';
+
+  const title = document.createElement('strong');
+  title.className = 'gisora-popup__title';
+  title.textContent = popup.title ?? '';
+  content.appendChild(title);
+
+  for (const row of popup.rows ?? []) {
+    const line = document.createElement('span');
+    line.className = 'gisora-popup__row';
+
+    const label = document.createElement('span');
+    label.className = 'gisora-popup__label';
+    label.textContent = row.label;
+
+    const value = document.createElement('span');
+    value.className = 'gisora-popup__value';
+    value.textContent = row.value;
+
+    line.append(label, value);
+    content.appendChild(line);
+  }
+
+  const actions = document.createElement('div');
+  actions.className = 'gisora-popup__actions';
+
+  const invoke = (action) => {
+    layer.closePopup();
+    instance.dotNetRef.invokeMethodAsync('HandlePopupAction', layerId, featureId, action);
+  };
+
+  if (popup.showEdit) {
+    const edit = document.createElement('button');
+    edit.type = 'button';
+    edit.className = 'gisora-popup__action';
+    edit.textContent = popup.editLabel ?? 'Editar geometria';
+    edit.addEventListener('click', () => invoke('edit'));
+    actions.appendChild(edit);
+  }
+
+  if (popup.actionLabel) {
+    const open = document.createElement('button');
+    open.type = 'button';
+    open.className = 'gisora-popup__action gisora-popup__action--primary';
+    open.textContent = popup.actionLabel;
+    open.addEventListener('click', () => invoke('open'));
+    actions.appendChild(open);
+  }
+
+  content.appendChild(actions);
+
+  layer.bindPopup(content, {
+    closeButton: true,
+    autoPan: true,
+    maxWidth: 300,
+    className: 'gisora-popup-container',
+  });
+  layer.openPopup();
+
+  return true;
+}
+
+export function hidePopup(elementId) {
+  const instance = instances.get(elementId);
+  if (!instance) {
+    return false;
+  }
+
+  instance.map.closePopup();
 
   return true;
 }

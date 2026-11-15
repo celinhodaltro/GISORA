@@ -27,7 +27,7 @@ Restricoes atuais:
 - `/cadastro` redireciona para `/cadastro/quadras`.
 - O modulo ativo e refletido na rota, preservando deep link, historico do navegador e testes.
 - `/map` permanece como ambiente de visualizacao e exportacao; nao se torna editor.
-- As rotas antigas de listagem (`/urban-blocks`, `/properties`, `/facilities`, `/rural`) passam a redirecionar para o shell na fase de consolidacao. Rotas profundas de formulario e geometria continuam existindo ate o modal substitui-las.
+- A navegacao lateral aponta para o shell. As rotas antigas de listagem (`/urban-blocks`, `/properties`, `/facilities`, `/rural`) permanecem acessiveis por link direto para fluxos avancados ainda nao cobertos pelo modal (importacao GeoJSON, faces de quadra, listagens). Rotas profundas de formulario e geometria continuam existindo ate a paridade completa.
 
 ### Shell
 
@@ -84,7 +84,8 @@ Restricoes atuais:
 
 ## Consequencias
 
-- Nova rota e redirecionamentos; E2E existentes precisam ser atualizados na fase de consolidacao.
+- Nova rota e navegacao; E2E existentes precisam ser atualizados na fase de consolidacao.
+- As rotas legadas continuam no codigo ate os fluxos avancados (importacao GeoJSON, faces) serem absorvidos pelo shell; a navegacao oficial ja aponta para o cadastro unificado.
 - `LayerControl` passa a ter contrato de bloqueio, com teste garantindo que camada bloqueada nao pode ser ocultada.
 - O shell concentra estado e os modulos recebem dados e devolvem intencao por evento, mantendo as convencoes de componentizacao.
 - O fluxo de cada modulo precisa distinguir explicitamente rascunho de feicao persistida.

@@ -1,0 +1,158 @@
+.cadastro-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    background: rgba(18, 33, 47, 0.45);
+}
+
+.cadastro-modal__panel {
+    display: flex;
+    flex-direction: column;
+    width: min(36rem, 100%);
+    max-height: min(90vh, 44rem);
+    border-radius: var(--gisora-radius-lg, 14px);
+    background: #ffffff;
+    box-shadow: 0 20px 60px rgba(18, 33, 47, 0.32);
+}
+
+.cadastro-modal__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--gisora-border, #dde4ec);
+}
+
+.cadastro-modal__header h2 {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.cadastro-modal__header button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: #3b4b5a;
+    cursor: pointer;
+}
+
+.cadastro-modal__header button:hover {
+    background: var(--gisora-blue-50, #f3f7fd);
+}
+
+.cadastro-modal__header button svg {
+    width: 1rem;
+    height: 1rem;
+    fill: currentColor;
+}
+
+.cadastro-modal__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    padding: 1.1rem 1.25rem;
+    overflow-y: auto;
+}
+
+.cadastro-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.cadastro-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.74rem;
+    color: var(--gisora-muted, #5a6b7b);
+}
+
+.cadastro-field input,
+.cadastro-field select {
+    padding: 0.45rem 0.55rem;
+    border: 1px solid var(--gisora-border, #dde4ec);
+    border-radius: var(--gisora-radius-sm, 6px);
+    background: #ffffff;
+    color: var(--gisora-ink, #12212f);
+    font-size: 0.85rem;
+}
+
+.cadastro-details {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 0.3rem 0.9rem;
+    margin: 0;
+    font-size: 0.8rem;
+}
+
+.cadastro-details dt {
+    color: var(--gisora-muted, #5a6b7b);
+}
+
+.cadastro-details dd {
+    margin: 0;
+}
+
+.cadastro-modal__hint {
+    margin: 0;
+    color: var(--gisora-muted, #5a6b7b);
+    font-size: 0.78rem;
+}
+
+.cadastro-modal__error {
+    margin: 0;
+    padding: 0.5rem 0.65rem;
+    border: 1px solid #e5b4b4;
+    border-radius: var(--gisora-radius-sm, 6px);
+    background: #fdf1f1;
+    color: #8a1f1f;
+    font-size: 0.8rem;
+}
+
+.cadastro-modal__footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.6rem;
+    padding: 0.9rem 1.25rem;
+    border-top: 1px solid var(--gisora-border, #dde4ec);
+}
+
+.cadastro-modal__button {
+    padding: 0.55rem 0.95rem;
+    border: 1px solid var(--gisora-border, #dde4ec);
+    border-radius: var(--gisora-radius-sm, 6px);
+    background: #ffffff;
+    color: var(--gisora-blue-700, #1351b4);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.cadastro-modal__button--primary {
+    border-color: var(--gisora-blue-700, #1351b4);
+    background: var(--gisora-blue-700, #1351b4);
+    color: #ffffff;
+}
+
+.cadastro-modal__button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+@media (max-width: 40rem) {
+    .cadastro-fields {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}

@@ -69,4 +69,26 @@ public sealed class LocalStorageFacilityQueries(ILocalStore store) : IFacilityQu
 
         return items;
     }
+
+    public async Task<FacilityDetail?> GetAsync(PublicFacilityId id, CancellationToken cancellationToken = default)
+    {
+        var document = await store.GetAsync<FacilityDocument>(
+            StorageNamespaces.Facilities,
+            $"facility-{id.Value}",
+            cancellationToken);
+
+        if (document is null)
+        {
+            return null;
+        }
+
+        var facility = document.ToDomain();
+
+        return new FacilityDetail(
+            facility.Id,
+            facility.Name,
+            facility.Type,
+            facility.NeighborhoodId,
+            facility.Location);
+    }
 }

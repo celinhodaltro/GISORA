@@ -63,6 +63,8 @@ public static class GisoraServiceRegistration
         services.AddScoped<IPublicFacilityRepository, LocalStorageFacilityRepository>();
         services.AddScoped<IFacilityQueries, LocalStorageFacilityQueries>();
         services.AddScoped<CreateFacilityHandler>();
+        services.AddScoped<UpdateFacilityHandler>();
+        services.AddScoped<RelocateFacilityHandler>();
 
         services.AddScoped<ICemeteryRepository, LocalStorageCemeteryRepository>();
         services.AddScoped<ICemeterySectorRepository, LocalStorageCemeterySectorRepository>();
@@ -77,6 +79,8 @@ public static class GisoraServiceRegistration
         services.AddScoped<IRuralPropertyRepository, LocalStorageRuralPropertyRepository>();
         services.AddScoped<IRuralPropertyQueries, LocalStorageRuralPropertyQueries>();
         services.AddScoped<CreateRuralPropertyHandler>();
+        services.AddScoped<UpdateRuralPropertyHandler>();
+        services.AddScoped<UpdateRuralPropertyBoundaryHandler>();
         services.AddScoped<ImportRuralPropertyHandler>();
         services.AddScoped<AddPreservationAreaHandler>();
         services.AddScoped<DefineLegalReserveHandler>();
@@ -114,6 +118,7 @@ public static class GisoraServiceRegistration
 
         services.AddScoped<CreatePropertyHandler>();
         services.AddScoped<UpdatePropertyGeometryHandler>();
+        services.AddScoped<UpdatePropertyDetailsHandler>();
         services.AddScoped<ClearPropertyGeometryHandler>();
         services.AddScoped<AddOwnershipHandler>();
         services.AddScoped<GetPropertyHandler>();

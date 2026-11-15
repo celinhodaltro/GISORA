@@ -53,6 +53,77 @@ public sealed class CreateRuralPropertyHandler(IRuralPropertyRepository reposito
     }
 }
 
+public sealed record UpdateRuralPropertyCommand(
+    RuralPropertyId Id,
+    string Name,
+    RuralUsage Usage,
+    string? CarCode = null,
+    string? SigefCode = null,
+    string? SnciCode = null);
+
+public sealed class UpdateRuralPropertyHandler(IRuralPropertyRepository repository)
+{
+    public async Task<Result> HandleAsync(
+        UpdateRuralPropertyCommand command,
+        CancellationToken cancellationToken = default)
+    {
+        var property = await repository.FindAsync(command.Id, cancellationToken);
+
+        if (property is null)
+        {
+            return Result.Fail(Error.NotFound("Propriedade rural nao encontrada.", "rural.property.not-found"));
+        }
+
+        try
+        {
+            property.Rename(command.Name);
+            property.ChangeUsage(command.Usage);
+            property.UpdateCodes(command.CarCode, command.SigefCode, command.SnciCode);
+
+            await repository.UpdateAsync(property, cancellationToken);
+
+            return Result.Ok();
+        }
+        catch (DomainException exception)
+        {
+            return Result.Fail(Error.Validation(exception.Message, exception.Code));
+        }
+    }
+}
+
+public sealed record UpdateRuralPropertyBoundaryCommand(RuralPropertyId Id, Polygon Boundary);
+
+public sealed class UpdateRuralPropertyBoundaryHandler(
+    IRuralPropertyRepository repository,
+    ISpatialOperations spatial)
+{
+    public async Task<Result> HandleAsync(
+        UpdateRuralPropertyBoundaryCommand command,
+        CancellationToken cancellationToken = default)
+    {
+        var property = await repository.FindAsync(command.Id, cancellationToken);
+
+        if (property is null)
+        {
+            return Result.Fail(Error.NotFound("Propriedade rural nao encontrada.", "rural.property.not-found"));
+        }
+
+        try
+        {
+            var area = await spatial.AreaAsync(command.Boundary, cancellationToken);
+            property.ChangeBoundary(command.Boundary, area);
+
+            await repository.UpdateAsync(property, cancellationToken);
+
+            return Result.Ok();
+        }
+        catch (DomainException exception)
+        {
+            return Result.Fail(Error.Validation(exception.Message, exception.Code));
+        }
+    }
+}
+
 public sealed record ImportRuralPropertyCommand(
     string Name,
     string GeoJson,

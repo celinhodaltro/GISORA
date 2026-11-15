@@ -50,6 +50,13 @@ public sealed class PublicFacility : AggregateRoot<PublicFacilityId>
 
     public void Rename(string name) => Name = ValidateName(name);
 
+    public void UpdateDetails(string name, FacilityType type, Guid? neighborhoodId)
+    {
+        Name = ValidateName(name);
+        Type = type;
+        NeighborhoodId = neighborhoodId;
+    }
+
     public void Relocate(Point location) => Location = Guard.NotNull(location, nameof(location));
 
     internal static PublicFacility Rehydrate(PublicFacilityId id, string name, FacilityType type, Guid? neighborhoodId, Point? location)

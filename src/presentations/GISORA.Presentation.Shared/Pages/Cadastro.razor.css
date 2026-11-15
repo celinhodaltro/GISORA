@@ -169,6 +169,17 @@
     box-shadow: 0 4px 14px rgba(18, 33, 47, 0.14);
 }
 
+.cadastro-draft__action {
+    padding: 0.25rem 0.55rem;
+    border: 1px solid #c2410c;
+    border-radius: 999px;
+    background: #ffffff;
+    color: #7c2d12;
+    font-size: 0.74rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
 .cadastro-draft button {
     display: inline-flex;
     align-items: center;
