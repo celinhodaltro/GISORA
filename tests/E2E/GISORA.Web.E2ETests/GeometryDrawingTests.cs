@@ -18,12 +18,12 @@ public class GeometryDrawingTests(WebAppFixture fixture)
         await Expect(page.Locator(".geometry-page__registration")).ToHaveCountAsync(1);
         await Expect(page.Locator(".leaflet-container")).ToBeVisibleAsync();
 
-        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Desenhar poligono" }).ClickAsync();
+        await MapDrawing.StartAsync(page, "Poligono");
         await ClickMapAsync(page, 0.30, 0.30);
         await ClickMapAsync(page, 0.65, 0.30);
         await ClickMapAsync(page, 0.65, 0.65);
         await ClickMapAsync(page, 0.30, 0.65);
-        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Concluir desenho" }).ClickAsync();
+        await MapDrawing.FinishAsync(page);
 
         await Expect(page.GetByText("Area calculada")).ToBeVisibleAsync();
 
@@ -69,12 +69,12 @@ public class GeometryDrawingTests(WebAppFixture fixture)
         await Expect(page.Locator(".geometry-page__registration")).ToHaveCountAsync(1);
         await Expect(page.Locator(".leaflet-container")).ToBeVisibleAsync();
 
-        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Desenhar ponto" }).ClickAsync();
+        await MapDrawing.StartAsync(page, "Ponto");
         await page.WaitForTimeoutAsync(400);
         await ClickMapAsync(page, 0.45, 0.45);
         await Expect(page.GetByText("Tipo: Point")).ToBeVisibleAsync();
 
-        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Desenhar linha" }).ClickAsync();
+        await MapDrawing.StartAsync(page, "Linha");
         await ClickMapAsync(page, 0.30, 0.30);
         await ClickMapAsync(page, 0.55, 0.40);
         await ClickMapAsync(page, 0.70, 0.55);
@@ -83,15 +83,15 @@ public class GeometryDrawingTests(WebAppFixture fixture)
         await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Desfazer ultimo vertice" }).ClickAsync();
         await Expect(page.Locator(".gisora-map-vertex")).ToHaveCountAsync(2);
 
-        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Concluir desenho" }).ClickAsync();
+        await MapDrawing.FinishAsync(page);
         await Expect(page.GetByText("Tipo: LineString")).ToBeVisibleAsync();
 
-        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Desenhar poligono" }).ClickAsync();
+        await MapDrawing.StartAsync(page, "Poligono");
         await ClickMapAsync(page, 0.30, 0.30);
         await ClickMapAsync(page, 0.65, 0.30);
         await ClickMapAsync(page, 0.65, 0.65);
         await ClickMapAsync(page, 0.30, 0.65);
-        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Concluir desenho" }).ClickAsync();
+        await MapDrawing.FinishAsync(page);
         await Expect(page.GetByText("Area calculada")).ToBeVisibleAsync();
 
         await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Salvar geometria" }).ClickAsync();
@@ -111,12 +111,70 @@ public class GeometryDrawingTests(WebAppFixture fixture)
         await Expect(page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Editar geometria" })).ToBeDisabledAsync();
     }
 
+    [Fact]
+    public async Task DrawsPolygonFromPencilAndCompletesWithDoubleClick()
+    {
+        var page = await fixture.NewPageAsync();
+        await SeedAsync(page);
+
+        await page.GotoAsync($"{fixture.BaseUrl}/properties");
+        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Geometria" }).First.ClickAsync();
+        await Expect(page.Locator(".geometry-page__registration")).ToHaveCountAsync(1);
+        await Expect(page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = MapDrawing.Finish })).ToHaveCountAsync(0);
+
+        await MapDrawing.StartAsync(page, "Poligono");
+        await Expect(page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = MapDrawing.Finish })).ToBeVisibleAsync();
+        await Expect(page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = MapDrawing.Cancel })).ToBeVisibleAsync();
+
+        await ClickMapAsync(page, 0.30, 0.30);
+        await ClickMapAsync(page, 0.65, 0.30);
+        await ClickMapAsync(page, 0.65, 0.65);
+        await DoubleClickMapAsync(page, 0.30, 0.65);
+
+        await Expect(page.GetByText("Area calculada")).ToBeVisibleAsync();
+        await Expect(page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = MapDrawing.Finish })).ToHaveCountAsync(0);
+        await Expect(page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = MapDrawing.Pencil })).ToBeVisibleAsync();
+    }
+
+    [Fact]
+    public async Task CancelsDrawingWithEscapeWithoutChangingGeometry()
+    {
+        var page = await fixture.NewPageAsync();
+        await SeedAsync(page);
+
+        await page.GotoAsync($"{fixture.BaseUrl}/properties");
+        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Geometria" }).First.ClickAsync();
+        await Expect(page.Locator(".geometry-page__registration")).ToHaveCountAsync(1);
+
+        await MapDrawing.StartAsync(page, "Poligono");
+        await ClickMapAsync(page, 0.30, 0.30);
+        await ClickMapAsync(page, 0.65, 0.30);
+        await Expect(page.Locator(".gisora-map-vertex")).ToHaveCountAsync(2);
+
+        await page.Keyboard.PressAsync("Escape");
+
+        await Expect(page.Locator(".gisora-map-vertex")).ToHaveCountAsync(0);
+        await Expect(page.GetByText("Area calculada")).ToHaveCountAsync(0);
+        await Expect(page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = MapDrawing.Pencil })).ToBeVisibleAsync();
+        await Expect(page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Salvar geometria" })).ToBeDisabledAsync();
+    }
+
     private static async Task ClickMapAsync(IPage page, double relativeX, double relativeY)
     {
         var box = await page.Locator(".gisora-map").BoundingBoxAsync();
         ArgumentNullException.ThrowIfNull(box);
 
         await page.Mouse.ClickAsync(
+            box.X + (box.Width * (float)relativeX),
+            box.Y + (box.Height * (float)relativeY));
+    }
+
+    private static async Task DoubleClickMapAsync(IPage page, double relativeX, double relativeY)
+    {
+        var box = await page.Locator(".gisora-map").BoundingBoxAsync();
+        ArgumentNullException.ThrowIfNull(box);
+
+        await page.Mouse.DblClickAsync(
             box.X + (box.Width * (float)relativeX),
             box.Y + (box.Height * (float)relativeY));
     }

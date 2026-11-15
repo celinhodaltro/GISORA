@@ -76,6 +76,28 @@
     background: var(--gisora-border, #dde4ec);
 }
 
+.gisora-map-toolbar button.gisora-map-toolbar__mode {
+    color: var(--gisora-blue-700, #1351b4);
+    background: var(--gisora-blue-50, #f3f7fd);
+}
+
+.gisora-map-toolbar__error {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: max-content;
+    max-width: 15rem;
+    margin-top: 0.4rem;
+    padding: 0.4rem 0.55rem;
+    border: 1px solid #e5b4b4;
+    border-radius: var(--gisora-radius-sm, 6px);
+    background: #fdf1f1;
+    color: #8a1f1f;
+    font-size: 0.72rem;
+    line-height: 1.3;
+    box-shadow: 0 4px 14px rgba(18, 33, 47, 0.12);
+}
+
 .gisora-map-status {
     position: absolute;
     bottom: 1.9rem;

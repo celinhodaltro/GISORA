@@ -45,12 +45,12 @@ public class GeometryValidationTests(WebAppFixture fixture)
         await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Geometria" }).Nth(1).ClickAsync();
         await Expect(page.Locator(".geometry-page__registration")).ToHaveCountAsync(1);
 
-        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Desenhar poligono" }).ClickAsync();
+        await MapDrawing.StartAsync(page, "Poligono");
         await ClickMapAsync(page, 0.60, 0.60);
         await ClickMapAsync(page, 0.90, 0.60);
         await ClickMapAsync(page, 0.90, 0.90);
         await ClickMapAsync(page, 0.60, 0.90);
-        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Concluir desenho" }).ClickAsync();
+        await MapDrawing.FinishAsync(page);
 
         await Expect(page.GetByText("Area calculada")).ToBeVisibleAsync();
         await Expect(page.Locator(".geometry-page__diagnostics")).ToHaveCountAsync(0);
@@ -75,12 +75,12 @@ public class GeometryValidationTests(WebAppFixture fixture)
 
     private static async Task DrawPolygonAsync(IPage page, double left, double top, double right, double bottom)
     {
-        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Desenhar poligono" }).ClickAsync();
+        await MapDrawing.StartAsync(page, "Poligono");
         await ClickMapAsync(page, left, top);
         await ClickMapAsync(page, right, top);
         await ClickMapAsync(page, right, bottom);
         await ClickMapAsync(page, left, bottom);
-        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Concluir desenho" }).ClickAsync();
+        await MapDrawing.FinishAsync(page);
     }
 
     private static async Task ClickMapAsync(IPage page, double relativeX, double relativeY)

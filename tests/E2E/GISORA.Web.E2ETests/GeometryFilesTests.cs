@@ -119,12 +119,12 @@ public class GeometryFilesTests(WebAppFixture fixture)
         await Expect(page.Locator(".geometry-page__registration")).ToHaveCountAsync(1);
         await Expect(page.Locator(".leaflet-container")).ToBeVisibleAsync();
 
-        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Desenhar poligono" }).ClickAsync();
+        await MapDrawing.StartAsync(page, "Poligono");
         await ClickMapAsync(page, 0.30, 0.30);
         await ClickMapAsync(page, 0.65, 0.30);
         await ClickMapAsync(page, 0.65, 0.65);
         await ClickMapAsync(page, 0.30, 0.65);
-        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Concluir desenho" }).ClickAsync();
+        await MapDrawing.FinishAsync(page);
         await Expect(page.GetByText("Area calculada")).ToBeVisibleAsync();
 
         await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Salvar geometria" }).ClickAsync();

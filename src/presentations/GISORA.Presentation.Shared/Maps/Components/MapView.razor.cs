@@ -54,9 +54,32 @@ public sealed partial class MapView : IAsyncDisposable
 
     public event Action<MapFeature>? FeatureSelected;
 
+    public event Action? DrawingStateChanged;
+
     public bool IsReady => _module is not null;
 
     public string ElementId => _elementId;
+
+    public DrawingTool? DrawingTool { get; private set; }
+
+    internal void AttachDrawingTool(DrawingTool tool)
+    {
+        DrawingTool = tool;
+        DrawingStateChanged?.Invoke();
+    }
+
+    internal void DetachDrawingTool(DrawingTool tool)
+    {
+        if (ReferenceEquals(DrawingTool, tool) is false)
+        {
+            return;
+        }
+
+        DrawingTool = null;
+        DrawingStateChanged?.Invoke();
+    }
+
+    internal void NotifyDrawingStateChanged() => DrawingStateChanged?.Invoke();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

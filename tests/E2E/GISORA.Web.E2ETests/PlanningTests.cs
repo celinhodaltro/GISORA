@@ -20,13 +20,13 @@ public class PlanningTests(WebAppFixture fixture)
         await page.GetByPlaceholder("Codigo da zona").FillAsync("ZR1");
         await page.GetByPlaceholder("Nome da zona").FillAsync("Zona residencial");
         await page.GetByPlaceholder("Taxa de ocupacao (%)").FillAsync("60");
-        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Desenhar zona" }).ClickAsync();
+        await MapDrawing.StartAsync(page, "Zona");
 
         await ClickMapAsync(page, 0.15, 0.15);
         await ClickMapAsync(page, 0.85, 0.15);
         await ClickMapAsync(page, 0.85, 0.85);
         await ClickMapAsync(page, 0.15, 0.85);
-        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Concluir zona" }).ClickAsync();
+        await MapDrawing.FinishAsync(page);
 
         await Expect(page.Locator(".planning-area")).ToContainTextAsync("ha");
 

@@ -20,3 +20,5 @@ public sealed record MapFeature(
 public readonly record struct MapCoordinate(double Latitude, double Longitude);
 
 public sealed record MapFeatureSelection(string LayerId, MapFeature Feature);
+
+public sealed record MapDrawingMode(string Id, string Label, string Kind);

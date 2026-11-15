@@ -48,7 +48,6 @@
             <div class="facilities-form__field">
                 <span>Localizacao</span>
                 <div class="gisora-toolbar">
-                    <RadzenButton Text="Marcar no mapa" Variant="Variant.Outlined" Click="PickAsync" />
                     <span class="facilities__coordinate">
                         @(_point is { } point ? FacilityMapProjector.ToCoordinateText(point) : "nao definida")
                     </span>
@@ -75,7 +74,7 @@
         <MapView @ref="_map" CenterLatitude="-7.95" CenterLongitude="-35.25" Zoom="14" Height="clamp(20rem, calc(100vh - 28rem), 32rem)">
             <MapToolbar />
             <CoordinateControl />
-            <DrawingTool @ref="_tool" OnPointPicked="SetPoint" />
+            <DrawingTool @ref="_tool" Modes="DrawingModes" OnPointPicked="SetPoint" />
         </MapView>
 
         <MapLegend Layers="_layers" />
@@ -101,6 +100,9 @@
 </RadzenCard>
 
 @code {
+    private static readonly IReadOnlyList<MapDrawingMode> DrawingModes =
+        [new MapDrawingMode("point", "Marcar equipamento", "Pick")];
+
     private MapView? _map;
     private DrawingTool? _tool;
     private readonly List<MapLayer> _layers = [];
@@ -134,13 +136,6 @@
         var page = await Queries.SearchAsync(new FacilityFilter { PageSize = 200 });
 
         _items = page.Items;
-    }
-
-    private async Task PickAsync()
-    {
-        _error = null;
-
-        await _tool!.StartPickingPointAsync();
     }
 
     private void SetPoint(MapCoordinate coordinate)

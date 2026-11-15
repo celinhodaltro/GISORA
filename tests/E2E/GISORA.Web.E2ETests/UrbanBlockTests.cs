@@ -18,12 +18,12 @@ public class UrbanBlockTests(WebAppFixture fixture)
 
         await page.GetByPlaceholder("Codigo da quadra").FillAsync("Q-10");
 
-        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Desenhar contorno da quadra" }).ClickAsync();
+        await MapDrawing.StartAsync(page);
         await ClickMapAsync(page, 0.30, 0.30);
         await ClickMapAsync(page, 0.65, 0.30);
         await ClickMapAsync(page, 0.65, 0.65);
         await ClickMapAsync(page, 0.30, 0.65);
-        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Concluir contorno da quadra" }).ClickAsync();
+        await MapDrawing.FinishAsync(page);
 
         await Expect(page.GetByText("Contorno desenhado com")).ToBeVisibleAsync();
 
@@ -37,10 +37,10 @@ public class UrbanBlockTests(WebAppFixture fixture)
         await Expect(page.GetByText("Quadra Q-10").First).ToBeVisibleAsync();
 
         await page.GetByLabel("Logradouro da face").SelectOptionAsync(new SelectOptionValue { Label = "Rua da Matriz" });
-        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Desenhar linha da face" }).ClickAsync();
+        await MapDrawing.StartAsync(page, "Linha da face");
         await ClickMapAsync(page, 0.35, 0.55);
         await ClickMapAsync(page, 0.60, 0.55);
-        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Concluir linha da face" }).ClickAsync();
+        await MapDrawing.FinishAsync(page);
 
         await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Salvar face" }).ClickAsync();
 

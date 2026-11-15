@@ -58,12 +58,23 @@ export function create(elementId, options, dotNetRef) {
   L.control.scale({ position: 'bottomleft', imperial: false, maxWidth: 130 }).addTo(map);
 
   const layers = new Map();
+  const instance = { map, layers, dotNetRef, draw: null, onKeyDown: null };
 
   map.on('mousemove', (event) => {
     dotNetRef.invokeMethodAsync('HandleCoordinateChanged', event.latlng.lat, event.latlng.lng);
   });
 
-  instances.set(elementId, { map, layers, dotNetRef });
+  map.on('dblclick', () => completeFromDoubleClick(elementId));
+
+  instance.onKeyDown = (event) => {
+    if (event.key === 'Escape') {
+      cancelFromKeyboard(elementId);
+    }
+  };
+
+  window.addEventListener('keydown', instance.onKeyDown);
+
+  instances.set(elementId, instance);
   window.setTimeout(() => map.invalidateSize(), 0);
 
   return true;
@@ -239,6 +250,7 @@ function disableDraw(elementId) {
     instance.map.off('click', instance.draw.onMapClick);
   }
 
+  instance.map.doubleClickZoom.enable();
   instance.draw = null;
 }
 
@@ -251,7 +263,7 @@ export function enableDraw(elementId, dotNetRef, kind) {
   disableDraw(elementId);
 
   const geometryKind = normalizeKind(kind);
-  const state = { kind: geometryKind, points: [], preview: null, marker: null, handles: [], dotNetRef };
+  const state = { mode: 'draw', kind: geometryKind, points: [], preview: null, marker: null, handles: [], dotNetRef };
 
   state.render = () => {
     if (state.preview === null) {
@@ -269,6 +281,13 @@ export function enableDraw(elementId, dotNetRef, kind) {
   state.onMapClick = (event) => {
     state.points.push(event.latlng);
 
+    if (event.originalEvent?.detail > 1) {
+      removeDuplicateTail(instance);
+      completeDraw(elementId);
+
+      return;
+    }
+
     if (geometryKind === 'Point') {
       const geometry = buildGeometry(geometryKind, state.points);
       const notify = state.dotNetRef;
@@ -283,6 +302,7 @@ export function enableDraw(elementId, dotNetRef, kind) {
   };
 
   instance.draw = state;
+  instance.map.doubleClickZoom.disable();
   instance.map.on('click', state.onMapClick);
 
   return true;
@@ -300,9 +320,9 @@ export function undoLastVertex(elementId) {
   return true;
 }
 
-export function finishDraw(elementId) {
+function completeDraw(elementId) {
   const instance = instances.get(elementId);
-  if (!instance || !instance.draw) {
+  if (!instance || !instance.draw || instance.draw.mode !== 'draw') {
     return false;
   }
 
@@ -320,6 +340,46 @@ export function finishDraw(elementId) {
   return true;
 }
 
+function removeDuplicateTail(instance) {
+  const points = instance.draw.points;
+
+  while (points.length > 1) {
+    const last = instance.map.latLngToContainerPoint(points[points.length - 1]);
+    const previous = instance.map.latLngToContainerPoint(points[points.length - 2]);
+
+    if (last.distanceTo(previous) > 2) {
+      return;
+    }
+
+    points.pop();
+  }
+}
+
+function completeFromDoubleClick(elementId) {
+  const instance = instances.get(elementId);
+  if (!instance || !instance.draw || instance.draw.mode !== 'draw') {
+    return;
+  }
+
+  removeDuplicateTail(instance);
+  completeDraw(elementId);
+}
+
+function cancelFromKeyboard(elementId) {
+  const instance = instances.get(elementId);
+  if (!instance || !instance.draw) {
+    return;
+  }
+
+  const dotNetRef = instance.draw.dotNetRef;
+  disableDraw(elementId);
+  dotNetRef.invokeMethodAsync('HandleDrawingCanceled');
+}
+
+export function finishDraw(elementId) {
+  return completeDraw(elementId);
+}
+
 export function cancelDraw(elementId) {
   disableDraw(elementId);
 
@@ -334,7 +394,7 @@ export function enablePointPick(elementId, dotNetRef) {
 
   disableDraw(elementId);
 
-  const state = { points: [], line: null, polygon: null, handles: null, marker: null, dotNetRef };
+  const state = { mode: 'point', points: [], line: null, polygon: null, handles: null, marker: null, dotNetRef };
   state.onMapClick = (event) => {
     if (state.marker === null) {
       state.marker = L.marker(event.latlng).addTo(instance.map);
@@ -385,7 +445,8 @@ export function enableEdit(elementId, geoJson, dotNetRef) {
 
   handles.forEach((handle) => handle.on('drag', notify));
 
-  instance.draw = { kind: geometry.type, points: [], preview: shape, marker: null, handles, dotNetRef };
+  instance.draw = { mode: 'edit', kind: geometry.type, points: [], preview: shape, marker: null, handles, dotNetRef };
+  instance.map.doubleClickZoom.disable();
   instance.map.fitBounds(shape.getBounds(), { padding: [24, 24], animate: false });
 
   return true;
@@ -398,6 +459,11 @@ export function destroy(elementId) {
   }
 
   disableDraw(elementId);
+
+  if (instance.onKeyDown) {
+    window.removeEventListener('keydown', instance.onKeyDown);
+  }
+
   instance.map.remove();
   instances.delete(elementId);
 

@@ -18,13 +18,13 @@ public class RuralTests(WebAppFixture fixture)
 
         await page.GetByPlaceholder("Nome da propriedade").FillAsync("Fazenda Boa Vista");
         await page.GetByPlaceholder("Codigo CAR").FillAsync("PE-2610509-ABCD.EFGH.IJKL.MNOP.QRST");
-        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Desenhar limite" }).ClickAsync();
+        await MapDrawing.StartAsync(page, "Limite da propriedade");
 
         await ClickMapAsync(page, 0.3, 0.3);
         await ClickMapAsync(page, 0.7, 0.3);
         await ClickMapAsync(page, 0.7, 0.7);
         await ClickMapAsync(page, 0.3, 0.7);
-        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Concluir desenho" }).ClickAsync();
+        await MapDrawing.FinishAsync(page);
 
         await Expect(page.Locator(".rural-area")).ToContainTextAsync("ha");
 
