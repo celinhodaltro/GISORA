@@ -30,26 +30,20 @@ else
 {
     <p class="geometry-page__registration">Inscricao: <strong>@_view.Registration</strong></p>
 
-    <p class="geometry-page__hint">Clique no mapa para adicionar vertices. Em <strong>ponto</strong> o clique conclui; em <strong>linha</strong> e <strong>poligono</strong> use <strong>Concluir desenho</strong>.</p>
+    <p class="geometry-page__hint">Escolha o tipo no lapis do mapa e clique para adicionar vertices. Em <strong>ponto</strong> o clique conclui; em <strong>linha</strong> e <strong>poligono</strong> use <strong>Concluir desenho</strong> ou duplo clique.</p>
 
     <div class="geometry-page">
         <MapView @ref="_map" CenterLatitude="-7.95" CenterLongitude="-35.25" Zoom="16" Height="clamp(22rem, calc(100vh - 26rem), 34rem)">
             <MapToolbar />
             <CoordinateControl />
-            <DrawingTool @ref="_tool" OnCompleted="CompleteGeometryAsync" OnEdited="ApplyGeometryAsync" />
+            <DrawingTool @ref="_tool" Modes="DrawingModes" OnCompleted="CompleteGeometryAsync" OnEdited="ApplyGeometryAsync" OnCanceled="OnDrawingCanceledAsync" />
         </MapView>
     </div>
 
     <div class="gisora-toolbar geometry-page__actions">
-        <RadzenButton Text="Desenhar ponto" Variant="Variant.Outlined" Click="@(() => DrawAsync("Point"))" />
-        <RadzenButton Text="Desenhar linha" Variant="Variant.Outlined" Click="@(() => DrawAsync("LineString"))" />
-        <RadzenButton Text="Desenhar poligono" Variant="Variant.Outlined" Click="@(() => DrawAsync("Polygon"))" />
-        <RadzenButton Text="Concluir desenho" Variant="Variant.Outlined" Click="FinishAsync" />
-        <RadzenButton Text="Desfazer ultimo vertice" Variant="Variant.Outlined" Click="UndoAsync" />
         <RadzenButton Text="Editar geometria" Variant="Variant.Outlined" Disabled="@(_geometry is null && _view.Geometry is null)" Click="EditAsync" />
         <RadzenButton Text="Salvar geometria" ButtonStyle="ButtonStyle.Primary" Disabled="@(_geometry is not Polygon || _diagnostics.Count > 0)" Click="SaveAsync" />
         <RadzenButton Text="Remover geometria" ButtonStyle="ButtonStyle.Danger" Disabled="@(_geometry is null && _view.Geometry is null)" Click="AskRemoveAsync" />
-        <RadzenButton Text="Cancelar" Variant="Variant.Outlined" Click="CancelAsync" />
     </div>
 
     <div class="gisora-toolbar geometry-page__actions">
@@ -110,13 +104,19 @@ else
 }
 
 @code {
+    private static readonly IReadOnlyList<MapDrawingMode> DrawingModes =
+    [
+        new MapDrawingMode("point", "Ponto", "Point"),
+        new MapDrawingMode("line", "Linha", "LineString"),
+        new MapDrawingMode("polygon", "Poligono", "Polygon"),
+    ];
+
     private MapView? _map;
     private DrawingTool? _tool;
     private PropertyGeometryView? _view;
     private Geometry? _geometry;
     private decimal? _areaSquareMeters;
     private string? _summary;
-    private string _drawingKind = "Polygon";
     private bool _confirmingRemoval;
     private bool _loading = true;
     private bool _layerApplied;
@@ -151,17 +151,6 @@ else
         await ShowGeometryAsync(_view.Geometry);
     }
 
-    private async Task DrawAsync(string kind)
-    {
-        _error = null;
-        _message = null;
-        _diagnostics = [];
-        _confirmingRemoval = false;
-        _drawingKind = kind;
-
-        await _tool!.StartDrawingAsync(kind);
-    }
-
     private async Task EditAsync()
     {
         var geometry = _geometry ?? _view?.Geometry;
@@ -186,29 +175,9 @@ else
         await _tool!.StartEditingAsync(Serializer.Serialize(geometry));
     }
 
-    private async Task FinishAsync()
-    {
-        var completed = await _tool!.FinishDrawingAsync();
-
-        if (completed is false)
-        {
-            _error = _drawingKind switch
-            {
-                "Point" => "Clique no mapa para marcar o ponto.",
-                "LineString" => "Informe ao menos dois pontos para concluir a linha.",
-                _ => "Informe ao menos tres pontos para fechar o poligono.",
-            };
-        }
-    }
-
-    private async Task UndoAsync()
-    {
-        _error = null;
-        await _tool!.UndoLastVertexAsync();
-    }
-
     private async Task CompleteGeometryAsync(string geoJson)
     {
+        _confirmingRemoval = false;
         var geometry = await ReadGeometryAsync(geoJson);
 
         if (geometry is null)
@@ -380,9 +349,8 @@ else
         }
     }
 
-    private async Task CancelAsync()
+    private void OnDrawingCanceledAsync()
     {
-        await _tool!.CancelAsync();
         _error = null;
         _message = null;
         _diagnostics = [];

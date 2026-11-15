@@ -28,7 +28,7 @@
             <MapToolbar />
             <LayerControl Layers="_layers" />
             <CoordinateControl Crs="EPSG:4326" />
-            <DrawingTool @ref="_tool" OnCompleted="CompleteDrawingAsync" />
+            <DrawingTool @ref="_tool" Modes="DrawingModes" OnCompleted="CompleteDrawingAsync" />
         </MapView>
     </div>
 
@@ -51,11 +51,6 @@
                 <input class="territory-input" placeholder="Codigo CAR" @bind="_carCode" />
                 <input class="territory-input" placeholder="Codigo SIGEF" @bind="_sigefCode" />
                 <input class="territory-input" placeholder="Codigo SNCI" @bind="_snciCode" />
-
-                <div class="gisora-toolbar">
-                    <RadzenButton Text="Desenhar limite" Variant="Variant.Outlined" Click="@(() => StartDrawingAsync(false))" />
-                    <RadzenButton Text="Concluir desenho" Variant="Variant.Outlined" Click="FinishDrawingAsync" />
-                </div>
 
                 @if (_boundaryAreaHectares is { } hectares)
                 {
@@ -94,11 +89,6 @@
                 </select>
 
                 <input class="territory-input" placeholder="Rotulo da APP" @bind="_appLabel" />
-
-                <div class="gisora-toolbar">
-                    <RadzenButton Text="Desenhar APP" Variant="Variant.Outlined" Click="@(() => StartDrawingAsync(true))" />
-                    <RadzenButton Text="Concluir APP" Variant="Variant.Outlined" Click="FinishDrawingAsync" />
-                </div>
 
                 @if (_appAreaHectares is { } hectares)
                 {
@@ -156,6 +146,12 @@
     private DrawingTool? _tool;
     private readonly List<MapLayer> _layers = [];
 
+    private static readonly IReadOnlyList<MapDrawingMode> DrawingModes =
+    [
+        new MapDrawingMode("boundary", "Limite da propriedade", "Polygon"),
+        new MapDrawingMode("app", "APP", "Polygon"),
+    ];
+
     private IReadOnlyList<RuralPropertyListItem> _properties = [];
 
     private Guid? _selectedPropertyId;
@@ -173,7 +169,6 @@
     private Polygon? _appBoundary;
     private decimal? _boundaryAreaHectares;
     private decimal? _appAreaHectares;
-    private bool _drawingApp;
     private bool _applied;
     private string? _error;
     private string? _message;
@@ -246,24 +241,6 @@
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task StartDrawingAsync(bool forApp)
-    {
-        _drawingApp = forApp;
-        _error = null;
-
-        await _tool!.StartDrawingAsync();
-    }
-
-    private async Task FinishDrawingAsync()
-    {
-        var completed = await _tool!.FinishDrawingAsync();
-
-        if (completed is false)
-        {
-            _error = "Informe ao menos tres pontos para fechar o poligono.";
-        }
-    }
-
     private async Task CompleteDrawingAsync(string geoJson)
     {
         var geometry = Serializer.Deserialize(geoJson, SpatialReference.Wgs84);
@@ -276,7 +253,7 @@
 
         var area = (await Spatial.AreaAsync(polygon)).Hectares;
 
-        if (_drawingApp)
+        if (_tool?.CompletedMode?.Id == "app")
         {
             _appBoundary = polygon;
             _appAreaHectares = area;

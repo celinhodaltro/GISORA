@@ -14,7 +14,7 @@ public class FacilitiesTests(WebAppFixture fixture)
         await page.GotoAsync($"{fixture.BaseUrl}/facilities");
 
         await page.GetByPlaceholder("Nome do equipamento").FillAsync("Escola Municipal");
-        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Marcar no mapa" }).ClickAsync();
+        await MapDrawing.StartAsync(page);
         await ClickMapAsync(page, 0.5, 0.5);
 
         await Expect(page.Locator(".facilities__coordinate")).ToContainTextAsync(",");
@@ -72,7 +72,7 @@ public class FacilitiesTests(WebAppFixture fixture)
     {
         await page.GetByPlaceholder("Nome do equipamento").FillAsync(name);
         await page.Locator(".facilities-form__select").First.SelectOptionAsync(type);
-        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Marcar no mapa" }).ClickAsync();
+        await MapDrawing.StartAsync(page);
         await ClickMapAsync(page, relativeX, relativeY);
         await Expect(page.Locator(".facilities__coordinate")).ToContainTextAsync(",");
 

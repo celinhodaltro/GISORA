@@ -11,6 +11,9 @@
     private MapView? Map { get; set; }
 
     [Parameter]
+    public IReadOnlyList<MapDrawingMode> Modes { get; set; } = [];
+
+    [Parameter]
     public EventCallback<string> OnCompleted { get; set; }
 
     [Parameter]
@@ -19,37 +22,76 @@
     [Parameter]
     public EventCallback<MapCoordinate> OnPointPicked { get; set; }
 
+    [Parameter]
+    public EventCallback OnCanceled { get; set; }
+
     [Inject]
     private IJSRuntime Js { get; set; } = default!;
 
-    public async Task StartDrawingAsync(string kind = "Polygon")
+    public MapDrawingMode? ActiveMode { get; private set; }
+
+    public MapDrawingMode? CompletedMode { get; private set; }
+
+    public bool IsDrawing { get; private set; }
+
+    public bool IsEditing { get; private set; }
+
+    public bool IsActive => IsDrawing || IsEditing;
+
+    public bool CanFinish => IsDrawing && ActiveMode is { Kind: not "Point" and not "Pick" };
+
+    public bool CanUndo => CanFinish;
+
+    public string? Error { get; private set; }
+
+    protected override void OnInitialized() => Map?.AttachDrawingTool(this);
+
+    public async Task StartAsync(MapDrawingMode mode)
     {
+        ArgumentNullException.ThrowIfNull(mode);
+
         var module = await ModuleAsync();
         _reference ??= DotNetObjectReference.Create(this);
 
-        await module.InvokeVoidAsync("enableDraw", Map!.ElementId, _reference, kind);
+        ActiveMode = mode;
+        CompletedMode = null;
+        IsDrawing = true;
+        IsEditing = false;
+        Error = null;
+        Map?.NotifyDrawingStateChanged();
+
+        if (mode.Kind == "Pick")
+        {
+            await module.InvokeVoidAsync("enablePointPick", Map!.ElementId, _reference);
+
+            return;
+        }
+
+        await module.InvokeVoidAsync("enableDraw", Map!.ElementId, _reference, mode.Kind);
     }
 
-    public async Task<bool> FinishDrawingAsync()
+    public async Task FinishAsync()
     {
-        var module = await ModuleAsync();
+        if (_module is null || IsDrawing is false)
+        {
+            return;
+        }
 
-        return await module.InvokeAsync<bool>("finishDraw", Map!.ElementId);
+        var completed = await _module.InvokeAsync<bool>("finishDraw", Map!.ElementId);
+        Error = completed ? null : MinimumMessage(ActiveMode?.Kind);
+        Map?.NotifyDrawingStateChanged();
     }
 
-    public async Task UndoLastVertexAsync()
+    public async Task UndoAsync()
     {
-        var module = await ModuleAsync();
+        if (_module is null || IsDrawing is false)
+        {
+            return;
+        }
 
-        await module.InvokeVoidAsync("undoLastVertex", Map!.ElementId);
-    }
-
-    public async Task StartPickingPointAsync()
-    {
-        var module = await ModuleAsync();
-        _reference ??= DotNetObjectReference.Create(this);
-
-        await module.InvokeVoidAsync("enablePointPick", Map!.ElementId, _reference);
+        await _module.InvokeVoidAsync("undoLastVertex", Map!.ElementId);
+        Error = null;
+        Map?.NotifyDrawingStateChanged();
     }
 
     public async Task StartEditingAsync(string geoJson)
@@ -57,21 +99,35 @@
         var module = await ModuleAsync();
         _reference ??= DotNetObjectReference.Create(this);
 
+        ActiveMode = null;
+        CompletedMode = null;
+        IsDrawing = false;
+        IsEditing = true;
+        Error = null;
+        Map?.NotifyDrawingStateChanged();
+
         await module.InvokeVoidAsync("enableEdit", Map!.ElementId, geoJson, _reference);
     }
 
     public async Task CancelAsync()
     {
-        if (_module is null)
+        if (_module is not null)
         {
-            return;
+            await _module.InvokeVoidAsync("cancelDraw", Map!.ElementId);
         }
 
-        await _module.InvokeVoidAsync("cancelDraw", Map!.ElementId);
+        Reset();
+        await OnCanceled.InvokeAsync();
     }
 
     [JSInvokable]
-    public async Task HandleGeometryCompleted(string geoJson) => await OnCompleted.InvokeAsync(geoJson);
+    public async Task HandleGeometryCompleted(string geoJson)
+    {
+        CompletedMode = ActiveMode;
+        Reset();
+
+        await OnCompleted.InvokeAsync(geoJson);
+    }
 
     [JSInvokable]
     public async Task HandleGeometryEdited(string geoJson) => await OnEdited.InvokeAsync(geoJson);
@@ -80,8 +136,17 @@
     public async Task HandlePointPicked(double latitude, double longitude)
         => await OnPointPicked.InvokeAsync(new MapCoordinate(latitude, longitude));
 
+    [JSInvokable]
+    public async Task HandleDrawingCanceled()
+    {
+        Reset();
+        await OnCanceled.InvokeAsync();
+    }
+
     public async ValueTask DisposeAsync()
     {
+        Map?.DetachDrawingTool(this);
+
         if (_module is not null)
         {
             try
@@ -96,6 +161,22 @@
 
         _reference?.Dispose();
     }
+
+    private void Reset()
+    {
+        IsDrawing = false;
+        IsEditing = false;
+        ActiveMode = null;
+        Error = null;
+        Map?.NotifyDrawingStateChanged();
+    }
+
+    private static string MinimumMessage(string? kind) => kind switch
+    {
+        "Point" => "Clique no mapa para marcar o ponto.",
+        "LineString" => "Informe ao menos dois pontos para concluir a linha.",
+        _ => "Informe ao menos tres pontos para fechar o poligono.",
+    };
 
     private async ValueTask<IJSObjectReference> ModuleAsync()
         => _module ??= await Js.InvokeAsync<IJSObjectReference>("import", ModulePath);

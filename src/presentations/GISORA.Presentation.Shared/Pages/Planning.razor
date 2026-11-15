@@ -31,7 +31,7 @@
             <MapToolbar />
             <LayerControl Layers="_layers" />
             <CoordinateControl Crs="EPSG:4326" />
-            <DrawingTool @ref="_tool" OnCompleted="CompleteDrawingAsync" />
+            <DrawingTool @ref="_tool" Modes="DrawingModes" OnCompleted="CompleteDrawingAsync" />
         </MapView>
     </div>
 
@@ -48,11 +48,6 @@
                 <input class="territory-input" placeholder="Gabarito (m)" @bind="_height" />
                 <input class="territory-input" placeholder="Recuo minimo (m)" @bind="_setback" />
                 <input class="territory-input" placeholder="Usos permitidos" @bind="_allowedUses" />
-
-                <div class="gisora-toolbar">
-                    <RadzenButton Text="Desenhar zona" Variant="Variant.Outlined" Click="@(() => StartDrawingAsync(DrawingTarget.Zone))" />
-                    <RadzenButton Text="Concluir zona" Variant="Variant.Outlined" Click="FinishDrawingAsync" />
-                </div>
 
                 @if (_zoneAreaHectares is { } hectares)
                 {
@@ -75,11 +70,6 @@
                 </select>
 
                 <input class="territory-input" placeholder="Descricao da restricao" @bind="_restrictionDescription" />
-
-                <div class="gisora-toolbar">
-                    <RadzenButton Text="Desenhar restricao" Variant="Variant.Outlined" Click="@(() => StartDrawingAsync(DrawingTarget.Restriction))" />
-                    <RadzenButton Text="Concluir restricao" Variant="Variant.Outlined" Click="FinishDrawingAsync" />
-                </div>
 
                 @if (_restrictionAreaHectares is { } hectares)
                 {
@@ -161,13 +151,13 @@
 </RadzenCard>
 
 @code {
-    private enum DrawingTarget
-    {
-        Zone,
-        Restriction,
-    }
-
     private static readonly RestrictionType[] RestrictionTypes = Enum.GetValues<RestrictionType>();
+
+    private static readonly IReadOnlyList<MapDrawingMode> DrawingModes =
+    [
+        new MapDrawingMode("zone", "Zona", "Polygon"),
+        new MapDrawingMode("restriction", "Restricao", "Polygon"),
+    ];
 
     private MapView? _map;
     private DrawingTool? _tool;
@@ -178,7 +168,6 @@
     private IncidentRegulation? _incident;
 
     private Guid? _selectedPropertyId;
-    private DrawingTarget _drawingTarget = DrawingTarget.Zone;
 
     private string? _zoneCode;
     private string? _zoneName;
@@ -274,24 +263,6 @@
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task StartDrawingAsync(DrawingTarget target)
-    {
-        _drawingTarget = target;
-        _error = null;
-
-        await _tool!.StartDrawingAsync();
-    }
-
-    private async Task FinishDrawingAsync()
-    {
-        var completed = await _tool!.FinishDrawingAsync();
-
-        if (completed is false)
-        {
-            _error = "Informe ao menos tres pontos para fechar o poligono.";
-        }
-    }
-
     private async Task CompleteDrawingAsync(string geoJson)
     {
         var geometry = Serializer.Deserialize(geoJson, SpatialReference.Wgs84);
@@ -305,7 +276,7 @@
         var hectares = (await Spatial.AreaAsync(polygon)).Hectares;
         _pendingBoundary = polygon;
 
-        if (_drawingTarget == DrawingTarget.Zone)
+        if (_tool?.CompletedMode?.Id == "zone")
         {
             _zoneAreaHectares = hectares;
         }

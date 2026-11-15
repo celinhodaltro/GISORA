@@ -14,12 +14,12 @@ public class CemeteryTests(WebAppFixture fixture)
         await page.GotoAsync($"{fixture.BaseUrl}/cemetery");
 
         await page.GetByPlaceholder("Nome do cemiterio").FillAsync("Cemiterio Municipal");
-        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Desenhar limite" }).ClickAsync();
+        await MapDrawing.StartAsync(page, "Limite do cemiterio");
         await ClickMapAsync(page, 0.35, 0.35);
         await ClickMapAsync(page, 0.65, 0.35);
         await ClickMapAsync(page, 0.65, 0.65);
         await ClickMapAsync(page, 0.35, 0.65);
-        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Concluir desenho" }).ClickAsync();
+        await MapDrawing.FinishAsync(page);
 
         await Expect(page.GetByText("Area:")).ToBeVisibleAsync();
 
@@ -32,7 +32,7 @@ public class CemeteryTests(WebAppFixture fixture)
         await Expect(page.GetByText("Setor cadastrado.")).ToBeVisibleAsync();
 
         await page.GetByPlaceholder("Codigo do jazigo").FillAsync("J-01");
-        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Marcar jazigo" }).ClickAsync();
+        await MapDrawing.StartAsync(page, "Marcar jazigo");
         await ClickMapAsync(page, 0.5, 0.5);
 
         await Expect(page.Locator(".cemetery-coordinate")).ToBeVisibleAsync();

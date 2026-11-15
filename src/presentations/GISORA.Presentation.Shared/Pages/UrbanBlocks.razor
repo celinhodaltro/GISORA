@@ -51,8 +51,6 @@
                 <input id="urban-block-code" class="territory-input" placeholder="Codigo da quadra" @bind="_code" />
             </label>
 
-            <RadzenButton Text="Desenhar contorno" Variant="Variant.Outlined" aria-label="Desenhar contorno da quadra" Click="DrawBlockAsync" />
-            <RadzenButton Text="Concluir desenho" Variant="Variant.Outlined" aria-label="Concluir contorno da quadra" Click="FinishDrawingAsync" />
             <RadzenButton Icon="add" Text="Cadastrar quadra" ButtonStyle="ButtonStyle.Primary" Click="CreateBlockAsync" />
         </div>
 
@@ -102,8 +100,6 @@
             </p>
 
             <div class="territory-form">
-                <RadzenButton Text="Desenhar contorno" Variant="Variant.Outlined" aria-label="Desenhar contorno da quadra selecionada" Click="DrawBlockGeometryAsync" />
-                <RadzenButton Text="Concluir desenho" Variant="Variant.Outlined" aria-label="Concluir contorno da quadra selecionada" Click="FinishDrawingAsync" />
                 <RadzenButton Text="Salvar geometria" Variant="Variant.Outlined" Disabled="@(_drawnBlock is null)" Click="SaveBlockGeometryAsync" />
                 <RadzenButton Text="Excluir quadra" ButtonStyle="ButtonStyle.Danger" Click="AskDeleteBlock" />
             </div>
@@ -137,8 +133,6 @@
                     <RadzenNumeric TValue="decimal" @bind-Value="_frontage" Min="0.01m" />
                 </label>
 
-                <RadzenButton Text="Desenhar face" Variant="Variant.Outlined" aria-label="Desenhar linha da face" Click="DrawFaceAsync" />
-                <RadzenButton Text="Concluir desenho" Variant="Variant.Outlined" aria-label="Concluir linha da face" Click="FinishDrawingAsync" />
                 <RadzenButton Text="Salvar face" ButtonStyle="ButtonStyle.Primary" Click="AddFaceAsync" />
             </div>
 
@@ -170,7 +164,7 @@
     <MapView @ref="_map" CenterLatitude="-7.95" CenterLongitude="-35.25" Zoom="16" Height="clamp(22rem, calc(100vh - 30rem), 34rem)">
         <MapToolbar />
         <CoordinateControl />
-        <DrawingTool @ref="_tool" OnCompleted="OnDrawingCompletedAsync" />
+        <DrawingTool @ref="_tool" Modes="DrawingModes" OnCompleted="OnDrawingCompletedAsync" />
     </MapView>
 </div>
 
@@ -188,7 +182,6 @@
     private LineString? _faceLine;
     private MapView? _map;
     private DrawingTool? _tool;
-    private string? _drawingTarget;
     private string? _code;
     private decimal _frontage = 10m;
     private string? _error;
@@ -408,35 +401,9 @@
         await ReloadBlocksAsync();
     }
 
-    private async Task DrawBlockAsync()
-    {
-        _drawingTarget = "block";
-        await _tool!.StartDrawingAsync("Polygon");
-    }
-
-    private async Task DrawBlockGeometryAsync()
-    {
-        _drawingTarget = "block";
-        await _tool!.StartDrawingAsync("Polygon");
-    }
-
-    private async Task DrawFaceAsync()
-    {
-        _drawingTarget = "face";
-        await _tool!.StartDrawingAsync("LineString");
-    }
-
-    private async Task FinishDrawingAsync()
-    {
-        var completed = await _tool!.FinishDrawingAsync();
-
-        if (completed is false)
-        {
-            _error = _drawingTarget == "face"
-                ? "Informe ao menos dois pontos para concluir a face."
-                : "Informe ao menos tres pontos para fechar o contorno da quadra.";
-        }
-    }
+    private IReadOnlyList<MapDrawingMode> DrawingModes => _selected is null
+        ? [new MapDrawingMode("block", "Contorno da quadra", "Polygon")]
+        : [new MapDrawingMode("block", "Contorno da quadra", "Polygon"), new MapDrawingMode("face", "Linha da face", "LineString")];
 
     private async Task OnDrawingCompletedAsync(string geoJson)
     {
@@ -453,7 +420,9 @@
             return;
         }
 
-        if (_drawingTarget == "face" && geometry is LineString line)
+        var isFace = _tool?.CompletedMode?.Id == "face";
+
+        if (isFace && geometry is LineString line)
         {
             _faceLine = line;
             _error = null;
@@ -469,7 +438,7 @@
             return;
         }
 
-        _error = _drawingTarget == "face"
+        _error = isFace
             ? "A face exige uma linha."
             : "O contorno da quadra exige um poligono.";
     }
