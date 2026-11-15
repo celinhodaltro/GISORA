@@ -1,0 +1,212 @@
+.cadastro {
+    position: relative;
+    height: calc(100dvh - 3.75rem);
+    margin: -1.75rem -2rem -3rem;
+    overflow: hidden;
+    background: #eef2f6;
+}
+
+.cadastro ::deep .gisora-map-wrapper {
+    height: 100%;
+    min-height: 0;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.cadastro-bar {
+    position: absolute;
+    top: 0.75rem;
+    left: 0.75rem;
+    z-index: 650;
+    display: flex;
+    gap: 0.25rem;
+    padding: 0.3rem;
+    border: 1px solid var(--gisora-border, #dde4ec);
+    border-radius: var(--gisora-radius-md, 10px);
+    background: #ffffff;
+    box-shadow: 0 4px 14px rgba(18, 33, 47, 0.14);
+}
+
+.cadastro-bar__item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.3rem;
+    height: 2.3rem;
+    border-radius: var(--gisora-radius-sm, 6px);
+    color: #2c3e50;
+    text-decoration: none;
+}
+
+.cadastro-bar__item:hover {
+    background: var(--gisora-blue-50, #f3f7fd);
+    color: var(--gisora-blue-700, #1351b4);
+}
+
+.cadastro-bar__item--active {
+    background: var(--gisora-blue-700, #1351b4);
+    color: #ffffff;
+}
+
+.cadastro-bar__item--active:hover {
+    background: var(--gisora-blue-700, #1351b4);
+    color: #ffffff;
+}
+
+.cadastro-bar__item ::deep .rzi {
+    font-size: 1.2rem;
+    --rz-icon-size: 1.2rem;
+}
+
+.cadastro ::deep .gisora-layer-control {
+    top: 4.05rem;
+}
+
+.cadastro-fab {
+    position: absolute;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 650;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.1rem;
+    height: 3.1rem;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: var(--gisora-blue-700, #1351b4);
+    color: #ffffff;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(18, 33, 47, 0.28);
+}
+
+.cadastro-fab:hover {
+    background: #0f4396;
+}
+
+.cadastro-fab:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.cadastro-fab svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    fill: currentColor;
+}
+
+.cadastro-types {
+    position: absolute;
+    right: 1rem;
+    bottom: 4.6rem;
+    z-index: 650;
+    display: grid;
+    grid-template-columns: repeat(4, 2.4rem);
+    gap: 0.3rem;
+    padding: 0.5rem;
+    border: 1px solid var(--gisora-border, #dde4ec);
+    border-radius: var(--gisora-radius-md, 10px);
+    background: #ffffff;
+    box-shadow: 0 6px 18px rgba(18, 33, 47, 0.18);
+}
+
+.cadastro-types__item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.4rem;
+    height: 2.4rem;
+    padding: 0;
+    border: none;
+    border-radius: var(--gisora-radius-sm, 6px);
+    background: var(--gisora-blue-50, #f3f7fd);
+    color: var(--gisora-blue-700, #1351b4);
+    cursor: pointer;
+}
+
+.cadastro-types__item:hover {
+    background: var(--gisora-blue-700, #1351b4);
+    color: #ffffff;
+}
+
+.cadastro-types__item ::deep .rzi {
+    font-size: 1.15rem;
+    --rz-icon-size: 1.15rem;
+}
+
+.cadastro-error {
+    position: absolute;
+    left: 50%;
+    bottom: 4.6rem;
+    z-index: 650;
+    padding: 0.45rem 0.8rem;
+    transform: translateX(-50%);
+    border: 1px solid #e5b4b4;
+    border-radius: 999px;
+    background: #fdf1f1;
+    color: #8a1f1f;
+    font-size: 0.78rem;
+}
+
+.cadastro-draft {
+    position: absolute;
+    left: 50%;
+    bottom: 1rem;
+    z-index: 650;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    max-width: calc(100% - 9rem);
+    padding: 0.45rem 0.5rem 0.45rem 0.8rem;
+    transform: translateX(-50%);
+    border: 1px dashed #c2410c;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.97);
+    color: #7c2d12;
+    font-size: 0.78rem;
+    box-shadow: 0 4px 14px rgba(18, 33, 47, 0.14);
+}
+
+.cadastro-draft__action {
+    padding: 0.25rem 0.55rem;
+    border: 1px solid #c2410c;
+    border-radius: 999px;
+    background: #ffffff;
+    color: #7c2d12;
+    font-size: 0.74rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.cadastro-draft button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.6rem;
+    height: 1.6rem;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: #7c2d12;
+    cursor: pointer;
+}
+
+.cadastro-draft button:hover {
+    background: #fdeceB;
+}
+
+.cadastro-draft button svg {
+    width: 0.9rem;
+    height: 0.9rem;
+    fill: currentColor;
+}
+
+@media (max-width: 60rem) {
+    .cadastro-draft {
+        bottom: 5rem;
+        max-width: calc(100% - 2rem);
+    }
+}

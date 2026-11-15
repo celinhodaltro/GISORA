@@ -17,6 +17,13 @@ public sealed record FacilityMapItem(
     FacilityType Type,
     Point Location);
 
+public sealed record FacilityDetail(
+    PublicFacilityId Id,
+    string Name,
+    FacilityType Type,
+    Guid? NeighborhoodId,
+    Point? Location);
+
 public sealed record FacilityFilter
 {
     public string? NameContains { get; init; }
@@ -35,4 +42,6 @@ public interface IFacilityQueries
     Task<PagedResult<FacilityListItem>> SearchAsync(FacilityFilter filter, CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<FacilityMapItem>> GetMapItemsAsync(CancellationToken cancellationToken = default);
+
+    Task<FacilityDetail?> GetAsync(PublicFacilityId id, CancellationToken cancellationToken = default);
 }

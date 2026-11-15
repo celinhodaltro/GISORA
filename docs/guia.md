@@ -46,7 +46,7 @@ Nao ha servidor de tiles, API ou banco: o Pages serve apenas arquivos estaticos.
 ## Checklist pos-deploy
 
 1. Abrir https://celinhodaltro.github.io/GISORA/ e confirmar carregamento sem erro no console.
-2. Navegar para cada rota direta (`/properties`, `/map`, `/territory`, `/cemetery`, `/rural`, `/planning`, `/cib`, `/data`) e recarregar a pagina.
+2. Navegar para cada rota direta (`/cadastro/imoveis`, `/properties`, `/map`, `/territory`, `/cemetery`, `/rural`, `/planning`, `/cib`, `/data`) e recarregar a pagina.
 3. Confirmar que CSS, imagens da marca, Leaflet e `map.js` carregam (sem 404).
 4. Carregar a base demonstrativa e conferir os indicadores.
 5. Desenhar uma geometria e confirmar area e persistencia apos recarregar.
@@ -57,14 +57,15 @@ Nao ha servidor de tiles, API ou banco: o Pages serve apenas arquivos estaticos.
 
 1. **Visao geral**: carregar dados de demonstracao e conferir indicadores.
 2. **Territorio**: criar municipio/distrito/bairro/setor.
-3. **Imoveis**: abrir geometria, desenhar lote, salvar e ver no mapa.
-4. **Mapa**: alternar camadas, selecionar feicao e ver atributos.
-5. **Equipamentos**: criar equipamento com ponto e simbologia por tipo.
-6. **Cemiterio**: criar cemiterio, setor, jazigo e sepultamento.
-7. **Rural**: criar/importar propriedade e APP.
-8. **Zoneamento**: criar zona, desenhar poligono e consultar incidencia.
-9. **Consulta CIB**: usar os codigos demo (`DEMO1A2B`, `DEMO3C4D`, `DEMO5E6F`).
-10. **Dados e backup**: exportar e restaurar.
+3. **Cadastro no mapa**: abrir `/cadastro/imoveis`, alternar os modulos pelos icones, ligar/desligar camadas e observar o bloqueio da camada ativa.
+4. **Criacao guiada**: usar o `+`, desenhar o poligono (ou escolher o tipo do equipamento) e concluir com duplo clique ou botao de concluir; abrir o popup, preencher o modal e salvar.
+5. **Selecao e edicao**: clicar em uma feicao, abrir o cadastro pelo popup, editar os dados e usar o lapis para mover vertices ou o ponto.
+6. **Mapa**: alternar camadas, selecionar feicao e ver atributos.
+7. **Cemiterio**: criar cemiterio, setor, jazigo e sepultamento.
+8. **Rural avancado**: importar propriedade por GeoJSON e cadastrar APP na rota legada `/rural`.
+9. **Zoneamento**: criar zona, desenhar poligono e consultar incidencia.
+10. **Consulta CIB**: usar os codigos demo (`DEMO1A2B`, `DEMO3C4D`, `DEMO5E6F`).
+11. **Dados e backup**: exportar e restaurar.
 
 ## Fluxo de contribuicao
 

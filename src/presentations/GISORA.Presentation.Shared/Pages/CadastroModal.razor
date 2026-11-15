@@ -1,0 +1,272 @@
+@namespace GISORA.Presentation.Shared.Pages
+@using GISORA.Domain.Geospatial
+@using GISORA.Domain.PublicFacilities
+@using GISORA.Domain.Rural
+@using GISORA.Presentation.Shared.Maps
+
+<div class="cadastro-modal"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="cadastro-modal-title"
+     tabindex="-1"
+     @ref="_dialog"
+     @onkeydown="HandleKeyDown">
+    <div class="cadastro-modal__panel">
+        <header class="cadastro-modal__header">
+            <h2 id="cadastro-modal-title">@Title</h2>
+            <button type="button" aria-label="Fechar" title="Fechar" @onclick="CloseAsync">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.3 5.7 12 12l6.3 6.3-1.4 1.4L10.6 13.4 5.7 18.3 4.3 16.9 9.2 12 4.3 7.1l1.4-1.4 4.9 4.9 6.3-6.3z" /></svg>
+            </button>
+        </header>
+
+        <div class="cadastro-modal__body">
+            <div class="cadastro-fields">
+                @switch (Module)
+                {
+                    case CadastroModuleKind.Quadras:
+                        @if (Form.IsNew)
+                        {
+                            <label class="cadastro-field">
+                                <span>Setor fiscal</span>
+                                <select @bind="Form.SectorId">
+                                    <option value="">Selecione</option>
+                                    @foreach (var sector in Options.Sectors)
+                                    {
+                                        <option value="@sector.Id">@sector.Label</option>
+                                    }
+                                </select>
+                            </label>
+
+                            <label class="cadastro-field">
+                                <span>Codigo</span>
+                                <input @bind="Form.Code" placeholder="Codigo da quadra" />
+                            </label>
+                        }
+                        break;
+
+                    case CadastroModuleKind.Imoveis:
+                        @if (Form.IsNew)
+                        {
+                            <label class="cadastro-field">
+                                <span>Setor</span>
+                                <input @bind="Form.Sector" />
+                            </label>
+
+                            <label class="cadastro-field">
+                                <span>Quadra</span>
+                                <input @bind="Form.Block" />
+                            </label>
+
+                            <label class="cadastro-field">
+                                <span>Lote</span>
+                                <input @bind="Form.Lot" />
+                            </label>
+
+                            <label class="cadastro-field">
+                                <span>Unidade</span>
+                                <input @bind="Form.Unit" />
+                            </label>
+                        }
+
+                        <label class="cadastro-field">
+                            <span>Logradouro</span>
+                            <select @bind="Form.StreetId">
+                                <option value="">Selecione</option>
+                                @foreach (var street in Options.Streets)
+                                {
+                                    <option value="@street.Id">@street.Label</option>
+                                }
+                            </select>
+                        </label>
+
+                        <label class="cadastro-field">
+                            <span>Numero</span>
+                            <input @bind="Form.Number" />
+                        </label>
+
+                        <label class="cadastro-field">
+                            <span>Bairro</span>
+                            <select @bind="Form.NeighborhoodId">
+                                <option value="">Selecione</option>
+                                @foreach (var neighborhood in Options.Neighborhoods)
+                                {
+                                    <option value="@neighborhood.Id">@neighborhood.Label</option>
+                                }
+                            </select>
+                        </label>
+
+                        @if (Form.IsNew)
+                        {
+                            <label class="cadastro-field">
+                                <span>Area do lote (m2)</span>
+                                <input type="number" step="0.01" @bind="Form.LandArea" />
+                            </label>
+                        }
+                        break;
+
+                    case CadastroModuleKind.Equipamentos:
+                        <label class="cadastro-field">
+                            <span>Nome</span>
+                            <input @bind="Form.Name" placeholder="Nome do equipamento" />
+                        </label>
+
+                        <label class="cadastro-field">
+                            <span>Tipo</span>
+                            <select @bind="Form.Type">
+                                @foreach (var symbol in FacilitySymbology.All)
+                                {
+                                    <option value="@symbol.Type">@symbol.Label</option>
+                                }
+                            </select>
+                        </label>
+
+                        <label class="cadastro-field">
+                            <span>Bairro</span>
+                            <select @bind="Form.FacilityNeighborhoodId">
+                                <option value="">Sem bairro</option>
+                                @foreach (var neighborhood in Options.Neighborhoods)
+                                {
+                                    <option value="@neighborhood.Id">@neighborhood.Label</option>
+                                }
+                            </select>
+                        </label>
+                        break;
+
+                    case CadastroModuleKind.Rurais:
+                        <label class="cadastro-field">
+                            <span>Nome</span>
+                            <input @bind="Form.RuralName" placeholder="Nome da propriedade" />
+                        </label>
+
+                        <label class="cadastro-field">
+                            <span>Uso</span>
+                            <select @bind="Form.Usage">
+                                @foreach (var usage in Usages)
+                                {
+                                    <option value="@usage">@RuralMapProjector.UsageLabel(usage)</option>
+                                }
+                            </select>
+                        </label>
+
+                        <label class="cadastro-field">
+                            <span>Codigo CAR</span>
+                            <input @bind="Form.CarCode" />
+                        </label>
+
+                        <label class="cadastro-field">
+                            <span>Codigo SIGEF</span>
+                            <input @bind="Form.SigefCode" />
+                        </label>
+
+                        <label class="cadastro-field">
+                            <span>Codigo SNCI</span>
+                            <input @bind="Form.SnciCode" />
+                        </label>
+                        break;
+                }
+            </div>
+
+            @if (Form.Details.Count > 0)
+            {
+                <dl class="cadastro-details">
+                    @foreach (var row in Form.Details)
+                    {
+                        <dt>@row.Label</dt>
+                        <dd>@row.Value</dd>
+                    }
+                </dl>
+            }
+
+            @if (Form.Geometry is null)
+            {
+                <p class="cadastro-modal__hint" role="alert">Desenhe ou posicione a feicao no mapa antes de salvar.</p>
+            }
+            else
+            {
+                <p class="cadastro-modal__hint">@GeometrySummary</p>
+            }
+
+            @if (Error is not null)
+            {
+                <p class="cadastro-modal__error" role="alert">@Error</p>
+            }
+        </div>
+
+        <footer class="cadastro-modal__footer">
+            <button type="button" class="cadastro-modal__button" @onclick="CloseAsync">Cancelar</button>
+            <button type="button"
+                    class="cadastro-modal__button cadastro-modal__button--primary"
+                    disabled="@(Saving || Form.Geometry is null)"
+                    @onclick="SaveAsync">
+                @(Saving ? "Salvando..." : "Salvar")
+            </button>
+        </footer>
+    </div>
+</div>
+
+@code {
+    private static readonly RuralUsage[] Usages = Enum.GetValues<RuralUsage>();
+
+    private ElementReference _dialog;
+
+    [Parameter]
+    public CadastroModuleKind Module { get; set; }
+
+    [Parameter]
+    public CadastroForm Form { get; set; } = default!;
+
+    [Parameter]
+    public CadastroOptions Options { get; set; } = default!;
+
+    [Parameter]
+    public bool Saving { get; set; }
+
+    [Parameter]
+    public string? Error { get; set; }
+
+    [Parameter]
+    public EventCallback OnSave { get; set; }
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    private string ModuleLabel => Module switch
+    {
+        CadastroModuleKind.Quadras => "Quadra",
+        CadastroModuleKind.Imoveis => "Imovel",
+        CadastroModuleKind.Equipamentos => "Equipamento",
+        _ => "Propriedade rural",
+    };
+
+    private string Title => Form.IsNew
+        ? $"Novo cadastro: {ModuleLabel}"
+        : $"{ModuleLabel}: {Form.Code ?? Form.Registration ?? Form.Name ?? Form.RuralName}";
+
+    private string GeometrySummary => Form.Geometry switch
+    {
+        null => string.Empty,
+        Polygon polygon => $"Geometria: poligono com {polygon.Rings[0].Coordinates.Count - 1} vertice(s).",
+        GISORA.Domain.Geospatial.Point => "Geometria: ponto.",
+        _ => $"Geometria: {Form.Geometry.Type}.",
+    };
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await _dialog.FocusAsync();
+        }
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key == "Escape")
+        {
+            await CloseAsync();
+        }
+    }
+
+    private Task CloseAsync() => OnClose.InvokeAsync();
+
+    private Task SaveAsync() => OnSave.InvokeAsync();
+}

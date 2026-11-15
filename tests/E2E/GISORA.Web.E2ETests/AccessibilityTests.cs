@@ -44,7 +44,7 @@ public class AccessibilityTests(WebAppFixture fixture)
     {
         var page = await fixture.NewPageAsync();
 
-        foreach (var path in new[] { string.Empty, "/data", "/territory", "/properties" })
+        foreach (var path in new[] { string.Empty, "/data", "/territory", "/properties", "/cadastro/imoveis" })
         {
             await page.GotoAsync($"{fixture.BaseUrl}{path}");
             await page.WaitForTimeoutAsync(400);
@@ -105,7 +105,7 @@ public class AccessibilityTests(WebAppFixture fixture)
 
         await page.GetByRole(AriaRole.Link, new PageGetByRoleOptions { Name = "Imoveis" }).ClickAsync();
 
-        await Expect(page).ToHaveURLAsync(new Regex("/properties"));
+        await Expect(page).ToHaveURLAsync(new Regex("/cadastro/imoveis$"));
         await Expect(page.Locator("#app-nav")).ToBeHiddenAsync();
     }
 }

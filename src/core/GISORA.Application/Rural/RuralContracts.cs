@@ -15,6 +15,16 @@ public sealed record RuralPropertyListItem(
 
 public sealed record RuralPropertyMapItem(RuralPropertyId Id, string Name, Polygon Boundary);
 
+public sealed record RuralPropertyDetail(
+    RuralPropertyId Id,
+    string Name,
+    RuralUsage Usage,
+    string? CarCode,
+    string? SigefCode,
+    string? SnciCode,
+    Polygon Boundary,
+    decimal AreaHectares);
+
 public sealed record PreservationAreaListItem(
     PreservationAreaId Id,
     RuralPropertyId PropertyId,
@@ -28,6 +38,8 @@ public interface IRuralPropertyQueries
     Task<IReadOnlyList<RuralPropertyListItem>> ListAsync(CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<RuralPropertyMapItem>> GetMapItemsAsync(CancellationToken cancellationToken = default);
+
+    Task<RuralPropertyDetail?> GetAsync(RuralPropertyId id, CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<PreservationAreaListItem>> ListPreservationAreasAsync(
         RuralPropertyId? propertyId = null,

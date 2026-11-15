@@ -200,6 +200,11 @@
     color: var(--gisora-ink-soft, #3b4b5a);
 }
 
+.gisora-layer-control__item--locked {
+    cursor: not-allowed;
+    opacity: 0.68;
+}
+
 .gisora-feature-inspector {
     padding: 1rem;
     background: var(--gisora-surface, #ffffff);
@@ -229,6 +234,66 @@
     margin: 0;
     font-size: 0.85rem;
     font-variant-numeric: tabular-nums;
+}
+
+.gisora-popup-container .leaflet-popup-content-wrapper {
+    border-radius: var(--gisora-radius-md, 10px);
+}
+
+.gisora-popup-container .leaflet-popup-content {
+    margin: 0.7rem 0.85rem;
+    font-size: 0.8rem;
+}
+
+.gisora-popup {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    min-width: 11rem;
+}
+
+.gisora-popup__title {
+    font-size: 0.88rem;
+    color: var(--gisora-ink, #12212f);
+}
+
+.gisora-popup__row {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.8rem;
+}
+
+.gisora-popup__label {
+    color: var(--gisora-muted, #5a6b7b);
+}
+
+.gisora-popup__value {
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+}
+
+.gisora-popup__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.4rem;
+    margin-top: 0.45rem;
+}
+
+.gisora-popup__action {
+    padding: 0.35rem 0.6rem;
+    border: 1px solid var(--gisora-border, #dde4ec);
+    border-radius: var(--gisora-radius-sm, 6px);
+    background: #ffffff;
+    color: var(--gisora-blue-700, #1351b4);
+    font-size: 0.74rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.gisora-popup__action--primary {
+    border-color: var(--gisora-blue-700, #1351b4);
+    background: var(--gisora-blue-700, #1351b4);
+    color: #ffffff;
 }
 
 .gisora-map-pin-wrapper {

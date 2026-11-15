@@ -1,0 +1,1410 @@
+@page "/cadastro"
+@page "/cadastro/{ModuleSlug}"
+@using System.Text.Json.Nodes
+@using GISORA.Application.Common
+@using GISORA.Application.Geospatial
+@using GISORA.Application.Properties
+@using GISORA.Application.Properties.Commands
+@using GISORA.Application.Properties.Queries
+@using GISORA.Application.PublicFacilities
+@using GISORA.Application.PublicFacilities.Commands
+@using GISORA.Application.Roads
+@using GISORA.Application.Rural
+@using GISORA.Application.Rural.Commands
+@using GISORA.Application.Territory
+@using GISORA.Application.Territory.Commands
+@using GISORA.Application.Territory.Queries
+@using GISORA.Domain.Geospatial
+@using GISORA.Domain.Properties
+@using GISORA.Domain.PublicFacilities
+@using GISORA.Domain.Rural
+@using GISORA.Domain.Territory
+@using GISORA.Presentation.Shared.Maps
+@using GISORA.Presentation.Shared.Maps.Components
+@implements IDisposable
+@inject IPropertyMapQueries PropertyMapQueries
+@inject IFacilityQueries FacilityQueries
+@inject IUrbanBlockQueries UrbanBlockQueries
+@inject IRuralPropertyQueries RuralQueries
+@inject ITerritoryQueries TerritoryQueries
+@inject IStreetQueries StreetQueries
+@inject IGeoJsonSerializer Serializer
+@inject ISpatialOperations Spatial
+@inject CreateUrbanBlockHandler CreateUrbanBlock
+@inject UpdateUrbanBlockGeometryHandler UpdateUrbanBlockGeometry
+@inject CreatePropertyHandler CreateProperty
+@inject UpdatePropertyGeometryHandler UpdatePropertyGeometry
+@inject UpdatePropertyDetailsHandler UpdatePropertyDetails
+@inject GetPropertyHandler GetProperty
+@inject CreateFacilityHandler CreateFacility
+@inject UpdateFacilityHandler UpdateFacility
+@inject CreateRuralPropertyHandler CreateRuralProperty
+@inject UpdateRuralPropertyHandler UpdateRuralProperty
+@inject UpdateRuralPropertyBoundaryHandler UpdateRuralPropertyBoundary
+@inject GetUrbanBlockHandler GetUrbanBlock
+@inject NavigationManager Navigation
+
+<div class="cadastro">
+    <MapView @ref="_map"
+             CenterLatitude="-7.95"
+             CenterLongitude="-35.25"
+             Zoom="14"
+             Height="100%"
+             OnReady="ApplyLayersAsync"
+             OnFeatureSelected="SelectFeatureAsync"
+             OnPopupAction="HandlePopupActionAsync">
+        <nav class="cadastro-bar" aria-label="Modulos de cadastro">
+            @foreach (var module in Modules)
+            {
+                <a class="cadastro-bar__item @(IsActive(module) ? "cadastro-bar__item--active" : null)"
+                   href="@($"cadastro/{module.Slug}")"
+                   title="@module.Label"
+                   aria-label="@module.Label"
+                   aria-current="@(IsActive(module) ? "page" : null)">
+                    <RadzenIcon Icon="@module.Icon" />
+                </a>
+            }
+        </nav>
+
+        <MapToolbar />
+        <LayerControl Layers="_layers" LockedLayerIds="LockedLayerIds" />
+        <CoordinateControl Crs="EPSG:4326" />
+        <DrawingTool @ref="_tool"
+                     ShowToolbarTrigger="false"
+                     OnCompleted="OnDrawingCompletedAsync"
+                     OnPointPicked="OnPointPickedAsync"
+                     OnEdited="OnGeometryEdited"
+                     OnCanceled="OnDrawingCanceled" />
+
+        @if (_typePickerOpen)
+        {
+            <div class="cadastro-types" role="group" aria-label="Tipo de equipamento">
+                @foreach (var symbol in FacilitySymbology.All)
+                {
+                    <button type="button"
+                            class="cadastro-types__item"
+                            title="@symbol.Label"
+                            aria-label="@symbol.Label"
+                            @onclick="() => StartFacilityAsync(symbol)">
+                        <RadzenIcon Icon="@symbol.Icon" />
+                    </button>
+                }
+            </div>
+        }
+
+        <button type="button"
+                class="cadastro-fab"
+                aria-label="Novo cadastro"
+                title="Novo cadastro"
+                aria-expanded="@(IsTypePickerModule ? _typePickerOpen.ToString().ToLowerInvariant() : null)"
+                disabled="@IsBusy"
+                @onclick="StartOrToggleAsync">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z" /></svg>
+        </button>
+
+        @if (_geometryEdit is not null)
+        {
+            <div class="cadastro-draft" role="status">
+                <span>Editando geometria de @_geometryEdit.Module.Label.</span>
+                <button type="button" class="cadastro-draft__action" @onclick="SaveGeometryAsync">Salvar</button>
+                <button type="button" aria-label="Cancelar edicao geometrica" title="Cancelar" @onclick="CancelGeometryEditAsync">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.3 5.7 12 12l6.3 6.3-1.4 1.4L10.6 13.4 5.7 18.3 4.3 16.9 9.2 12 4.3 7.1l1.4-1.4 4.9 4.9 6.3-6.3z" /></svg>
+                </button>
+            </div>
+        }
+        else if (_draft is not null)
+        {
+            <div class="cadastro-draft" role="status">
+                <span>@DraftSummary</span>
+                <button type="button" aria-label="Descartar rascunho" title="Descartar rascunho" @onclick="DiscardDraftAsync">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.3 5.7 12 12l6.3 6.3-1.4 1.4L10.6 13.4 5.7 18.3 4.3 16.9 9.2 12 4.3 7.1l1.4-1.4 4.9 4.9 6.3-6.3z" /></svg>
+                </button>
+            </div>
+        }
+
+        @if (_error is not null)
+        {
+            <div class="cadastro-error" role="alert">@_error</div>
+        }
+    </MapView>
+
+    @if (_form is not null)
+    {
+        <CadastroModal Module="_formModule"
+                       Form="_form"
+                       Options="Options"
+                       Saving="_saving"
+                       Error="_modalError"
+                       OnSave="SaveAsync"
+                       OnClose="CloseModalAsync" />
+    }
+</div>
+
+@code {
+    private const string DraftLayerId = "cadastro-rascunho";
+
+    private sealed record CadastroModule(
+        string Slug,
+        string Label,
+        string Icon,
+        CadastroModuleKind Kind,
+        string PrimaryLayerId,
+        string[] LayerIds);
+
+    private sealed record CadastroDraft(CadastroModule Module, Geometry Geometry, FacilityType? FacilityType, int VertexCount);
+
+    private sealed record GeometryEdit(CadastroModule Module, string LayerId, string FeatureId, string EntityId, Geometry Geometry, bool IsPoint);
+
+    private static readonly CadastroModule[] Modules =
+    [
+        new CadastroModule("quadras", "Quadras", "grid_view", CadastroModuleKind.Quadras, "cadastro-quadras", ["cadastro-quadras", "cadastro-quadras-faces"]),
+        new CadastroModule("imoveis", "Imoveis", "home_work", CadastroModuleKind.Imoveis, "cadastro-imoveis", ["cadastro-imoveis"]),
+        new CadastroModule("equipamentos", "Equipamentos", "school", CadastroModuleKind.Equipamentos, "cadastro-equipamentos", ["cadastro-equipamentos"]),
+        new CadastroModule("rurais", "Rurais", "agriculture", CadastroModuleKind.Rurais, "cadastro-rurais", ["cadastro-rurais", "cadastro-rurais-app"]),
+    ];
+
+    private readonly List<MapLayer> _layers = [];
+
+    private MapView? _map;
+    private DrawingTool? _tool;
+    private CadastroModule _activeModule = Modules[0];
+    private CadastroDraft? _draft;
+    private CadastroSelection? _selection;
+    private GeometryEdit? _geometryEdit;
+    private CadastroForm? _form;
+    private CadastroModuleKind _formModule;
+    private CadastroOptions Options = new([], [], [], []);
+    private FacilityType? _pendingFacilityType;
+    private bool _typePickerOpen;
+    private bool _saving;
+    private string? _error;
+    private string? _modalError;
+
+    private IReadOnlyList<PropertyMapItem> _properties = [];
+    private IReadOnlyList<FacilityMapItem> _facilities = [];
+    private IReadOnlyList<UrbanBlockMapItem> _urbanBlocks = [];
+    private IReadOnlyList<RuralPropertyMapItem> _ruralProperties = [];
+    private IReadOnlyList<PreservationAreaMapItem> _preservationAreas = [];
+
+    private IReadOnlyCollection<string> LockedLayerIds
+    {
+        get
+        {
+            var ids = new HashSet<string>(_activeModule.LayerIds);
+
+            if (_selection is { IsDraft: false } selection)
+            {
+                ids.Add(selection.LayerId);
+            }
+
+            if (_geometryEdit is { } edit)
+            {
+                ids.Add(edit.LayerId);
+            }
+
+            return ids.ToArray();
+        }
+    }
+
+    private bool IsTypePickerModule => _activeModule.Kind == CadastroModuleKind.Equipamentos;
+
+    private bool IsBusy => _tool?.IsActive == true;
+
+    private string DraftSummary => _draft switch
+    {
+        null => string.Empty,
+        { FacilityType: { } type } => $"Rascunho de equipamento: {FacilitySymbology.For(type).Label}.",
+        { VertexCount: var count } => $"Rascunho de {_draft.Module.Label}: {count} vertice(s).",
+    };
+
+    [Parameter]
+    public string? ModuleSlug { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (string.IsNullOrWhiteSpace(ModuleSlug))
+        {
+            Navigation.NavigateTo($"cadastro/{Modules[0].Slug}", replace: true);
+
+            return;
+        }
+
+        var slug = ModuleSlug.Trim().ToLowerInvariant();
+        var module = Modules.FirstOrDefault(candidate => candidate.Slug == slug);
+
+        if (module is null)
+        {
+            Navigation.NavigateTo($"cadastro/{Modules[0].Slug}", replace: true);
+
+            return;
+        }
+
+        var changed = module.Slug != _activeModule.Slug;
+        _activeModule = module;
+
+        if (changed)
+        {
+            _typePickerOpen = false;
+            _pendingFacilityType = null;
+            _selection = null;
+
+            await DiscardDraftAsync();
+            await CloseModalCoreAsync();
+
+            if (_map is not null)
+            {
+                await _map.HidePopupAsync();
+            }
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ReloadDataAsync();
+        await LoadOptionsAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false || _map is null)
+        {
+            return;
+        }
+
+        _map.DrawingStateChanged += HandleDrawingStateChanged;
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        if (_map is not null)
+        {
+            _map.DrawingStateChanged -= HandleDrawingStateChanged;
+        }
+    }
+
+    private bool IsActive(CadastroModule module) => _activeModule.Slug == module.Slug;
+
+    private CadastroModule? ModuleForLayer(string? layerId)
+        => layerId is null ? null : Modules.FirstOrDefault(module => module.PrimaryLayerId == layerId);
+
+    private async Task ReloadDataAsync()
+    {
+        _properties = await PropertyMapQueries.GetMapItemsAsync();
+        _facilities = await FacilityQueries.GetMapItemsAsync();
+        _urbanBlocks = await UrbanBlockQueries.GetMapItemsAsync();
+        _ruralProperties = await RuralQueries.GetMapItemsAsync();
+        _preservationAreas = await RuralQueries.GetPreservationAreaMapItemsAsync();
+
+        BuildLayers();
+    }
+
+    private async Task LoadOptionsAsync()
+    {
+        var sectors = await TerritoryQueries.ListFiscalSectorsAsync();
+        var streets = (await StreetQueries.SearchAsync(new StreetFilter { PageSize = 500 })).Items;
+        var neighborhoods = await TerritoryQueries.ListNeighborhoodsAsync();
+
+        Options = new CadastroOptions(
+            sectors.Select(sector => new CadastroOption(sector.Id.Value, sector.Code)).ToArray(),
+            streets.Select(street => new CadastroOption(street.Id.Value, street.Name)).ToArray(),
+            neighborhoods.Select(neighborhood => new CadastroOption(neighborhood.Id.Value, neighborhood.Name)).ToArray(),
+            FacilitySymbology.All);
+    }
+
+    private void BuildLayers()
+    {
+        _layers.Clear();
+
+        if (_urbanBlocks.Any(block => block.Rings.Count > 0))
+        {
+            _layers.Add(new MapLayer(
+                "cadastro-quadras",
+                "Quadras",
+                UrbanBlockMapProjector.ToBlockFeatureCollection(_urbanBlocks),
+                Color: "#b45309"));
+        }
+
+        if (_urbanBlocks.Any(block => block.Faces.Count > 0))
+        {
+            _layers.Add(new MapLayer(
+                "cadastro-quadras-faces",
+                "Faces de quadra",
+                UrbanBlockMapProjector.ToFaceFeatureCollection(_urbanBlocks),
+                Color: "#7c2d12"));
+        }
+
+        if (_properties.Count > 0)
+        {
+            _layers.Add(new MapLayer(
+                "cadastro-imoveis",
+                "Imoveis",
+                PropertyMapProjector.ToFeatureCollection(_properties, Serializer),
+                Color: "#1f7a5c"));
+        }
+
+        if (_facilities.Count > 0)
+        {
+            _layers.Add(new MapLayer(
+                "cadastro-equipamentos",
+                "Equipamentos",
+                FacilityMapProjector.ToFeatureCollection(_facilities, Serializer),
+                Color: "#1351b4",
+                Legend: FacilityMapProjector.ToLegend(_facilities)));
+        }
+
+        if (_ruralProperties.Count > 0)
+        {
+            _layers.Add(new MapLayer(
+                "cadastro-rurais",
+                "Rurais",
+                RuralMapProjector.PropertiesToFeatureCollection(_ruralProperties, Serializer),
+                Color: "#7c5a12"));
+        }
+
+        if (_preservationAreas.Count > 0)
+        {
+            _layers.Add(new MapLayer(
+                "cadastro-rurais-app",
+                "APP",
+                RuralMapProjector.PreservationAreasToFeatureCollection(_preservationAreas, Serializer),
+                Color: "#0f766e"));
+        }
+    }
+
+    private async Task ApplyLayersAsync()
+    {
+        if (_map is null)
+        {
+            return;
+        }
+
+        foreach (var layer in _layers)
+        {
+            await _map.SetLayerAsync(layer);
+        }
+
+        await _map.FitBoundsAsync();
+    }
+
+    private async Task RefreshLayersAsync()
+    {
+        if (_map is null)
+        {
+            return;
+        }
+
+        foreach (var layer in _layers)
+        {
+            await _map.SetLayerAsync(layer);
+        }
+    }
+
+    private async Task StartOrToggleAsync()
+    {
+        if (_tool is null || _tool.IsActive || _geometryEdit is not null)
+        {
+            return;
+        }
+
+        _error = null;
+
+        if (IsTypePickerModule)
+        {
+            _typePickerOpen = !_typePickerOpen;
+
+            return;
+        }
+
+        _typePickerOpen = false;
+
+        await _tool.StartAsync(new MapDrawingMode("draft", _activeModule.Label, "Polygon"));
+    }
+
+    private async Task StartFacilityAsync(FacilitySymbol symbol)
+    {
+        if (_tool is null || _tool.IsActive)
+        {
+            return;
+        }
+
+        _error = null;
+        _pendingFacilityType = symbol.Type;
+        _typePickerOpen = false;
+
+        await _tool.StartAsync(new MapDrawingMode("draft", symbol.Label, "Pick"));
+    }
+
+    private async Task OnDrawingCompletedAsync(string geoJson)
+    {
+        _error = null;
+
+        try
+        {
+            if (Serializer.Deserialize(geoJson, SpatialReference.Wgs84) is not Polygon polygon)
+            {
+                _error = "O cadastro exige um poligono.";
+
+                return;
+            }
+
+            var vertices = polygon.Rings.Count > 0 ? polygon.Rings[0].Coordinates.Count - 1 : 0;
+            _draft = new CadastroDraft(_activeModule, polygon, null, vertices);
+        }
+        catch (Exception)
+        {
+            _error = "Geometria invalida.";
+
+            return;
+        }
+
+        await ShowDraftAsync();
+    }
+
+    private async Task OnPointPickedAsync(MapCoordinate coordinate)
+    {
+        var point = new GISORA.Domain.Geospatial.Point(
+            new Coordinate(coordinate.Longitude, coordinate.Latitude, SpatialReference.Wgs84));
+
+        if (_geometryEdit is { IsPoint: true } edit)
+        {
+            _geometryEdit = edit with { Geometry = point };
+
+            await _tool!.CancelAsync();
+            await InvokeAsync(StateHasChanged);
+
+            return;
+        }
+
+        if (_pendingFacilityType is not { } type)
+        {
+            await _tool!.CancelAsync();
+
+            return;
+        }
+
+        _draft = new CadastroDraft(_activeModule, point, type, 1);
+
+        await _tool!.CancelAsync();
+        await ShowDraftAsync();
+    }
+
+    private void OnGeometryEdited(string geoJson)
+    {
+        if (_geometryEdit is not { } edit)
+        {
+            return;
+        }
+
+        try
+        {
+            _geometryEdit = edit with { Geometry = Serializer.Deserialize(geoJson, SpatialReference.Wgs84) };
+        }
+        catch (Exception)
+        {
+            _error = "Geometria invalida.";
+        }
+    }
+
+    private void OnDrawingCanceled()
+    {
+        _pendingFacilityType = null;
+        _typePickerOpen = false;
+    }
+
+    private async Task ShowDraftAsync()
+    {
+        if (_map is null || _draft is null)
+        {
+            return;
+        }
+
+        await _map.SetLayerAsync(BuildDraftLayer());
+
+        _selection = new CadastroSelection(
+            _draft.Module.Kind,
+            DraftLayerId,
+            DraftLayerId,
+            new Dictionary<string, string>(),
+            true);
+
+        await ShowSelectionPopupAsync();
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private MapLayer BuildDraftLayer()
+    {
+        var properties = new JsonObject
+        {
+            ["modulo"] = _draft!.Module.Label,
+            ["rascunho"] = "sim",
+        };
+
+        if (_draft.FacilityType is { } type)
+        {
+            var symbol = FacilitySymbology.For(type);
+            properties["tipo"] = symbol.Label;
+            properties["icone"] = symbol.Icon;
+            properties["cor"] = symbol.Color;
+        }
+
+        var feature = new JsonObject
+        {
+            ["type"] = "Feature",
+            ["id"] = DraftLayerId,
+            ["properties"] = properties,
+            ["geometry"] = JsonNode.Parse(Serializer.Serialize(_draft.Geometry)),
+        };
+
+        var collection = new JsonObject
+        {
+            ["type"] = "FeatureCollection",
+            ["features"] = new JsonArray(feature),
+        };
+
+        return new MapLayer(DraftLayerId, "Rascunho", collection.ToJsonString(), Color: "#c2410c");
+    }
+
+    private async Task DiscardDraftAsync()
+    {
+        _draft = null;
+
+        if (_map is not null)
+        {
+            await _map.RemoveLayerAsync(DraftLayerId);
+            await _map.HidePopupAsync();
+        }
+
+        if (_selection is { IsDraft: true })
+        {
+            _selection = null;
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void HandleDrawingStateChanged() => _ = InvokeAsync(StateHasChanged);
+
+    private async Task SelectFeatureAsync(MapFeature feature)
+    {
+        var module = ModuleForLayer(feature.LayerId);
+
+        if (module is null)
+        {
+            return;
+        }
+
+        _selection = new CadastroSelection(module.Kind, feature.LayerId!, feature.Id, feature.Properties, false);
+        _error = null;
+
+        await ShowSelectionPopupAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ShowSelectionPopupAsync()
+    {
+        if (_map is null || _selection is not { } selection)
+        {
+            return;
+        }
+
+        if (selection.IsDraft)
+        {
+            await _map.ShowPopupAsync(
+                DraftLayerId,
+                DraftLayerId,
+                new MapPopupModel(
+                    _draft?.FacilityType is { } type ? FacilitySymbology.For(type).Label : $"Rascunho de {_draft?.Module.Label}",
+                    DraftPopupRows(),
+                    "Abrir cadastro",
+                    ShowEdit: false));
+
+            return;
+        }
+
+        await _map.ShowPopupAsync(
+            selection.LayerId,
+            selection.FeatureId,
+            new MapPopupModel(
+                ModuleForLayer(selection.LayerId)?.Label ?? "Feicao",
+                PopupRows(selection),
+                "Abrir cadastro",
+                ShowEdit: true));
+    }
+
+    private IReadOnlyList<MapPopupRow> DraftPopupRows()
+    {
+        if (_draft is null)
+        {
+            return [];
+        }
+
+        var rows = new List<MapPopupRow> { new("Modulo", _draft.Module.Label) };
+
+        if (_draft.FacilityType is { } type)
+        {
+            rows.Add(new MapPopupRow("Tipo", FacilitySymbology.For(type).Label));
+        }
+        else
+        {
+            rows.Add(new MapPopupRow("Vertices", _draft.VertexCount.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+        }
+
+        return rows;
+    }
+
+    private static IReadOnlyList<MapPopupRow> PopupRows(CadastroSelection selection)
+    {
+        static string Value(IReadOnlyDictionary<string, string> properties, string key)
+            => properties.TryGetValue(key, out var value) ? value : "-";
+
+        return selection.Module switch
+        {
+            CadastroModuleKind.Quadras =>
+            [
+                new MapPopupRow("Codigo", Value(selection.Properties, "quadra")),
+                new MapPopupRow("Faces", Value(selection.Properties, "faces")),
+            ],
+            CadastroModuleKind.Imoveis =>
+            [
+                new MapPopupRow("Inscricao", Value(selection.Properties, "inscricao")),
+                new MapPopupRow("Area do lote (m2)", Value(selection.Properties, "areaLote")),
+                new MapPopupRow("Area construida (m2)", Value(selection.Properties, "areaConstruida")),
+            ],
+            CadastroModuleKind.Equipamentos =>
+            [
+                new MapPopupRow("Nome", Value(selection.Properties, "nome")),
+                new MapPopupRow("Tipo", Value(selection.Properties, "tipo")),
+            ],
+            _ => [new MapPopupRow("Nome", Value(selection.Properties, "nome"))],
+        };
+    }
+
+    private async Task HandlePopupActionAsync(MapPopupAction action)
+    {
+        if (action.Action == "edit")
+        {
+            await StartGeometryEditAsync(action.LayerId, action.FeatureId);
+
+            return;
+        }
+
+        await OpenModalAsync(action.LayerId, action.FeatureId);
+    }
+
+    private async Task OpenModalAsync(string layerId, string featureId)
+    {
+        _modalError = null;
+        _saving = false;
+
+        if (layerId == DraftLayerId)
+        {
+            await OpenDraftModalAsync();
+
+            return;
+        }
+
+        var module = ModuleForLayer(layerId);
+
+        if (module is null || Guid.TryParse(featureId, out var id) is false)
+        {
+            return;
+        }
+
+        _form = await LoadFormAsync(module, id);
+        _formModule = module.Kind;
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task<CadastroForm?> LoadFormAsync(CadastroModule module, Guid id)
+    {
+        switch (module.Kind)
+        {
+            case CadastroModuleKind.Quadras:
+            {
+                var result = await GetUrbanBlock.HandleAsync(new GetUrbanBlockQuery(new UrbanBlockId(id)));
+
+                if (result.IsFailure)
+                {
+                    _error = result.Error.Message;
+
+                    return null;
+                }
+
+                var block = result.Value;
+                var geometry = _urbanBlocks.FirstOrDefault(item => item.Id.Value == id);
+                var details = new List<CadastroDetailRow>
+                {
+                    new("Codigo", block.Code),
+                    new("Faces", block.Faces.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+                };
+
+                return new CadastroForm
+                {
+                    IsNew = false,
+                    EntityId = id.ToString(),
+                    Code = block.Code,
+                    SectorId = block.FiscalSectorId.Value,
+                    Geometry = ToPolygon(geometry?.Rings),
+                    Details = details,
+                };
+            }
+
+            case CadastroModuleKind.Imoveis:
+            {
+                var result = await GetProperty.HandleAsync(new GetPropertyQuery(new PropertyId(id)));
+
+                if (result.IsFailure)
+                {
+                    _error = result.Error.Message;
+
+                    return null;
+                }
+
+                var property = result.Value;
+                var mapItem = _properties.FirstOrDefault(item => item.Id.Value == id);
+                var details = new List<CadastroDetailRow>
+                {
+                    new("Inscricao", property.Registration),
+                    new("Area do lote (m2)", property.LandAreaSquareMeters.ToString("N2", System.Globalization.CultureInfo.InvariantCulture)),
+                    new("Area construida (m2)", property.BuiltAreaSquareMeters.ToString("N2", System.Globalization.CultureInfo.InvariantCulture)),
+                };
+
+                return new CadastroForm
+                {
+                    IsNew = false,
+                    EntityId = id.ToString(),
+                    Registration = property.Registration,
+                    StreetId = property.StreetId,
+                    Number = property.Number,
+                    NeighborhoodId = property.NeighborhoodId,
+                    LandArea = property.LandAreaSquareMeters,
+                    Geometry = mapItem?.Geometry,
+                    Details = details,
+                };
+            }
+
+            case CadastroModuleKind.Equipamentos:
+            {
+                var detail = await FacilityQueries.GetAsync(new PublicFacilityId(id));
+
+                if (detail is null)
+                {
+                    _error = "Equipamento nao encontrado.";
+
+                    return null;
+                }
+
+                return new CadastroForm
+                {
+                    IsNew = false,
+                    EntityId = id.ToString(),
+                    Name = detail.Name,
+                    Type = detail.Type,
+                    FacilityNeighborhoodId = detail.NeighborhoodId,
+                    Geometry = detail.Location,
+                    Details = [new CadastroDetailRow("Tipo", FacilitySymbology.For(detail.Type).Label)],
+                };
+            }
+
+            default:
+            {
+                var detail = await RuralQueries.GetAsync(new RuralPropertyId(id));
+
+                if (detail is null)
+                {
+                    _error = "Propriedade rural nao encontrada.";
+
+                    return null;
+                }
+
+                return new CadastroForm
+                {
+                    IsNew = false,
+                    EntityId = id.ToString(),
+                    RuralName = detail.Name,
+                    Usage = detail.Usage,
+                    CarCode = detail.CarCode,
+                    SigefCode = detail.SigefCode,
+                    SnciCode = detail.SnciCode,
+                    Geometry = detail.Boundary,
+                    AreaLabel = RuralMapProjector.Hectares(detail.AreaHectares),
+                    Details = [new CadastroDetailRow("Area", RuralMapProjector.Hectares(detail.AreaHectares))],
+                };
+            }
+        }
+    }
+
+    private async Task OpenDraftModalAsync()
+    {
+        if (_draft is null)
+        {
+            return;
+        }
+
+        var form = new CadastroForm
+        {
+            IsNew = true,
+            Geometry = _draft.Geometry,
+            Details = [new CadastroDetailRow("Modulo", _draft.Module.Label)],
+        };
+
+        if (_draft.FacilityType is { } type)
+        {
+            form.Name = string.Empty;
+            form.Type = type;
+        }
+
+        if (_draft.Geometry is Polygon polygon && _draft.FacilityType is null)
+        {
+            var area = (await Spatial.AreaAsync(polygon)).SquareMeters;
+            form.AreaLabel = $"{area:N2} m2";
+
+            if (_draft.Module.Kind == CadastroModuleKind.Imoveis)
+            {
+                form.LandArea = Math.Round(area, 2);
+            }
+        }
+
+        if (_draft.Module.Kind == CadastroModuleKind.Quadras && Options.Sectors.Count > 0)
+        {
+            form.SectorId = Options.Sectors[0].Id;
+        }
+
+        _form = form;
+        _formModule = _draft.Module.Kind;
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task CloseModalAsync()
+    {
+        await CloseModalCoreAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private Task CloseModalCoreAsync()
+    {
+        _form = null;
+        _modalError = null;
+        _saving = false;
+
+        return Task.CompletedTask;
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_form is not { } form || _saving)
+        {
+            return;
+        }
+
+        _saving = true;
+        _modalError = null;
+
+        try
+        {
+            var saved = _formModule switch
+            {
+                CadastroModuleKind.Quadras => await SaveQuadraAsync(form),
+                CadastroModuleKind.Imoveis => await SaveImovelAsync(form),
+                CadastroModuleKind.Equipamentos => await SaveEquipamentoAsync(form),
+                _ => await SaveRuralAsync(form),
+            };
+
+            if (saved is null)
+            {
+                return;
+            }
+
+            _form = null;
+
+            if (_map is not null)
+            {
+                await _map.HidePopupAsync();
+            }
+
+            if (saved.IsNew)
+            {
+                await DiscardDraftAsync();
+            }
+
+            await ReloadDataAsync();
+            await RefreshLayersAsync();
+            await SelectPersistedAsync(saved.Module, saved.Id);
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private sealed record SaveOutcome(CadastroModuleKind Module, Guid Id, bool IsNew);
+
+    private async Task<SaveOutcome?> SaveQuadraAsync(CadastroForm form)
+    {
+        if (form.Geometry is not Polygon polygon)
+        {
+            _modalError = "Desenhe o poligono da quadra.";
+
+            return null;
+        }
+
+        if (form.IsNew)
+        {
+            if (form.SectorId is not { } sectorId || string.IsNullOrWhiteSpace(form.Code))
+            {
+                _modalError = "Informe o setor fiscal e o codigo da quadra.";
+
+                return null;
+            }
+
+            var result = await CreateUrbanBlock.HandleAsync(new CreateUrbanBlockCommand(
+                new FiscalSectorId(sectorId),
+                form.Code,
+                polygon));
+
+            if (result.IsFailure)
+            {
+                _modalError = result.Error.Message;
+
+                return null;
+            }
+
+            return new SaveOutcome(CadastroModuleKind.Quadras, result.Value.Value, true);
+        }
+
+        if (form.GeometryChanged && Guid.TryParse(form.EntityId, out var blockId))
+        {
+            var result = await UpdateUrbanBlockGeometry.HandleAsync(
+                new UpdateUrbanBlockGeometryCommand(new UrbanBlockId(blockId), polygon));
+
+            if (result.IsFailure)
+            {
+                _modalError = result.Error.Message;
+
+                return null;
+            }
+        }
+
+        return Guid.TryParse(form.EntityId, out var id)
+            ? new SaveOutcome(CadastroModuleKind.Quadras, id, false)
+            : null;
+    }
+
+    private async Task<SaveOutcome?> SaveImovelAsync(CadastroForm form)
+    {
+        if (form.Geometry is not Polygon polygon)
+        {
+            _modalError = "Desenhe o poligono do imovel.";
+
+            return null;
+        }
+
+        if (form.IsNew)
+        {
+            if (form.StreetId is not { } streetId || form.NeighborhoodId is not { } neighborhoodId)
+            {
+                _modalError = "Selecione logradouro e bairro.";
+
+                return null;
+            }
+
+            var result = await CreateProperty.HandleAsync(new CreatePropertyCommand(
+                form.Sector ?? string.Empty,
+                form.Block ?? string.Empty,
+                form.Lot ?? string.Empty,
+                form.Unit,
+                streetId,
+                form.Number ?? string.Empty,
+                neighborhoodId,
+                form.LandArea,
+                polygon));
+
+            if (result.IsFailure)
+            {
+                _modalError = result.Error.Message;
+
+                return null;
+            }
+
+            return new SaveOutcome(CadastroModuleKind.Imoveis, result.Value.Value, true);
+        }
+
+        if (Guid.TryParse(form.EntityId, out var propertyId) is false)
+        {
+            return null;
+        }
+
+        if (form.StreetId is { } editStreet && form.NeighborhoodId is { } editNeighborhood)
+        {
+            var details = await UpdatePropertyDetails.HandleAsync(new UpdatePropertyDetailsCommand(
+                new PropertyId(propertyId),
+                editStreet,
+                form.Number ?? string.Empty,
+                editNeighborhood));
+
+            if (details.IsFailure)
+            {
+                _modalError = details.Error.Message;
+
+                return null;
+            }
+        }
+
+        if (form.GeometryChanged)
+        {
+            var geometry = await UpdatePropertyGeometry.HandleAsync(new UpdatePropertyGeometryCommand(
+                new PropertyId(propertyId),
+                polygon,
+                "edicao no cadastro unificado"));
+
+            if (geometry.IsFailure)
+            {
+                _modalError = geometry.Error.Message;
+
+                return null;
+            }
+        }
+
+        return new SaveOutcome(CadastroModuleKind.Imoveis, propertyId, false);
+    }
+
+    private async Task<SaveOutcome?> SaveEquipamentoAsync(CadastroForm form)
+    {
+        if (string.IsNullOrWhiteSpace(form.Name))
+        {
+            _modalError = "Informe o nome do equipamento.";
+
+            return null;
+        }
+
+        if (form.Geometry is not GISORA.Domain.Geospatial.Point point)
+        {
+            _modalError = "Posicione o equipamento no mapa.";
+
+            return null;
+        }
+
+        if (form.IsNew)
+        {
+            var result = await CreateFacility.HandleAsync(new CreateFacilityCommand(
+                form.Name,
+                form.Type,
+                form.FacilityNeighborhoodId,
+                point));
+
+            if (result.IsFailure)
+            {
+                _modalError = result.Error.Message;
+
+                return null;
+            }
+
+            return new SaveOutcome(CadastroModuleKind.Equipamentos, result.Value.Value, true);
+        }
+
+        if (Guid.TryParse(form.EntityId, out var facilityId) is false)
+        {
+            return null;
+        }
+
+        var update = await UpdateFacility.HandleAsync(new UpdateFacilityCommand(
+            new PublicFacilityId(facilityId),
+            form.Name,
+            form.Type,
+            form.FacilityNeighborhoodId,
+            point));
+
+        if (update.IsFailure)
+        {
+            _modalError = update.Error.Message;
+
+            return null;
+        }
+
+        return new SaveOutcome(CadastroModuleKind.Equipamentos, facilityId, false);
+    }
+
+    private async Task<SaveOutcome?> SaveRuralAsync(CadastroForm form)
+    {
+        if (string.IsNullOrWhiteSpace(form.RuralName))
+        {
+            _modalError = "Informe o nome da propriedade.";
+            return null;
+        }
+
+        if (form.Geometry is not Polygon polygon)
+        {
+            _modalError = "Desenhe o poligono da propriedade.";
+            return null;
+        }
+
+        if (form.IsNew)
+        {
+            var result = await CreateRuralProperty.HandleAsync(new CreateRuralPropertyCommand(
+                form.RuralName,
+                polygon,
+                form.Usage,
+                null,
+                form.CarCode,
+                form.SigefCode,
+                form.SnciCode));
+
+            if (result.IsFailure)
+            {
+                _modalError = result.Error.Message;
+                return null;
+            }
+
+            return new SaveOutcome(CadastroModuleKind.Rurais, result.Value.Value, true);
+        }
+
+        if (Guid.TryParse(form.EntityId, out var ruralId) is false)
+        {
+            return null;
+        }
+
+        var update = await UpdateRuralProperty.HandleAsync(new UpdateRuralPropertyCommand(
+            new RuralPropertyId(ruralId),
+            form.RuralName,
+            form.Usage,
+            form.CarCode,
+            form.SigefCode,
+            form.SnciCode));
+
+        if (update.IsFailure)
+        {
+            _modalError = update.Error.Message;
+            return null;
+        }
+
+        if (form.GeometryChanged)
+        {
+            var boundary = await UpdateRuralPropertyBoundary.HandleAsync(
+                new UpdateRuralPropertyBoundaryCommand(new RuralPropertyId(ruralId), polygon));
+
+            if (boundary.IsFailure)
+            {
+                _modalError = boundary.Error.Message;
+                return null;
+            }
+        }
+
+        return new SaveOutcome(CadastroModuleKind.Rurais, ruralId, false);
+    }
+
+    private async Task SelectPersistedAsync(CadastroModuleKind kind, Guid id)
+    {
+        var layerId = kind switch
+        {
+            CadastroModuleKind.Quadras => "cadastro-quadras",
+            CadastroModuleKind.Imoveis => "cadastro-imoveis",
+            CadastroModuleKind.Equipamentos => "cadastro-equipamentos",
+            _ => "cadastro-rurais",
+        };
+
+        var properties = new Dictionary<string, string>();
+
+        switch (kind)
+        {
+            case CadastroModuleKind.Quadras:
+                var block = _urbanBlocks.FirstOrDefault(item => item.Id.Value == id);
+
+                if (block is null)
+                {
+                    return;
+                }
+
+                properties["quadra"] = block.Code;
+                properties["faces"] = block.Faces.Count.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                break;
+
+            case CadastroModuleKind.Imoveis:
+                var property = _properties.FirstOrDefault(item => item.Id.Value == id);
+
+                if (property is null)
+                {
+                    return;
+                }
+
+                properties["inscricao"] = property.Registration;
+                properties["areaLote"] = property.LandAreaSquareMeters.ToString("N2", System.Globalization.CultureInfo.InvariantCulture);
+                properties["areaConstruida"] = property.BuiltAreaSquareMeters.ToString("N2", System.Globalization.CultureInfo.InvariantCulture);
+                break;
+
+            case CadastroModuleKind.Equipamentos:
+                var facility = _facilities.FirstOrDefault(item => item.Id.Value == id);
+
+                if (facility is null)
+                {
+                    return;
+                }
+
+                properties["nome"] = facility.Name;
+                properties["tipo"] = FacilitySymbology.For(facility.Type).Label;
+                break;
+
+            default:
+                var rural = _ruralProperties.FirstOrDefault(item => item.Id.Value == id);
+
+                if (rural is null)
+                {
+                    return;
+                }
+
+                properties["nome"] = rural.Name;
+                break;
+        }
+
+        _selection = new CadastroSelection(kind, layerId, id.ToString(), properties, false);
+
+        await InvokeAsync(StateHasChanged);
+        await ShowSelectionPopupAsync();
+    }
+
+    private async Task StartGeometryEditAsync(string layerId, string featureId)
+    {
+        var module = ModuleForLayer(layerId);
+
+        if (module is null || Guid.TryParse(featureId, out var id) is false)
+        {
+            return;
+        }
+
+        var geometry = await LoadGeometryAsync(module.Kind, id);
+
+        if (geometry is null)
+        {
+            _error = "Feicao sem geometria para editar.";
+
+            return;
+        }
+
+        _geometryEdit = new GeometryEdit(module, layerId, featureId, id.ToString(), geometry, geometry is GISORA.Domain.Geospatial.Point);
+        _selection = new CadastroSelection(module.Kind, layerId, featureId, new Dictionary<string, string>(), false);
+        _error = null;
+
+        await _map!.HidePopupAsync();
+
+        if (geometry is GISORA.Domain.Geospatial.Point)
+        {
+            await _tool!.StartAsync(new MapDrawingMode("edit-point", "Mover ponto", "Pick"));
+        }
+        else
+        {
+            await _tool!.StartEditingAsync(Serializer.Serialize(geometry));
+        }
+    }
+
+    private async Task<Geometry?> LoadGeometryAsync(CadastroModuleKind kind, Guid id)
+    {
+        switch (kind)
+        {
+            case CadastroModuleKind.Quadras:
+                return ToPolygon(_urbanBlocks.FirstOrDefault(item => item.Id.Value == id)?.Rings);
+            case CadastroModuleKind.Imoveis:
+                return _properties.FirstOrDefault(item => item.Id.Value == id)?.Geometry;
+            case CadastroModuleKind.Equipamentos:
+                return _facilities.FirstOrDefault(item => item.Id.Value == id)?.Location;
+            default:
+                return _ruralProperties.FirstOrDefault(item => item.Id.Value == id)?.Boundary;
+        }
+    }
+
+    private async Task SaveGeometryAsync()
+    {
+        if (_geometryEdit is not { } edit || Guid.TryParse(edit.EntityId, out var id) is false)
+        {
+            return;
+        }
+
+        Result result;
+
+        switch (edit.Module.Kind)
+        {
+            case CadastroModuleKind.Quadras when edit.Geometry is Polygon blockPolygon:
+                result = await UpdateUrbanBlockGeometry.HandleAsync(
+                    new UpdateUrbanBlockGeometryCommand(new UrbanBlockId(id), blockPolygon));
+                break;
+
+            case CadastroModuleKind.Imoveis when edit.Geometry is Polygon propertyPolygon:
+                result = await UpdatePropertyGeometry.HandleAsync(new UpdatePropertyGeometryCommand(
+                    new PropertyId(id),
+                    propertyPolygon,
+                    "edicao geometrica assistida"));
+                break;
+
+            case CadastroModuleKind.Equipamentos when edit.Geometry is GISORA.Domain.Geospatial.Point point:
+            {
+                var detail = await FacilityQueries.GetAsync(new PublicFacilityId(id));
+
+                if (detail is null)
+                {
+                    _error = "Equipamento nao encontrado.";
+
+                    return;
+                }
+
+                result = await UpdateFacility.HandleAsync(new UpdateFacilityCommand(
+                    detail.Id,
+                    detail.Name,
+                    detail.Type,
+                    detail.NeighborhoodId,
+                    point));
+                break;
+            }
+
+            case CadastroModuleKind.Rurais when edit.Geometry is Polygon ruralPolygon:
+                result = await UpdateRuralPropertyBoundary.HandleAsync(
+                    new UpdateRuralPropertyBoundaryCommand(new RuralPropertyId(id), ruralPolygon));
+                break;
+
+            default:
+                _error = "Geometria incompativel com o modulo.";
+
+                return;
+        }
+
+        if (result.IsFailure)
+        {
+            _error = result.Error.Message;
+
+            return;
+        }
+
+        await _tool!.CancelAsync();
+        _geometryEdit = null;
+
+        await ReloadDataAsync();
+        await RefreshLayersAsync();
+        await SelectPersistedAsync(edit.Module.Kind, id);
+
+        _error = null;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task CancelGeometryEditAsync()
+    {
+        if (_tool is not null)
+        {
+            await _tool.CancelAsync();
+        }
+
+        _geometryEdit = null;
+        _error = null;
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private static Polygon? ToPolygon(IReadOnlyList<IReadOnlyList<GISORA.Application.Territory.CoordinateDto>>? rings)
+        => rings is null || rings.Count == 0
+            ? null
+            : new Polygon(rings
+                .Select(ring => new CoordinateSequence(ring
+                    .Select(coordinate => new Coordinate(coordinate.X, coordinate.Y, SpatialReference.Wgs84))
+                    .ToArray()))
+                .ToArray());
+}

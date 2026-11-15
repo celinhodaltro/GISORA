@@ -43,6 +43,19 @@ public class PublicFacilityTests
     }
 
     [Fact]
+    public void UpdateDetailsChangesNameTypeAndNeighborhood()
+    {
+        var facility = PublicFacility.Register("  Escola Municipal  ", FacilityType.School, null, Location());
+        var neighborhood = Guid.CreateVersion7();
+
+        facility.UpdateDetails("  Praca Central  ", FacilityType.Square, neighborhood);
+
+        Assert.Equal("Praca Central", facility.Name);
+        Assert.Equal(FacilityType.Square, facility.Type);
+        Assert.Equal(neighborhood, facility.NeighborhoodId);
+    }
+
+    [Fact]
     public void RelocateRequiresLocation()
     {
         var facility = PublicFacility.Register("Praca Central", FacilityType.Square, null, null);

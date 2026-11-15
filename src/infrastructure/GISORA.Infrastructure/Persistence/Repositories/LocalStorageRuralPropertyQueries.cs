@@ -36,6 +36,31 @@ public sealed class LocalStorageRuralPropertyQueries(ILocalStore store) : IRural
             .ToArray();
     }
 
+    public async Task<RuralPropertyDetail?> GetAsync(RuralPropertyId id, CancellationToken cancellationToken = default)
+    {
+        var document = await store.GetAsync<RuralPropertyDocument>(
+            StorageNamespaces.Rural,
+            $"rural-{id.Value}",
+            cancellationToken);
+
+        if (document is null)
+        {
+            return null;
+        }
+
+        var property = document.ToDomain();
+
+        return new RuralPropertyDetail(
+            property.Id,
+            property.Name,
+            property.Usage,
+            property.CarCode,
+            property.SigefCode,
+            property.SnciCode,
+            property.Boundary,
+            property.Area.Hectares);
+    }
+
     public async Task<IReadOnlyList<PreservationAreaListItem>> ListPreservationAreasAsync(
         RuralPropertyId? propertyId = null,
         CancellationToken cancellationToken = default)

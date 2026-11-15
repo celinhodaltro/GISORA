@@ -190,6 +190,21 @@ public sealed class RuralProperty : AggregateRoot<RuralPropertyId>
 
     public void ChangeUsage(RuralUsage usage) => Usage = usage;
 
+    public void ChangeBoundary(Polygon boundary, Area area)
+    {
+        Guard.NotNull(boundary, nameof(boundary));
+        Guard.NotNull(area, nameof(area));
+
+        Guard.Condition(area.SquareMeters > 0, "Area da propriedade deve ser maior que zero.", "rural.property.area");
+        Guard.Condition(
+            ConstrainedSquareMeters <= area.SquareMeters,
+            "Soma de reserva legal e APP nao pode exceder a area da propriedade.",
+            "rural.constraints.exceeds-property");
+
+        Boundary = boundary;
+        Area = area;
+    }
+
     public void UpdateCodes(string? carCode, string? sigefCode, string? snciCode)
     {
         CarCode = NormalizeCode(carCode, "CAR");

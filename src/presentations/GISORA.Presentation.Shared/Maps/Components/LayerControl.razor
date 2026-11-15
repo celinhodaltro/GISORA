@@ -14,8 +14,14 @@
 
                 @foreach (var layer in group)
                 {
-                    <label class="gisora-layer-control__item">
-                        <input type="checkbox" checked="@_applied.ContainsKey(layer.Id)" @onchange="args => ToggleAsync(layer, args)" />
+                    var locked = IsLocked(layer);
+
+                    <label class="gisora-layer-control__item @(locked ? "gisora-layer-control__item--locked" : null)"
+                           title="@(locked ? "Camada bloqueada enquanto a feicao esta em cadastro ou edicao." : null)">
+                        <input type="checkbox"
+                               checked="@_applied.ContainsKey(layer.Id)"
+                               disabled="@locked"
+                               @onchange="args => ToggleAsync(layer, args)" />
                         <span>@layer.Name</span>
                     </label>
                 }
@@ -33,23 +39,66 @@
     [Parameter, EditorRequired]
     public IEnumerable<MapLayer> Layers { get; set; } = [];
 
+    [Parameter]
+    public IReadOnlyCollection<string> LockedLayerIds { get; set; } = [];
+
+    private readonly Dictionary<string, bool> _visibleBeforeLock = [];
+    private readonly HashSet<string> _hidden = [];
+
     private bool _disposed;
+    private bool _layersChanged;
+    private bool _lockChanged;
+    private string _layerSignature = string.Empty;
+    private string _lockSignature = string.Empty;
+
+    protected override void OnParametersSet()
+    {
+        var layerSignature = string.Join(
+            "|",
+            Layers.Select(layer => $"{layer.Id}:{layer.Visible}:{layer.GeoJson.Length}:{layer.GeoJson.GetHashCode()}"));
+
+        if (layerSignature != _layerSignature)
+        {
+            _layerSignature = layerSignature;
+            _layersChanged = true;
+        }
+
+        var lockSignature = string.Join("|", LockedLayerIds.OrderBy(id => id, StringComparer.Ordinal));
+
+        if (lockSignature != _lockSignature)
+        {
+            _lockSignature = lockSignature;
+            _lockChanged = true;
+        }
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender is false || Map is null)
+        if (Map is null)
         {
             return;
         }
 
-        await SyncAsync();
+        if (_lockChanged)
+        {
+            _lockChanged = false;
+            await ApplyLocksAsync();
+        }
+
+        if (_layersChanged)
+        {
+            _layersChanged = false;
+            await SyncAsync();
+        }
     }
 
     public void Dispose() => _disposed = true;
 
+    private bool IsLocked(MapLayer layer) => LockedLayerIds.Contains(layer.Id);
+
     private async Task ToggleAsync(MapLayer layer, ChangeEventArgs args)
     {
-        if (Map is null)
+        if (Map is null || IsLocked(layer))
         {
             return;
         }
@@ -58,12 +107,51 @@
         {
             await Map.SetLayerAsync(layer);
             _applied[layer.Id] = layer.GeoJson;
+            _hidden.Remove(layer.Id);
         }
         else
         {
             await Map.RemoveLayerAsync(layer.Id);
             _applied.Remove(layer.Id);
+            _hidden.Add(layer.Id);
         }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ApplyLocksAsync()
+    {
+        if (Map is null || _disposed)
+        {
+            return;
+        }
+
+        var locked = LockedLayerIds.ToHashSet(StringComparer.Ordinal);
+
+        foreach (var layerId in _visibleBeforeLock.Keys.Except(locked).ToArray())
+        {
+            if (_visibleBeforeLock[layerId] is false)
+            {
+                await Map.RemoveLayerAsync(layerId);
+                _applied.Remove(layerId);
+                _hidden.Add(layerId);
+            }
+
+            _visibleBeforeLock.Remove(layerId);
+        }
+
+        foreach (var layer in Layers.Where(candidate => locked.Contains(candidate.Id)))
+        {
+            _visibleBeforeLock.TryAdd(layer.Id, _applied.ContainsKey(layer.Id));
+
+            if (_applied.ContainsKey(layer.Id) is false)
+            {
+                await Map.SetLayerAsync(layer);
+                _applied[layer.Id] = layer.GeoJson;
+            }
+        }
+
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task SyncAsync()
@@ -81,7 +169,12 @@
             _applied.Remove(layerId);
         }
 
-        foreach (var layer in current.Where(layer => layer.Visible))
+        foreach (var layerId in _hidden.Except(current.Select(layer => layer.Id)).ToArray())
+        {
+            _hidden.Remove(layerId);
+        }
+
+        foreach (var layer in current.Where(layer => layer.Visible && _hidden.Contains(layer.Id) is false))
         {
             if (_applied.TryGetValue(layer.Id, out var geoJson) && geoJson == layer.GeoJson)
             {
