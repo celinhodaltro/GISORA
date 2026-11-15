@@ -1,12 +1,16 @@
 @page "/cadastro"
 @page "/cadastro/{ModuleSlug}"
+@using System.Text.Json.Nodes
 @using GISORA.Application.Geospatial
 @using GISORA.Application.Properties
 @using GISORA.Application.PublicFacilities
 @using GISORA.Application.Rural
 @using GISORA.Application.Territory
+@using GISORA.Domain.Geospatial
+@using GISORA.Domain.PublicFacilities
 @using GISORA.Presentation.Shared.Maps
 @using GISORA.Presentation.Shared.Maps.Components
+@implements IDisposable
 @inject IPropertyMapQueries PropertyMapQueries
 @inject IFacilityQueries FacilityQueries
 @inject IUrbanBlockQueries UrbanBlockQueries
@@ -37,11 +41,61 @@
         <MapToolbar />
         <LayerControl Layers="_layers" LockedLayerIds="LockedLayerIds" />
         <CoordinateControl Crs="EPSG:4326" />
+        <DrawingTool @ref="_tool"
+                     ShowToolbarTrigger="false"
+                     OnCompleted="OnDrawingCompletedAsync"
+                     OnPointPicked="OnPointPickedAsync"
+                     OnCanceled="OnDrawingCanceled" />
+
+        @if (_typePickerOpen)
+        {
+            <div class="cadastro-types" role="group" aria-label="Tipo de equipamento">
+                @foreach (var symbol in FacilitySymbology.All)
+                {
+                    <button type="button"
+                            class="cadastro-types__item"
+                            title="@symbol.Label"
+                            aria-label="@symbol.Label"
+                            @onclick="() => StartFacilityAsync(symbol)">
+                        <RadzenIcon Icon="@symbol.Icon" />
+                    </button>
+                }
+            </div>
+        }
+
+        <button type="button"
+                class="cadastro-fab"
+                aria-label="Novo cadastro"
+                title="Novo cadastro"
+                aria-expanded="@(IsTypePickerModule ? _typePickerOpen.ToString().ToLowerInvariant() : null)"
+                disabled="@IsBusy"
+                @onclick="StartOrToggleAsync">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z" /></svg>
+        </button>
+
+        @if (_error is not null)
+        {
+            <div class="cadastro-error" role="alert">@_error</div>
+        }
+
+        @if (_draft is not null)
+        {
+            <div class="cadastro-draft" role="status">
+                <span>@DraftSummary</span>
+                <button type="button" aria-label="Descartar rascunho" title="Descartar rascunho" @onclick="DiscardDraftAsync">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.3 5.7 12 12l6.3 6.3-1.4 1.4L10.6 13.4 5.7 18.3 4.3 16.9 9.2 12 4.3 7.1l1.4-1.4 4.9 4.9 6.3-6.3z" /></svg>
+                </button>
+            </div>
+        }
     </MapView>
 </div>
 
 @code {
+    private const string DraftLayerId = "cadastro-rascunho";
+
     private sealed record CadastroModule(string Slug, string Label, string Icon, string[] LayerIds);
+
+    private sealed record CadastroDraft(CadastroModule Module, Geometry Geometry, FacilityType? FacilityType, int VertexCount);
 
     private static readonly CadastroModule[] Modules =
     [
@@ -54,7 +108,12 @@
     private readonly List<MapLayer> _layers = [];
 
     private MapView? _map;
+    private DrawingTool? _tool;
     private CadastroModule _activeModule = Modules[0];
+    private CadastroDraft? _draft;
+    private FacilityType? _pendingFacilityType;
+    private bool _typePickerOpen;
+    private string? _error;
 
     private IReadOnlyList<PropertyMapItem> _properties = [];
     private IReadOnlyList<FacilityMapItem> _facilities = [];
@@ -64,10 +123,21 @@
 
     private IReadOnlyCollection<string> LockedLayerIds => _activeModule.LayerIds;
 
+    private bool IsTypePickerModule => _activeModule.Slug == "equipamentos";
+
+    private bool IsBusy => _tool?.IsActive == true;
+
+    private string DraftSummary => _draft switch
+    {
+        null => string.Empty,
+        { FacilityType: { } type } => $"Rascunho de equipamento: {FacilitySymbology.For(type).Label}.",
+        { VertexCount: var count } => $"Rascunho de {_draft.Module.Label}: {count} vertice(s).",
+    };
+
     [Parameter]
     public string? ModuleSlug { get; set; }
 
-    protected override void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
         if (string.IsNullOrWhiteSpace(ModuleSlug))
         {
@@ -86,7 +156,34 @@
             return;
         }
 
+        if (module.Slug != _activeModule.Slug)
+        {
+            _typePickerOpen = false;
+            _pendingFacilityType = null;
+
+            await DiscardDraftAsync();
+        }
+
         _activeModule = module;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false || _map is null)
+        {
+            return;
+        }
+
+        _map.DrawingStateChanged += HandleDrawingStateChanged;
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        if (_map is not null)
+        {
+            _map.DrawingStateChanged -= HandleDrawingStateChanged;
+        }
     }
 
     protected override async Task OnInitializedAsync()
@@ -176,4 +273,147 @@
 
         await _map.FitBoundsAsync();
     }
+
+    private async Task StartOrToggleAsync()
+    {
+        if (_tool is null || _tool.IsActive)
+        {
+            return;
+        }
+
+        _error = null;
+
+        if (IsTypePickerModule)
+        {
+            _typePickerOpen = !_typePickerOpen;
+
+            return;
+        }
+
+        _typePickerOpen = false;
+
+        await _tool.StartAsync(new MapDrawingMode("draft", _activeModule.Label, "Polygon"));
+    }
+
+    private async Task StartFacilityAsync(FacilitySymbol symbol)
+    {
+        if (_tool is null || _tool.IsActive)
+        {
+            return;
+        }
+
+        _error = null;
+        _pendingFacilityType = symbol.Type;
+        _typePickerOpen = false;
+
+        await _tool.StartAsync(new MapDrawingMode("draft", symbol.Label, "Pick"));
+    }
+
+    private async Task OnDrawingCompletedAsync(string geoJson)
+    {
+        _error = null;
+
+        try
+        {
+            if (Serializer.Deserialize(geoJson, SpatialReference.Wgs84) is not Polygon polygon)
+            {
+                _error = "O cadastro exige um poligono.";
+
+                return;
+            }
+
+            var vertices = polygon.Rings.Count > 0 ? polygon.Rings[0].Coordinates.Count - 1 : 0;
+            _draft = new CadastroDraft(_activeModule, polygon, null, vertices);
+        }
+        catch (Exception)
+        {
+            _error = "Geometria invalida.";
+
+            return;
+        }
+
+        await ShowDraftAsync();
+    }
+
+    private async Task OnPointPickedAsync(MapCoordinate coordinate)
+    {
+        if (_pendingFacilityType is not { } type)
+        {
+            await _tool!.CancelAsync();
+
+            return;
+        }
+
+        var point = new GISORA.Domain.Geospatial.Point(
+            new Coordinate(coordinate.Longitude, coordinate.Latitude, SpatialReference.Wgs84));
+
+        _draft = new CadastroDraft(_activeModule, point, type, 1);
+
+        await _tool!.CancelAsync();
+        await ShowDraftAsync();
+    }
+
+    private void OnDrawingCanceled()
+    {
+        _pendingFacilityType = null;
+        _typePickerOpen = false;
+    }
+
+    private async Task ShowDraftAsync()
+    {
+        if (_map is null || _draft is null)
+        {
+            return;
+        }
+
+        await _map.SetLayerAsync(BuildDraftLayer());
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private MapLayer BuildDraftLayer()
+    {
+        var properties = new JsonObject
+        {
+            ["modulo"] = _draft!.Module.Label,
+            ["rascunho"] = "sim",
+        };
+
+        if (_draft.FacilityType is { } type)
+        {
+            var symbol = FacilitySymbology.For(type);
+            properties["tipo"] = symbol.Label;
+            properties["icone"] = symbol.Icon;
+            properties["cor"] = symbol.Color;
+        }
+
+        var feature = new JsonObject
+        {
+            ["type"] = "Feature",
+            ["id"] = DraftLayerId,
+            ["properties"] = properties,
+            ["geometry"] = JsonNode.Parse(Serializer.Serialize(_draft.Geometry)),
+        };
+
+        var collection = new JsonObject
+        {
+            ["type"] = "FeatureCollection",
+            ["features"] = new JsonArray(feature),
+        };
+
+        return new MapLayer(DraftLayerId, "Rascunho", collection.ToJsonString(), Color: "#c2410c");
+    }
+
+    private async Task DiscardDraftAsync()
+    {
+        _draft = null;
+
+        if (_map is not null)
+        {
+            await _map.RemoveLayerAsync(DraftLayerId);
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void HandleDrawingStateChanged() => _ = InvokeAsync(StateHasChanged);
 }
