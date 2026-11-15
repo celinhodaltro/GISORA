@@ -59,7 +59,7 @@ export function create(elementId, options, dotNetRef) {
 
   const layers = new Map();
   const featureLayers = new Map();
-  const instance = { map, layers, featureLayers, dotNetRef, draw: null, onKeyDown: null };
+  const instance = { map, layers, featureLayers, dotNetRef, draw: null, onKeyDown: null, suppressSelectionUntil: 0 };
 
   map.on('mousemove', (event) => {
     dotNetRef.invokeMethodAsync('HandleCoordinateChanged', event.latlng.lat, event.latlng.lng);
@@ -110,7 +110,7 @@ export function setLayer(elementId, layerId, geoJson, color) {
       instance.featureLayers.set(`${layerId}:${featureId}`, layer);
 
       layer.on('click', () => {
-        if (instance.draw) {
+        if (instance.draw || Date.now() < instance.suppressSelectionUntil) {
           return;
         }
 
@@ -363,6 +363,7 @@ function disableDraw(elementId) {
   }
 
   instance.map.doubleClickZoom.enable();
+  instance.suppressSelectionUntil = Date.now() + 350;
   instance.draw = null;
 }
 

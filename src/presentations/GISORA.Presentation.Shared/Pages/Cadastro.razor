@@ -435,6 +435,12 @@
         }
 
         _typePickerOpen = false;
+        _selection = null;
+
+        if (_map is not null)
+        {
+            await _map.HidePopupAsync();
+        }
 
         await _tool.StartAsync(new MapDrawingMode("draft", _activeModule.Label, "Polygon"));
     }
@@ -449,6 +455,12 @@
         _error = null;
         _pendingFacilityType = symbol.Type;
         _typePickerOpen = false;
+        _selection = null;
+
+        if (_map is not null)
+        {
+            await _map.HidePopupAsync();
+        }
 
         await _tool.StartAsync(new MapDrawingMode("draft", symbol.Label, "Pick"));
     }
