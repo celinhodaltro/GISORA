@@ -127,7 +127,7 @@ internal sealed class PropertyDocument
         PropertyRegistration.Create(Sector, Block, Lot, Unit),
         new Address(StreetId, Number, NeighborhoodId, Complement),
         Area.FromSquareMeters(LandAreaSquareMeters),
-        Geometry is null ? null : (Polygon)Geometry.ToDomain(),
+        Geometry is null ? null : Geometry.ToDomain(),
         Buildings.Select(building => building.ToDomain()),
         Units.Select(unit => unit.ToDomain()),
         Ownerships.Select(ownership => ownership.ToDomain()),

@@ -1,4 +1,4 @@
-using GISORA.Domain.Common;
+﻿using GISORA.Domain.Common;
 using GISORA.Domain.Geospatial;
 
 namespace GISORA.Domain.Properties;
@@ -18,7 +18,7 @@ public sealed class Property : AggregateRoot<PropertyId>
     private readonly List<Ownership> _ownerships = [];
     private readonly List<CadastralHistoryEntry> _history = [];
 
-    private Property(PropertyId id, PropertyRegistration registration, Address address, Area landArea, Polygon? geometry)
+    private Property(PropertyId id, PropertyRegistration registration, Address address, Area landArea, Geometry? geometry)
         : base(id)
     {
         Guard.Condition(landArea.SquareMeters > 0, "Area do lote deve ser maior que zero.", "properties.land-area");
@@ -35,7 +35,7 @@ public sealed class Property : AggregateRoot<PropertyId>
 
     public Area LandArea { get; }
 
-    public Polygon? Geometry { get; private set; }
+    public Geometry? Geometry { get; private set; }
 
     public IReadOnlyCollection<Building> Buildings => _buildings.AsReadOnly();
 
@@ -53,7 +53,7 @@ public sealed class Property : AggregateRoot<PropertyId>
         PropertyRegistration registration,
         Address address,
         Area landArea,
-        Polygon? geometry = null,
+        Geometry? geometry = null,
         DateTimeOffset? registeredAt = null)
     {
         var property = new Property(PropertyId.New(), registration, address, landArea, geometry);
@@ -66,7 +66,7 @@ public sealed class Property : AggregateRoot<PropertyId>
         return property;
     }
 
-    public void ChangeGeometry(Polygon geometry, string? reason, DateTimeOffset? changedAt = null)
+    public void ChangeGeometry(Geometry geometry, string? reason, DateTimeOffset? changedAt = null)
     {
         Guard.NotNull(geometry, nameof(geometry));
 
@@ -180,7 +180,7 @@ public sealed class Property : AggregateRoot<PropertyId>
         PropertyRegistration registration,
         Address address,
         Area landArea,
-        Polygon? geometry,
+        Geometry? geometry,
         IEnumerable<Building> buildings,
         IEnumerable<Unit> units,
         IEnumerable<Ownership> ownerships,

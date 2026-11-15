@@ -42,7 +42,7 @@ else
 
     <div class="gisora-toolbar geometry-page__actions">
         <RadzenButton Text="Editar geometria" Variant="Variant.Outlined" Disabled="@(_geometry is null && _view.Geometry is null)" Click="EditAsync" />
-        <RadzenButton Text="Salvar geometria" ButtonStyle="ButtonStyle.Primary" Disabled="@(_geometry is not Polygon || _diagnostics.Count > 0)" Click="SaveAsync" />
+        <RadzenButton Text="Salvar geometria" ButtonStyle="ButtonStyle.Primary" Disabled="@(_geometry is not (Polygon or MultiPolygon) || _diagnostics.Count > 0)" Click="SaveAsync" />
         <RadzenButton Text="Remover geometria" ButtonStyle="ButtonStyle.Danger" Disabled="@(_geometry is null && _view.Geometry is null)" Click="AskRemoveAsync" />
     </div>
 
@@ -169,6 +169,13 @@ else
             return;
         }
 
+        if (geometry is MultiPolygon)
+        {
+            _error = "Edicao de multi-poligono nao suportada nesta tela.";
+
+            return;
+        }
+
         _error = null;
         _message = null;
         _diagnostics = [];
@@ -219,9 +226,9 @@ else
             return null;
         }
 
-        if (geometry is Polygon polygon)
+        if (geometry is Polygon or MultiPolygon)
         {
-            var validation = await Validator.ValidateAsync(polygon, new PropertyId(PropertyId));
+            var validation = await Validator.ValidateAsync(geometry, new PropertyId(PropertyId));
 
             if (validation.IsValid is false)
             {
@@ -246,9 +253,9 @@ else
 
     private async Task UpdateMeasurementAsync(Geometry geometry)
     {
-        if (geometry is Polygon polygon)
+        if (geometry is Polygon or MultiPolygon)
         {
-            _areaSquareMeters = (await Spatial.AreaAsync(polygon)).SquareMeters;
+            _areaSquareMeters = (await Spatial.AreaAsync(geometry)).SquareMeters;
             _summary = null;
 
             return;
@@ -268,15 +275,17 @@ else
 
     private async Task SaveAsync()
     {
-        if (_geometry is not Polygon polygon)
+        var geometry = _geometry;
+
+        if (geometry is not (Polygon or MultiPolygon))
         {
-            _error = "Poligono e o unico tipo persistido no cadastro do imovel.";
+            _error = "Poligono ou multi-poligono e o unico tipo persistido no cadastro do imovel.";
 
             return;
         }
 
         var result = await UpdateGeometry.HandleAsync(
-            new UpdatePropertyGeometryCommand(new PropertyId(PropertyId), polygon, null));
+            new UpdatePropertyGeometryCommand(new PropertyId(PropertyId), geometry, null));
 
         if (result.IsFailure)
         {
@@ -299,8 +308,8 @@ else
         _error = null;
         _diagnostics = [];
         _message = "Geometria atualizada.";
-        _view = _view is null ? null : _view with { Geometry = polygon };
-        await ShowGeometryAsync(polygon);
+        _view = _view is null ? null : _view with { Geometry = geometry };
+        await ShowGeometryAsync(geometry);
     }
 
     private void AskRemoveAsync()

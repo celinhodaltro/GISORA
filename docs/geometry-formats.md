@@ -18,7 +18,7 @@ Contrato de importacao:
 
 - A feicao e associada ao imovel pelo `id` (GUID do imovel) ou, na falta dele, pela propriedade `inscricao`.
 - Feicoes sem imovel correspondente sao informadas e descartadas; nenhum imovel novo e criado e nenhum dado e inventado.
-- Apenas geometria `Polygon` e persistida no cadastro do imovel. `Point` e `LineString` continuam disponiveis para desenho e visualizacao, mas nao substituem a geometria cadastral do lote.
+- Geometrias `Polygon` e `MultiPolygon` sao persistidas no cadastro do imovel. `MultiPolygon` representa partes separadas do mesmo imovel (por exemplo, edificacao principal e anexo). `Point` e `LineString` continuam disponiveis para desenho e visualizacao, mas nao substituem a geometria cadastral do lote.
 - A geometria importada passa pela mesma validacao do desenho assistido: anel fechado, minimo de vertices, auto-intersecao e sobreposicao com outros imoveis.
 - Cada importacao bem-sucedida grava um registro com origem, CRS de origem, CRS de destino, data e quantidade de feicoes.
 

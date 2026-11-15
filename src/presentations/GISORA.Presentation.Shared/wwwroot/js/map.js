@@ -92,7 +92,7 @@ export function setLayer(elementId, layerId, geoJson, color) {
   const stroke = color ?? '#1351b4';
 
   const group = L.geoJSON(JSON.parse(geoJson), {
-    style: { color: stroke, weight: 2, fillColor: stroke, fillOpacity: 0.18 },
+    style: { color: stroke, weight: 2, fillColor: stroke, fillOpacity: 0 },
     pointToLayer: (feature, latlng) => {
       const properties = feature.properties ?? {};
       const pinColor = properties.cor ? String(properties.cor) : stroke;
@@ -110,6 +110,10 @@ export function setLayer(elementId, layerId, geoJson, color) {
       instance.featureLayers.set(`${layerId}:${featureId}`, layer);
 
       layer.on('click', () => {
+        if (instance.draw) {
+          return;
+        }
+
         instance.dotNetRef.invokeMethodAsync('HandleFeatureSelected', {
           id: featureId,
           layerId,
@@ -369,6 +373,7 @@ export function enableDraw(elementId, dotNetRef, kind) {
   }
 
   disableDraw(elementId);
+  clearPopupDom(instance);
 
   const geometryKind = normalizeKind(kind);
   const state = { mode: 'draw', kind: geometryKind, points: [], preview: null, marker: null, handles: [], dotNetRef };
@@ -376,7 +381,7 @@ export function enableDraw(elementId, dotNetRef, kind) {
   state.render = () => {
     if (state.preview === null) {
       state.preview = geometryKind === 'Polygon'
-        ? L.polygon(state.points, { color: '#1f6f4a', weight: 3, fillOpacity: 0.12 }).addTo(instance.map)
+        ? L.polygon(state.points, { color: '#1f6f4a', weight: 3, fill: false }).addTo(instance.map)
         : L.polyline(state.points, { color: '#1f6f4a', weight: 3 }).addTo(instance.map);
     } else {
       state.preview.setLatLngs(state.points);
@@ -501,6 +506,7 @@ export function enablePointPick(elementId, dotNetRef) {
   }
 
   disableDraw(elementId);
+  clearPopupDom(instance);
 
   const state = { mode: 'point', points: [], line: null, polygon: null, handles: null, marker: null, dotNetRef };
   state.onMapClick = (event) => {
@@ -526,6 +532,7 @@ export function enableEdit(elementId, geoJson, dotNetRef) {
   }
 
   disableDraw(elementId);
+  clearPopupDom(instance);
 
   const geometry = JSON.parse(geoJson);
   if (geometry.type === 'Point') {
@@ -538,7 +545,7 @@ export function enableEdit(elementId, geoJson, dotNetRef) {
   const latlngs = positions.map(([lng, lat]) => L.latLng(lat, lng));
   const shape = isLine
     ? L.polyline(latlngs, { color: '#2f7fb5', weight: 3 }).addTo(instance.map)
-    : L.polygon(latlngs, { color: '#2f7fb5', weight: 3 }).addTo(instance.map);
+    : L.polygon(latlngs, { color: '#2f7fb5', weight: 3, fill: false }).addTo(instance.map);
 
   const handles = latlngs.map((latlng) => L.marker(latlng, { draggable: true, icon: vertexIcon }).addTo(instance.map));
   const notify = () => {

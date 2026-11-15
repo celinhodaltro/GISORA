@@ -97,7 +97,7 @@
                 aria-label="Novo cadastro"
                 title="Novo cadastro"
                 aria-expanded="@(IsTypePickerModule ? _typePickerOpen.ToString().ToLowerInvariant() : null)"
-                disabled="@IsBusy"
+                disabled="@(!CanCreate)"
                 @onclick="StartOrToggleAsync">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z" /></svg>
         </button>
@@ -116,6 +116,10 @@
         {
             <div class="cadastro-draft" role="status">
                 <span>@DraftSummary</span>
+                @if (_draft.Module.Kind == CadastroModuleKind.Imoveis && _draft.FacilityType is null && IsBusy is false)
+                {
+                    <button type="button" class="cadastro-draft__action" @onclick="StartAddPartAsync">Adicionar parte</button>
+                }
                 <button type="button" aria-label="Descartar rascunho" title="Descartar rascunho" @onclick="DiscardDraftAsync">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.3 5.7 12 12l6.3 6.3-1.4 1.4L10.6 13.4 5.7 18.3 4.3 16.9 9.2 12 4.3 7.1l1.4-1.4 4.9 4.9 6.3-6.3z" /></svg>
                 </button>
@@ -130,11 +134,11 @@
 
     @if (_form is not null)
     {
-        <CadastroModal Module="_formModule"
-                       Form="_form"
-                       Options="Options"
-                       Saving="_saving"
-                       Error="_modalError"
+        <CadastroModal Module="@_formModule"
+                       Form="@_form"
+                       Options="@Options"
+                       Saving="@_saving"
+                       Error="@_modalError"
                        OnSave="SaveAsync"
                        OnClose="CloseModalAsync" />
     }
@@ -151,7 +155,10 @@
         string PrimaryLayerId,
         string[] LayerIds);
 
-    private sealed record CadastroDraft(CadastroModule Module, Geometry Geometry, FacilityType? FacilityType, int VertexCount);
+    private sealed record CadastroDraft(CadastroModule Module, Geometry Geometry, FacilityType? FacilityType, int VertexCount)
+    {
+        public int PartCount => Geometry is MultiPolygon multiPolygon ? multiPolygon.Polygons.Count : 1;
+    }
 
     private sealed record GeometryEdit(CadastroModule Module, string LayerId, string FeatureId, string EntityId, Geometry Geometry, bool IsPoint);
 
@@ -176,6 +183,7 @@
     private CadastroOptions Options = new([], [], [], []);
     private FacilityType? _pendingFacilityType;
     private bool _typePickerOpen;
+    private bool _appendingPart;
     private bool _saving;
     private string? _error;
     private string? _modalError;
@@ -210,10 +218,13 @@
 
     private bool IsBusy => _tool?.IsActive == true;
 
+    private bool CanCreate => IsBusy is false && _geometryEdit is null;
+
     private string DraftSummary => _draft switch
     {
         null => string.Empty,
         { FacilityType: { } type } => $"Rascunho de equipamento: {FacilitySymbology.For(type).Label}.",
+        { PartCount: > 1, VertexCount: var count } => $"Rascunho de {_draft.Module.Label}: {_draft.PartCount} partes, {count} vertice(s).",
         { VertexCount: var count } => $"Rascunho de {_draft.Module.Label}: {count} vertice(s).",
     };
 
@@ -409,6 +420,13 @@
 
         _error = null;
 
+        if (_draft is not null)
+        {
+            await OpenDraftModalAsync();
+
+            return;
+        }
+
         if (IsTypePickerModule)
         {
             _typePickerOpen = !_typePickerOpen;
@@ -448,8 +466,7 @@
                 return;
             }
 
-            var vertices = polygon.Rings.Count > 0 ? polygon.Rings[0].Coordinates.Count - 1 : 0;
-            _draft = new CadastroDraft(_activeModule, polygon, null, vertices);
+            _draft = AppendPartIfNeeded(polygon);
         }
         catch (Exception)
         {
@@ -458,7 +475,52 @@
             return;
         }
 
+        _appendingPart = false;
         await ShowDraftAsync();
+    }
+
+    private CadastroDraft AppendPartIfNeeded(Polygon polygon)
+    {
+        if (_appendingPart && _draft is { FacilityType: null } draft && _draft.Module.Kind == CadastroModuleKind.Imoveis)
+        {
+            var parts = draft.Geometry switch
+            {
+                Polygon single => new List<Polygon> { single },
+                MultiPolygon multi => multi.Polygons.ToList(),
+                _ => [],
+            };
+
+            parts.Add(polygon);
+
+            var geometry = new MultiPolygon(parts);
+            var vertices = parts.Sum(part => part.Rings.Count > 0 ? part.Rings[0].Coordinates.Count - 1 : 0);
+
+            return new CadastroDraft(_activeModule, geometry, null, vertices);
+        }
+
+        var count = polygon.Rings.Count > 0 ? polygon.Rings[0].Coordinates.Count - 1 : 0;
+
+        return new CadastroDraft(_activeModule, polygon, null, count);
+    }
+
+    private async Task StartAddPartAsync()
+    {
+        if (_tool is null || _tool.IsActive || _draft is null)
+        {
+            return;
+        }
+
+        _appendingPart = true;
+        _typePickerOpen = false;
+        _error = null;
+        _selection = null;
+
+        if (_map is not null)
+        {
+            await _map.HidePopupAsync();
+        }
+
+        await _tool.StartAsync(new MapDrawingMode("draft-part", "Adicionar parte", "Polygon"));
     }
 
     private async Task OnPointPickedAsync(MapCoordinate coordinate)
@@ -510,6 +572,7 @@
     {
         _pendingFacilityType = null;
         _typePickerOpen = false;
+        _appendingPart = false;
     }
 
     private async Task ShowDraftAsync()
@@ -623,6 +686,9 @@
             return;
         }
 
+        var showEdit = Guid.TryParse(selection.FeatureId, out var featureId)
+            && await LoadGeometryAsync(selection.Module, featureId) is GISORA.Domain.Geospatial.Point or Polygon or LineString;
+
         await _map.ShowPopupAsync(
             selection.LayerId,
             selection.FeatureId,
@@ -630,7 +696,7 @@
                 ModuleForLayer(selection.LayerId)?.Label ?? "Feicao",
                 PopupRows(selection),
                 "Abrir cadastro",
-                ShowEdit: true));
+                ShowEdit: showEdit));
     }
 
     private IReadOnlyList<MapPopupRow> DraftPopupRows()
@@ -648,6 +714,7 @@
         }
         else
         {
+            rows.Add(new MapPopupRow("Partes", _draft.PartCount.ToString(System.Globalization.CultureInfo.InvariantCulture)));
             rows.Add(new MapPopupRow("Vertices", _draft.VertexCount.ToString(System.Globalization.CultureInfo.InvariantCulture)));
         }
 
@@ -857,9 +924,9 @@
             form.Type = type;
         }
 
-        if (_draft.Geometry is Polygon polygon && _draft.FacilityType is null)
+        if (_draft.FacilityType is null && _draft.Geometry is Polygon or MultiPolygon)
         {
-            var area = (await Spatial.AreaAsync(polygon)).SquareMeters;
+            var area = (await Spatial.AreaAsync(_draft.Geometry)).SquareMeters;
             form.AreaLabel = $"{area:N2} m2";
 
             if (_draft.Module.Kind == CadastroModuleKind.Imoveis)
@@ -996,7 +1063,9 @@
 
     private async Task<SaveOutcome?> SaveImovelAsync(CadastroForm form)
     {
-        if (form.Geometry is not Polygon polygon)
+        var geometry = form.Geometry;
+
+        if (geometry is not (Polygon or MultiPolygon))
         {
             _modalError = "Desenhe o poligono do imovel.";
 
@@ -1021,7 +1090,7 @@
                 form.Number ?? string.Empty,
                 neighborhoodId,
                 form.LandArea,
-                polygon));
+                geometry));
 
             if (result.IsFailure)
             {
@@ -1056,14 +1125,14 @@
 
         if (form.GeometryChanged)
         {
-            var geometry = await UpdatePropertyGeometry.HandleAsync(new UpdatePropertyGeometryCommand(
+            var geometryResult = await UpdatePropertyGeometry.HandleAsync(new UpdatePropertyGeometryCommand(
                 new PropertyId(propertyId),
-                polygon,
+                geometry,
                 "edicao no cadastro unificado"));
 
-            if (geometry.IsFailure)
+            if (geometryResult.IsFailure)
             {
-                _modalError = geometry.Error.Message;
+                _modalError = geometryResult.Error.Message;
 
                 return null;
             }
@@ -1279,6 +1348,13 @@
         if (geometry is null)
         {
             _error = "Feicao sem geometria para editar.";
+
+            return;
+        }
+
+        if (geometry is MultiPolygon)
+        {
+            _error = "Edicao de multi-poligono ainda nao suportada.";
 
             return;
         }

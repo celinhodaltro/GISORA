@@ -154,6 +154,10 @@ public class UnifiedCadastroTests(WebAppFixture fixture)
         var modal = page.Locator(".cadastro-modal");
         await Expect(modal).ToBeVisibleAsync();
 
+        await modal.Locator(".cadastro-modal__button--primary").ClickAsync();
+        await Expect(modal.Locator(".cadastro-modal__error")).ToContainTextAsync("Selecione logradouro e bairro.");
+        await Expect(modal.Locator(".cadastro-modal__error")).Not.ToContainTextAsync("_modalError");
+
         await modal.GetByLabel("Setor", new LocatorGetByLabelOptions { Exact = true }).FillAsync("001");
         await modal.GetByLabel("Quadra", new LocatorGetByLabelOptions { Exact = true }).FillAsync("010");
         await modal.GetByLabel("Lote", new LocatorGetByLabelOptions { Exact = true }).FillAsync("001");
@@ -185,6 +189,74 @@ public class UnifiedCadastroTests(WebAppFixture fixture)
 
         await Expect(page.Locator(".cadastro-draft")).ToHaveCountAsync(0);
         await Expect(page.Locator(".gisora-popup")).ToContainTextAsync("001.010.001");
+    }
+
+    [Fact]
+    public async Task DrawsPropertyOverExistingBlockWithoutOpeningBlockPopup()
+    {
+        var page = await fixture.NewPageAsync();
+        await SeedAsync(page);
+
+        await page.GotoAsync($"{fixture.BaseUrl}/cadastro/quadras");
+        await DrawPolygonDraftAsync(page);
+        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Abrir cadastro" }).ClickAsync();
+
+        var blockModal = page.Locator(".cadastro-modal");
+        await blockModal.GetByLabel("Codigo").FillAsync("Q-90");
+        await blockModal.Locator(".cadastro-modal__button--primary").ClickAsync();
+        await Expect(blockModal).ToHaveCountAsync(0);
+
+        await page.GotoAsync($"{fixture.BaseUrl}/cadastro/imoveis");
+
+        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Novo cadastro" }).ClickAsync();
+        await ClickMapAsync(page, 0.30, 0.30);
+        await ClickMapAsync(page, 0.65, 0.30);
+        await ClickMapAsync(page, 0.65, 0.65);
+        await ClickMapAsync(page, 0.30, 0.65);
+        await MapDrawing.FinishAsync(page);
+
+        await Expect(page.Locator(".gisora-popup")).ToContainTextAsync("Rascunho de Imoveis");
+        await Expect(page.Locator(".gisora-popup")).Not.ToContainTextAsync("Q-90");
+    }
+
+    [Fact]
+    public async Task CreatesPropertyWithMultiplePolygons()
+    {
+        var page = await fixture.NewPageAsync();
+        await SeedAsync(page);
+
+        await page.GotoAsync($"{fixture.BaseUrl}/cadastro/imoveis");
+
+        for (var index = 0; index < 3; index++)
+        {
+            await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Afastar" }).ClickAsync();
+        }
+
+        await DrawPolygonDraftAsync(page, 0.05, 0.62, 0.20, 0.75);
+
+        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Adicionar parte" }).ClickAsync();
+        await ClickMapAsync(page, 0.30, 0.62);
+        await ClickMapAsync(page, 0.45, 0.62);
+        await ClickMapAsync(page, 0.45, 0.75);
+        await ClickMapAsync(page, 0.30, 0.75);
+        await MapDrawing.FinishAsync(page);
+
+        await Expect(page.Locator(".cadastro-draft")).ToContainTextAsync("2 partes");
+        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Abrir cadastro" }).ClickAsync();
+
+        var modal = page.Locator(".cadastro-modal");
+        await Expect(modal).ToContainTextAsync("multi-poligono com 2 parte(s)");
+
+        await modal.GetByLabel("Setor", new LocatorGetByLabelOptions { Exact = true }).FillAsync("001");
+        await modal.GetByLabel("Quadra", new LocatorGetByLabelOptions { Exact = true }).FillAsync("020");
+        await modal.GetByLabel("Lote", new LocatorGetByLabelOptions { Exact = true }).FillAsync("001");
+        await modal.GetByLabel("Logradouro").SelectOptionAsync(new SelectOptionValue { Label = "Rua da Matriz" });
+        await modal.GetByLabel("Numero").FillAsync("10");
+        await modal.GetByLabel("Bairro").SelectOptionAsync(new SelectOptionValue { Label = "Centro" });
+        await modal.Locator(".cadastro-modal__button--primary").ClickAsync();
+
+        await Expect(modal).ToHaveCountAsync(0);
+        await Expect(page.Locator(".gisora-popup")).ToContainTextAsync("001.020.001");
     }
 
     [Fact]

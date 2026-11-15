@@ -95,7 +95,7 @@ internal sealed class FakePropertyGeometryValidator : IPropertyGeometryValidator
     public PropertyId? LastExcludedPropertyId { get; private set; }
 
     public Task<GeometryValidationResult> ValidateAsync(
-        Polygon geometry,
+        Geometry geometry,
         PropertyId? excludedPropertyId = null,
         CancellationToken cancellationToken = default)
     {

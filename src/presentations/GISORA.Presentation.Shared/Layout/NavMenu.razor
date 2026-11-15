@@ -18,6 +18,15 @@
     </div>
 
     <div class="app-nav__group">
+        <span class="app-nav__group-title">Cadastro territorial</span>
+
+        <NavLink class="app-nav__link" href="cadastro" title="Quadras, imoveis, equipamentos e rurais no mapa" @onclick="Navigate">
+            <span class="app-nav__icon" aria-hidden="true"><RadzenIcon Icon="edit_location_alt" /></span>
+            <span class="app-nav__label">Cadastro no mapa</span>
+        </NavLink>
+    </div>
+
+    <div class="app-nav__group">
         <span class="app-nav__group-title">Territorio</span>
 
         <NavLink class="app-nav__link" href="territory" title="Territorio" @onclick="Navigate">
@@ -29,48 +38,24 @@
             <span class="app-nav__icon" aria-hidden="true"><RadzenIcon Icon="signpost" /></span>
             <span class="app-nav__label">Logradouros</span>
         </NavLink>
-
-        <NavLink class="app-nav__link" href="cadastro/quadras" title="Quadras" @onclick="Navigate">
-            <span class="app-nav__icon" aria-hidden="true"><RadzenIcon Icon="grid_view" /></span>
-            <span class="app-nav__label">Quadras</span>
-        </NavLink>
-    </div>
-
-    <div class="app-nav__group">
-        <span class="app-nav__group-title">Cadastro</span>
-
-        <NavLink class="app-nav__link" href="cadastro/imoveis" title="Imoveis" @onclick="Navigate">
-            <span class="app-nav__icon" aria-hidden="true"><RadzenIcon Icon="home_work" /></span>
-            <span class="app-nav__label">Imoveis</span>
-        </NavLink>
-
-        <NavLink class="app-nav__link" href="cadastro/equipamentos" title="Equipamentos" @onclick="Navigate">
-            <span class="app-nav__icon" aria-hidden="true"><RadzenIcon Icon="school" /></span>
-            <span class="app-nav__label">Equipamentos</span>
-        </NavLink>
-
-        <NavLink class="app-nav__link" href="cadastro/rurais" title="Rural" @onclick="Navigate">
-            <span class="app-nav__icon" aria-hidden="true"><RadzenIcon Icon="agriculture" /></span>
-            <span class="app-nav__label">Rural</span>
-        </NavLink>
-
-        <NavLink class="app-nav__link" href="cib" title="Consulta CIB" @onclick="Navigate">
-            <span class="app-nav__icon" aria-hidden="true"><RadzenIcon Icon="travel_explore" /></span>
-            <span class="app-nav__label">Consulta CIB</span>
-        </NavLink>
     </div>
 
     <div class="app-nav__group">
         <span class="app-nav__group-title">Geoprocessamento</span>
+
+        <NavLink class="app-nav__link" href="map" title="Mapa" @onclick="Navigate">
+            <span class="app-nav__icon" aria-hidden="true"><RadzenIcon Icon="map" /></span>
+            <span class="app-nav__label">Mapa</span>
+        </NavLink>
 
         <NavLink class="app-nav__link" href="planning" title="Zoneamento" @onclick="Navigate">
             <span class="app-nav__icon" aria-hidden="true"><RadzenIcon Icon="map" /></span>
             <span class="app-nav__label">Zoneamento</span>
         </NavLink>
 
-        <NavLink class="app-nav__link" href="map" title="Mapa" @onclick="Navigate">
-            <span class="app-nav__icon" aria-hidden="true"><RadzenIcon Icon="map" /></span>
-            <span class="app-nav__label">Mapa</span>
+        <NavLink class="app-nav__link" href="cib" title="Consulta CIB" @onclick="Navigate">
+            <span class="app-nav__icon" aria-hidden="true"><RadzenIcon Icon="travel_explore" /></span>
+            <span class="app-nav__label">Consulta CIB</span>
         </NavLink>
     </div>
 
