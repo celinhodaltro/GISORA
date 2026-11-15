@@ -212,8 +212,7 @@ public class UnifiedCadastroTests(WebAppFixture fixture)
         await ClickMapAsync(page, 0.30, 0.30);
         await ClickMapAsync(page, 0.65, 0.30);
         await ClickMapAsync(page, 0.65, 0.65);
-        await ClickMapAsync(page, 0.30, 0.65);
-        await MapDrawing.FinishAsync(page);
+        await DoubleClickMapAsync(page, 0.30, 0.65);
 
         await Expect(page.Locator(".gisora-popup")).ToContainTextAsync("Rascunho de Imoveis");
         await Expect(page.Locator(".gisora-popup")).Not.ToContainTextAsync("Q-90");
@@ -329,6 +328,17 @@ public class UnifiedCadastroTests(WebAppFixture fixture)
 
         await Expect(page).ToHaveURLAsync(new System.Text.RegularExpressions.Regex("/cadastro/quadras$"));
         await Expect(page.Locator(".cadastro-bar__item[aria-current='page']")).ToHaveAttributeAsync("aria-label", "Quadras");
+    }
+
+    private static async Task DoubleClickMapAsync(IPage page, double relativeX, double relativeY)
+    {
+        var map = page.Locator(".gisora-map");
+        var box = await map.BoundingBoxAsync();
+        ArgumentNullException.ThrowIfNull(box);
+
+        await page.Mouse.DblClickAsync(
+            box.X + (box.Width * (float)relativeX),
+            box.Y + (box.Height * (float)relativeY));
     }
 
     private static async Task ClickMapAsync(IPage page, double relativeX, double relativeY)
