@@ -150,6 +150,87 @@
     font-size: 0.78rem;
 }
 
+.cadastro-selection-actions {
+    position: absolute;
+    top: 50%;
+    right: 1rem;
+    z-index: 650;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    transform: translateY(-50%);
+}
+
+.cadastro-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.6rem;
+    height: 2.6rem;
+    padding: 0;
+    border: 1px solid var(--gisora-border, #dde4ec);
+    border-radius: 50%;
+    background: #ffffff;
+    color: var(--gisora-blue-700, #1351b4);
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(18, 33, 47, 0.16);
+}
+
+.cadastro-action:hover {
+    background: var(--gisora-blue-50, #f3f7fd);
+}
+
+.cadastro-action svg {
+    width: 1.15rem;
+    height: 1.15rem;
+    fill: currentColor;
+}
+
+.cadastro-edit {
+    position: absolute;
+    right: 1rem;
+    bottom: 5.2rem;
+    z-index: 650;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    width: 9rem;
+    padding: 0.6rem;
+    border: 1px solid var(--gisora-border, #dde4ec);
+    border-radius: var(--gisora-radius-md, 10px);
+    background: #ffffff;
+    box-shadow: 0 6px 18px rgba(18, 33, 47, 0.18);
+}
+
+.cadastro-edit__title {
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gisora-muted, #5a6b7b);
+}
+
+.cadastro-edit__save,
+.cadastro-edit__cancel {
+    padding: 0.5rem 0.65rem;
+    border-radius: var(--gisora-radius-sm, 6px);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.cadastro-edit__save {
+    border: none;
+    background: var(--gisora-blue-700, #1351b4);
+    color: #ffffff;
+}
+
+.cadastro-edit__cancel {
+    border: 1px solid var(--gisora-border, #dde4ec);
+    background: #ffffff;
+    color: var(--gisora-blue-700, #1351b4);
+}
+
 .cadastro-draft {
     position: absolute;
     left: 50%;

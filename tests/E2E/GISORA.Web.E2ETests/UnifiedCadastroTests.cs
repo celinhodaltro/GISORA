@@ -172,8 +172,17 @@ public class UnifiedCadastroTests(WebAppFixture fixture)
         await Expect(page.Locator(".gisora-map path.leaflet-interactive")).ToHaveCountAsync(3);
 
         await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Editar geometria" }).ClickAsync();
-        await Expect(page.Locator(".cadastro-draft")).ToContainTextAsync("Editando geometria de Imoveis");
+        await Expect(page.Locator(".cadastro-edit")).ToContainTextAsync("Editando geometria");
+        await Expect(page.Locator(".cadastro-draft")).ToHaveCountAsync(0);
         await Expect(page.Locator(".gisora-map-vertex")).ToHaveCountAsync(4);
+
+        var saveButton = page.Locator(".cadastro-edit__save");
+        var cancelButton = page.Locator(".cadastro-edit__cancel");
+        var saveBox = await saveButton.BoundingBoxAsync();
+        var cancelBox = await cancelButton.BoundingBoxAsync();
+        ArgumentNullException.ThrowIfNull(saveBox);
+        ArgumentNullException.ThrowIfNull(cancelBox);
+        Assert.True(saveBox.Y < cancelBox.Y, "Salvar deve ficar acima de Cancelar.");
 
         var handle = page.Locator(".gisora-map-vertex").First;
         var handleBox = await handle.BoundingBoxAsync();
@@ -185,9 +194,9 @@ public class UnifiedCadastroTests(WebAppFixture fixture)
         await page.Mouse.MoveAsync(startX + 20, startY + 15, new MouseMoveOptions { Steps = 8 });
         await page.Mouse.UpAsync();
 
-        await page.Locator(".cadastro-draft__action").ClickAsync();
+        await saveButton.ClickAsync();
 
-        await Expect(page.Locator(".cadastro-draft")).ToHaveCountAsync(0);
+        await Expect(page.Locator(".cadastro-edit")).ToHaveCountAsync(0);
         await Expect(page.Locator(".gisora-popup")).ToContainTextAsync("001.010.001");
     }
 
@@ -216,6 +225,48 @@ public class UnifiedCadastroTests(WebAppFixture fixture)
 
         await Expect(page.Locator(".gisora-popup")).ToContainTextAsync("Rascunho de Imoveis");
         await Expect(page.Locator(".gisora-popup")).Not.ToContainTextAsync("Q-90");
+    }
+
+    [Fact]
+    public async Task SelectsPropertyAboveBlockAndShowsSelectionAffordances()
+    {
+        var page = await fixture.NewPageAsync();
+        await SeedAsync(page);
+
+        await page.GotoAsync($"{fixture.BaseUrl}/cadastro/quadras");
+
+        var propertyPath = page.Locator(".gisora-map path[stroke='#1f7a5c']").First;
+        var propertyBox = await propertyPath.BoundingBoxAsync();
+        ArgumentNullException.ThrowIfNull(propertyBox);
+
+        var centerX = propertyBox.X + (propertyBox.Width / 2);
+        var centerY = propertyBox.Y + (propertyBox.Height / 2);
+
+        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Novo cadastro" }).ClickAsync();
+        await page.Mouse.ClickAsync(centerX - 25, centerY - 25);
+        await page.Mouse.ClickAsync(centerX + 25, centerY - 25);
+        await page.Mouse.ClickAsync(centerX + 25, centerY + 25);
+        await page.Mouse.ClickAsync(centerX - 25, centerY + 25);
+        await MapDrawing.FinishAsync(page);
+
+        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Abrir cadastro" }).ClickAsync();
+        var blockModal = page.Locator(".cadastro-modal");
+        await blockModal.GetByLabel("Codigo").FillAsync("Q-91");
+        await blockModal.Locator(".cadastro-modal__button--primary").ClickAsync();
+        await Expect(blockModal).ToHaveCountAsync(0);
+
+        await page.GotoAsync($"{fixture.BaseUrl}/cadastro/imoveis");
+
+        var property = page.Locator(".gisora-map path[stroke='#1f7a5c']").First;
+        var box = await property.BoundingBoxAsync();
+        ArgumentNullException.ThrowIfNull(box);
+
+        await page.Mouse.ClickAsync(box.X + (box.Width / 2), box.Y + (box.Height / 2));
+
+        await Expect(page.Locator(".gisora-popup")).ToContainTextAsync("Inscricao");
+        await Expect(page.Locator(".gisora-popup")).Not.ToContainTextAsync("Q-91");
+        await Expect(page.Locator(".gisora-map path[stroke='#f59e0b']")).ToHaveCountAsync(1);
+        await Expect(page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Editar feicao" })).ToBeVisibleAsync();
     }
 
     [Fact]

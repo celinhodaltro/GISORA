@@ -5,7 +5,7 @@ namespace GISORA.Presentation.Shared.Maps.Components;
 
 public sealed partial class MapView : IAsyncDisposable
 {
-    private const string ModulePath = "./_content/GISORA.Presentation.Shared/js/map.js?v=2";
+    private const string ModulePath = "./_content/GISORA.Presentation.Shared/js/map.js?v=3";
     private const string OpenStreetMapTiles = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
 
     private readonly string _elementId = $"gisora-map-{Guid.NewGuid():N}";
@@ -164,6 +164,16 @@ public sealed partial class MapView : IAsyncDisposable
         }
 
         await _module.InvokeVoidAsync("hidePopup", _elementId);
+    }
+
+    public async Task ClearSelectionAsync()
+    {
+        if (_module is null)
+        {
+            return;
+        }
+
+        await _module.InvokeVoidAsync("clearSelection", _elementId);
     }
 
     public async Task FitBoundsAsync()

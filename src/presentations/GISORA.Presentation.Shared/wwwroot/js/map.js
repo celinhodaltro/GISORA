@@ -59,7 +59,17 @@ export function create(elementId, options, dotNetRef) {
 
   const layers = new Map();
   const featureLayers = new Map();
-  const instance = { map, layers, featureLayers, dotNetRef, draw: null, onKeyDown: null, suppressSelectionUntil: 0 };
+  const instance = {
+    map,
+    layers,
+    featureLayers,
+    dotNetRef,
+    draw: null,
+    onKeyDown: null,
+    suppressSelectionUntil: 0,
+    selectedKey: null,
+    selectedLayer: null,
+  };
 
   map.on('mousemove', (event) => {
     dotNetRef.invokeMethodAsync('HandleCoordinateChanged', event.latlng.lat, event.latlng.lng);
@@ -109,7 +119,7 @@ export function setLayer(elementId, layerId, geoJson, color) {
 
       instance.featureLayers.set(`${layerId}:${featureId}`, layer);
 
-      layer.on('click', () => {
+      layer.on('click', (event) => {
         if (instance.draw || Date.now() < instance.suppressSelectionUntil) {
           return;
         }
@@ -117,6 +127,8 @@ export function setLayer(elementId, layerId, geoJson, color) {
         instance.dotNetRef.invokeMethodAsync('HandleFeatureSelected', {
           id: featureId,
           layerId,
+          latitude: event.latlng?.lat ?? null,
+          longitude: event.latlng?.lng ?? null,
           properties: normalizeProperties(feature.properties),
         });
       });
@@ -140,6 +152,11 @@ export function removeLayer(elementId, layerId) {
   }
 
   clearPopupDom(instance);
+
+  if (instance.selectedKey?.startsWith(`${layerId}:`)) {
+    clearSelectionStyle(instance);
+  }
+
   layer.remove();
   instance.layers.delete(layerId);
 
@@ -160,6 +177,52 @@ function clearPopupDom(instance) {
     .forEach((node) => node.remove());
 }
 
+function clearSelectionStyle(instance) {
+  const layer = instance.selectedLayer;
+
+  if (layer) {
+    if (layer.setStyle) {
+      layer.setStyle({
+        color: layer.options?.color ?? '#1351b4',
+        weight: layer.options?.weight ?? 2,
+      });
+    } else if (layer.getElement) {
+      layer.getElement()?.classList.remove('gisora-map-pin--selected');
+    }
+  }
+
+  instance.selectedKey = null;
+  instance.selectedLayer = null;
+}
+
+function applySelectionStyle(instance, key, layer) {
+  if (instance.selectedKey === key) {
+    return;
+  }
+
+  clearSelectionStyle(instance);
+
+  instance.selectedKey = key;
+  instance.selectedLayer = layer;
+
+  if (layer.setStyle) {
+    layer.setStyle({ color: '#f59e0b', weight: 4 });
+  } else if (layer.getElement) {
+    layer.getElement()?.classList.add('gisora-map-pin--selected');
+  }
+}
+
+export function clearSelection(elementId) {
+  const instance = instances.get(elementId);
+  if (!instance) {
+    return false;
+  }
+
+  clearSelectionStyle(instance);
+
+  return true;
+}
+
 export function showPopup(elementId, layerId, featureId, popup) {
   const instance = instances.get(elementId);
   if (!instance) {
@@ -172,6 +235,7 @@ export function showPopup(elementId, layerId, featureId, popup) {
   }
 
   clearPopupDom(instance);
+  applySelectionStyle(instance, `${layerId}:${featureId}`, layer);
 
   const content = document.createElement('div');
   content.className = 'gisora-popup';
