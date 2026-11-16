@@ -178,14 +178,14 @@ function clearPopupDom(instance) {
 }
 
 function clearSelectionStyle(instance) {
-  const layer = instance.selectedLayer;
-
-  if (layer) {
+  for (const layer of instance.featureLayers.values()) {
     if (layer.setStyle) {
-      layer.setStyle({
+      const style = layer.__gisoraStyle ?? {
         color: layer.options?.color ?? '#1351b4',
         weight: layer.options?.weight ?? 2,
-      });
+      };
+
+      layer.setStyle({ color: style.color, weight: style.weight });
     } else if (layer.getElement) {
       layer.getElement()?.classList.remove('gisora-map-pin--selected');
     }
@@ -206,6 +206,11 @@ function applySelectionStyle(instance, key, layer) {
   instance.selectedLayer = layer;
 
   if (layer.setStyle) {
+    layer.__gisoraStyle ??= {
+      color: layer.options?.color ?? '#1351b4',
+      weight: layer.options?.weight ?? 2,
+    };
+
     layer.setStyle({ color: '#f59e0b', weight: 4 });
   } else if (layer.getElement) {
     layer.getElement()?.classList.add('gisora-map-pin--selected');

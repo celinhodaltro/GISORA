@@ -66,7 +66,10 @@
             }
         </nav>
 
-        <MapToolbar />
+        <MapToolbar CanEditSelection="@IsSelectionEditable"
+                    OnEditSelection="EditSelectionAsync"
+                    CanSaveEdit="@(_geometryEdit is not null)"
+                    OnSaveEdit="SaveGeometryAsync" />
         <LayerControl Layers="_layers" LockedLayerIds="LockedLayerIds" />
         <CoordinateControl Crs="EPSG:4326" />
         <DrawingTool @ref="_tool"
@@ -102,28 +105,7 @@
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z" /></svg>
         </button>
 
-        @if (IsSelectionEditable)
-        {
-            <div class="cadastro-selection-actions">
-                <button type="button"
-                        class="cadastro-action"
-                        aria-label="Editar feicao"
-                        title="Editar geometria"
-                        @onclick="EditSelectionAsync">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17.3V21h3.7L17.9 9.8l-3.7-3.7zm17.7-10.5c.4-.4.4-1 0-1.4l-2.1-2.1a1 1 0 0 0-1.4 0l-1.8 1.8 3.7 3.7z" /></svg>
-                </button>
-            </div>
-        }
-
-        @if (_geometryEdit is not null)
-        {
-            <div class="cadastro-edit" role="group" aria-label="Edicao geometrica">
-                <span class="cadastro-edit__title">Editando geometria</span>
-                <button type="button" class="cadastro-edit__save" @onclick="SaveGeometryAsync">Salvar</button>
-                <button type="button" class="cadastro-edit__cancel" @onclick="CancelGeometryEditAsync">Cancelar</button>
-            </div>
-        }
-        else if (_draft is not null)
+        @if (_draft is not null)
         {
             <div class="cadastro-draft" role="status">
                 <span>@DraftSummary</span>

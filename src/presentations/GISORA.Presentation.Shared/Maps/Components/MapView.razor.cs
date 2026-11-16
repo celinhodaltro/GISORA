@@ -1,11 +1,11 @@
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 namespace GISORA.Presentation.Shared.Maps.Components;
 
 public sealed partial class MapView : IAsyncDisposable
 {
-    private const string ModulePath = "./_content/GISORA.Presentation.Shared/js/map.js?v=3";
+    private const string ModulePath = "./_content/GISORA.Presentation.Shared/js/map.js?v=4";
     private const string OpenStreetMapTiles = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
 
     private readonly string _elementId = $"gisora-map-{Guid.NewGuid():N}";
