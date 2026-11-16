@@ -243,6 +243,8 @@ public class UnifiedCadastroTests(WebAppFixture fixture)
         var centerY = propertyBox.Y + (propertyBox.Height / 2);
 
         await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Novo cadastro" }).ClickAsync();
+        await Expect(page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = MapDrawing.Finish })).ToBeVisibleAsync();
+
         await page.Mouse.ClickAsync(centerX - 25, centerY - 25);
         await page.Mouse.ClickAsync(centerX + 25, centerY - 25);
         await page.Mouse.ClickAsync(centerX + 25, centerY + 25);
@@ -364,6 +366,8 @@ public class UnifiedCadastroTests(WebAppFixture fixture)
         double bottom = 0.65)
     {
         await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Novo cadastro" }).ClickAsync();
+        await Expect(page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = MapDrawing.Finish })).ToBeVisibleAsync();
+
         await ClickMapAsync(page, left, top);
         await ClickMapAsync(page, right, top);
         await ClickMapAsync(page, right, bottom);
