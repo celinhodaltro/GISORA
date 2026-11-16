@@ -16,7 +16,9 @@ public sealed record MapLegendItem(string Label, string Color, string? Icon = nu
 public sealed record MapFeature(
     [property: JsonPropertyName("id")] string Id,
     [property: JsonPropertyName("properties")] IReadOnlyDictionary<string, string> Properties,
-    [property: JsonPropertyName("layerId")] string? LayerId = null);
+    [property: JsonPropertyName("layerId")] string? LayerId = null,
+    [property: JsonPropertyName("latitude")] double? Latitude = null,
+    [property: JsonPropertyName("longitude")] double? Longitude = null);
 
 public sealed record MapPopupRow(string Label, string Value);
 
