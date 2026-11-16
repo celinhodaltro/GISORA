@@ -117,8 +117,27 @@
 
         var propertyItems = await PropertyMapQueries.GetMapItemsAsync();
         var facilityItems = await FacilityQueries.GetMapItemsAsync();
+        var urbanBlockItems = await UrbanBlockQueries.GetMapItemsAsync();
 
         _layers.Clear();
+
+        if (urbanBlockItems.Any(block => block.Rings.Count > 0))
+        {
+            _layers.Add(new MapLayer(
+                "urban-blocks",
+                "Quadras",
+                UrbanBlockMapProjector.ToBlockFeatureCollection(urbanBlockItems),
+                Color: "#b45309"));
+        }
+
+        if (urbanBlockItems.Any(block => block.Faces.Count > 0))
+        {
+            _layers.Add(new MapLayer(
+                "urban-block-faces",
+                "Faces de quadra",
+                UrbanBlockMapProjector.ToFaceFeatureCollection(urbanBlockItems),
+                Color: "#7c2d12"));
+        }
 
         if (propertyItems.Count > 0)
         {

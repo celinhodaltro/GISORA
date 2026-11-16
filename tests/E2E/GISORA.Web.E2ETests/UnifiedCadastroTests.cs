@@ -171,13 +171,16 @@ public class UnifiedCadastroTests(WebAppFixture fixture)
         await Expect(page.Locator(".gisora-popup")).ToContainTextAsync("001.010.001");
         await Expect(page.Locator(".gisora-map path.leaflet-interactive")).ToHaveCountAsync(3);
 
-        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Editar geometria" }).ClickAsync();
-        await Expect(page.Locator(".cadastro-edit")).ToContainTextAsync("Editando geometria");
+        var toolbar = page.Locator(".gisora-map-toolbar");
+
+        await toolbar.GetByRole(AriaRole.Button, new LocatorGetByRoleOptions { Name = "Editar geometria" }).ClickAsync();
+        await Expect(toolbar.GetByRole(AriaRole.Button, new LocatorGetByRoleOptions { Name = "Salvar geometria" })).ToBeVisibleAsync();
+        await Expect(toolbar.GetByRole(AriaRole.Button, new LocatorGetByRoleOptions { Name = "Cancelar desenho" })).ToBeVisibleAsync();
         await Expect(page.Locator(".cadastro-draft")).ToHaveCountAsync(0);
         await Expect(page.Locator(".gisora-map-vertex")).ToHaveCountAsync(4);
 
-        var saveButton = page.Locator(".cadastro-edit__save");
-        var cancelButton = page.Locator(".cadastro-edit__cancel");
+        var saveButton = toolbar.GetByRole(AriaRole.Button, new LocatorGetByRoleOptions { Name = "Salvar geometria" });
+        var cancelButton = toolbar.GetByRole(AriaRole.Button, new LocatorGetByRoleOptions { Name = "Cancelar desenho" });
         var saveBox = await saveButton.BoundingBoxAsync();
         var cancelBox = await cancelButton.BoundingBoxAsync();
         ArgumentNullException.ThrowIfNull(saveBox);
@@ -196,7 +199,7 @@ public class UnifiedCadastroTests(WebAppFixture fixture)
 
         await saveButton.ClickAsync();
 
-        await Expect(page.Locator(".cadastro-edit")).ToHaveCountAsync(0);
+        await Expect(saveButton).ToHaveCountAsync(0);
         await Expect(page.Locator(".gisora-popup")).ToContainTextAsync("001.010.001");
     }
 
@@ -268,7 +271,15 @@ public class UnifiedCadastroTests(WebAppFixture fixture)
         await Expect(page.Locator(".gisora-popup")).ToContainTextAsync("Inscricao");
         await Expect(page.Locator(".gisora-popup")).Not.ToContainTextAsync("Q-91");
         await Expect(page.Locator(".gisora-map path[stroke='#f59e0b']")).ToHaveCountAsync(1);
-        await Expect(page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Editar feicao" })).ToBeVisibleAsync();
+        await Expect(page.Locator(".gisora-map-toolbar").GetByRole(AriaRole.Button, new LocatorGetByRoleOptions { Name = "Editar geometria" })).ToBeVisibleAsync();
+
+        var secondProperty = page.Locator(".gisora-map path[stroke='#1f7a5c']").First;
+        var secondBox = await secondProperty.BoundingBoxAsync();
+        ArgumentNullException.ThrowIfNull(secondBox);
+
+        await page.Mouse.ClickAsync(secondBox.X + (secondBox.Width / 2), secondBox.Y + (secondBox.Height / 2));
+
+        await Expect(page.Locator(".gisora-map path[stroke='#f59e0b']")).ToHaveCountAsync(1);
     }
 
     [Fact]
