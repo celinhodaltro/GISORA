@@ -18,5 +18,7 @@ public static class StorageNamespaces
 
     public const string UrbanPlanning = "urban-planning";
 
+    public const string Identity = "identity";
+
     public const string Meta = "meta";
 }

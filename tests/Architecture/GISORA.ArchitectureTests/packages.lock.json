@@ -414,8 +414,19 @@
         "dependencies": {
           "GISORA.Application": "[0.1.0, )",
           "GISORA.Domain": "[0.1.0, )",
+          "Microsoft.AspNetCore.Components.Authorization": "[10.0.15, )",
           "Microsoft.AspNetCore.Components.Web": "[10.0.15, )",
           "Radzen.Blazor": "[13.0.0, )"
+        }
+      },
+      "Microsoft.AspNetCore.Components.Authorization": {
+        "type": "CentralTransitive",
+        "requested": "[10.0.15, )",
+        "resolved": "10.0.15",
+        "contentHash": "dAaM1HXVcnVkZGdATMRNTlEPPemqKaIvTUrPVBy9yLrXDpealF7cdaccv6cQkU/JP8GYOcK6dbG0QepmLrihCw==",
+        "dependencies": {
+          "Microsoft.AspNetCore.Authorization": "10.0.15",
+          "Microsoft.AspNetCore.Components": "10.0.15"
         }
       },
       "Microsoft.AspNetCore.Components.Web": {

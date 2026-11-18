@@ -1,0 +1,126 @@
+@page "/login"
+@layout BlankLayout
+@attribute [AllowAnonymous]
+@using GISORA.Application.Identity
+@using GISORA.Application.Identity.Commands
+@using GISORA.Presentation.Shared.Security
+@inject SignInHandler SignIn
+@inject EnsureIdentityUsersHandler EnsureUsers
+@inject GisoraAuthenticationStateProvider Authentication
+@inject NavigationManager Navigation
+
+<PageTitle>Acessar o GISORA</PageTitle>
+
+<div class="login">
+    <section class="login__panel" aria-labelledby="login-title">
+        <header class="login__header">
+            <img class="login__mark"
+                 src="_content/GISORA.Presentation.Shared/img/brand/gisora-mark-128.png"
+                 alt="" />
+            <div>
+                <h1 class="login__title" id="login-title">Acessar o GISORA</h1>
+                <p class="login__description">Gestao territorial do municipio.</p>
+            </div>
+        </header>
+
+        <form class="login__form" @onsubmit="SignInAsync" @onsubmit:preventDefault>
+            <label class="login__field">
+                <span>E-mail</span>
+                <input type="email"
+                       @bind="_email"
+                       autocomplete="username"
+                       placeholder="nome@municipio.gov.br"
+                       required />
+            </label>
+
+            <label class="login__field">
+                <span>Senha</span>
+                <input type="password"
+                       @bind="_password"
+                       autocomplete="current-password"
+                       placeholder="Sua senha"
+                       required />
+            </label>
+
+            @if (_error is not null)
+            {
+                <p class="login__error" role="alert">@_error</p>
+            }
+
+            <button type="submit" class="login__submit" disabled="@_busy">
+                @(_busy ? "Entrando..." : "Entrar")
+            </button>
+        </form>
+
+        <section class="login__demo" aria-label="Contas demonstrativas">
+            <h2 class="login__demo-title">Base demonstrativa</h2>
+            <p class="login__demo-text">
+                Contas locais para avaliacao dos perfis. Os dados ficam neste navegador e a sessao usa
+                um token assinado no proprio cliente: nao ha seguranca real enquanto nao existir backend.
+            </p>
+
+            <ul class="login__accounts">
+                <li>
+                    <strong>Administrador</strong>
+                    <span>@IdentitySeedAccounts.AdministratorEmail</span>
+                </li>
+                <li>
+                    <strong>Analista</strong>
+                    <span>@IdentitySeedAccounts.AnalystEmail</span>
+                </li>
+                <li>
+                    <strong>Consulta publica</strong>
+                    <span>@IdentitySeedAccounts.PublicViewerEmail</span>
+                </li>
+            </ul>
+
+            <p class="login__demo-text">Senha de todas as contas: <code>@IdentitySeedAccounts.Password</code></p>
+
+            <button type="button" class="login__demo-fill" @onclick="FillAdministrator">
+                Usar credenciais do administrador
+            </button>
+        </section>
+    </section>
+</div>
+
+@code {
+    [SupplyParameterFromQuery(Name = "returnUrl")]
+    public string? ReturnUrl { get; set; }
+
+    private string _email = string.Empty;
+    private string _password = string.Empty;
+    private bool _busy;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync() => await EnsureUsers.HandleAsync();
+
+    private void FillAdministrator()
+    {
+        _email = IdentitySeedAccounts.AdministratorEmail;
+        _password = IdentitySeedAccounts.Password;
+    }
+
+    private async Task SignInAsync()
+    {
+        _busy = true;
+        _error = null;
+
+        try
+        {
+            var result = await SignIn.HandleAsync(new SignInCommand(_email, _password));
+
+            if (result.IsFailure)
+            {
+                _error = result.Error.Message;
+                return;
+            }
+
+            Authentication.SignedIn(result.Value);
+            Navigation.NavigateTo(string.IsNullOrWhiteSpace(ReturnUrl) ? Navigation.BaseUri : ReturnUrl, replace: true);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+}

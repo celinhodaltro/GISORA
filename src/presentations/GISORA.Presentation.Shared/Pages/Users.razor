@@ -1,0 +1,264 @@
+@page "/users"
+@attribute [Authorize(Roles = IdentityRoles.Administrator)]
+@using GISORA.Application.Identity
+@using GISORA.Application.Identity.Commands
+@using GISORA.Domain.Identity
+@using GISORA.Presentation.Shared.Security
+@inject IUserQueries UserQueries
+@inject RegisterUserHandler RegisterUser
+@inject UpdateUserHandler UpdateUser
+@inject ResetUserPasswordHandler ResetPassword
+@inject GisoraAuthenticationStateProvider Authentication
+
+<PageHeader Title="Usuarios e perfis"
+            Description="Contas locais com perfil de acesso. Os dados ficam neste navegador."
+            Icon="manage_accounts" />
+
+<RadzenCard class="users-panel">
+    <h2 class="users-panel__title">Novo usuario</h2>
+
+    <div class="users-form">
+        <label class="users-field">
+            <span>Nome</span>
+            <input type="text" @bind="_name" maxlength="120" autocomplete="off" />
+        </label>
+
+        <label class="users-field">
+            <span>E-mail</span>
+            <input type="email" @bind="_email" maxlength="160" autocomplete="off" />
+        </label>
+
+        <label class="users-field">
+            <span>Senha inicial</span>
+            <input type="password" @bind="_password" autocomplete="new-password" />
+        </label>
+
+        <label class="users-field">
+            <span>Perfil</span>
+            <select @bind="_role" aria-label="Perfil">
+                @foreach (var role in Roles)
+                {
+                    <option value="@role">@RoleLabels.For(role)</option>
+                }
+            </select>
+        </label>
+
+        <button type="button" class="users-button users-button--primary" disabled="@_busy" @onclick="CreateAsync">
+            Criar usuario
+        </button>
+    </div>
+
+    @if (_message is not null)
+    {
+        <p class="users-message" role="status">@_message</p>
+    }
+
+    @if (_error is not null)
+    {
+        <p class="users-error" role="alert">@_error</p>
+    }
+</RadzenCard>
+
+<RadzenCard class="users-panel">
+    <h2 class="users-panel__title">Usuarios cadastrados</h2>
+
+    @if (_users.Count == 0)
+    {
+        <p class="users-empty">Nenhum usuario cadastrado.</p>
+    }
+    else
+    {
+        <table class="users-table">
+            <thead>
+                <tr>
+                    <th scope="col">Nome</th>
+                    <th scope="col">E-mail</th>
+                    <th scope="col">Perfil</th>
+                    <th scope="col">Situacao</th>
+                    <th scope="col">Ultimo acesso</th>
+                    <th scope="col">Acoes</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var user in _users)
+                {
+                    <tr>
+                        <td>@user.Name</td>
+                        <td class="users-table__email">@user.Email</td>
+                        <td>
+                            <select class="users-table__select"
+                                    aria-label="@($"Perfil de {user.Name}")"
+                                    value="@user.Role"
+                                    @onchange="args => ChangeRoleAsync(user, args)">
+                                @foreach (var role in Roles)
+                                {
+                                    <option value="@role">@RoleLabels.For(role)</option>
+                                }
+                            </select>
+                        </td>
+                        <td>
+                            <span class="users-status @(user.IsActive ? "users-status--active" : "users-status--inactive")">
+                                @(user.IsActive ? "Ativo" : "Inativo")
+                            </span>
+                        </td>
+                        <td>@(user.LastSignInAt?.ToLocalTime().ToString("dd/MM/yyyy HH:mm") ?? "Nunca")</td>
+                        <td class="users-table__actions">
+                            <button type="button"
+                                    class="users-button"
+                                    aria-label="@($"Alterar situacao de {user.Name}")"
+                                    @onclick="() => ToggleActiveAsync(user)">
+                                @(user.IsActive ? "Desativar" : "Ativar")
+                            </button>
+                            <button type="button"
+                                    class="users-button"
+                                    aria-label="@($"Redefinir senha de {user.Name}")"
+                                    @onclick="() => OpenReset(user.Id.Value)">
+                                Redefinir senha
+                            </button>
+                        </td>
+                    </tr>
+
+                    @if (_resetUserId == user.Id.Value)
+                    {
+                        <tr>
+                            <td colspan="6">
+                                <div class="users-reset">
+                                    <label class="users-field">
+                                        <span>Nova senha de @user.Name</span>
+                                        <input type="password" @bind="_resetPassword" autocomplete="new-password" />
+                                    </label>
+                                    <button type="button" class="users-button users-button--primary" @onclick="() => ResetAsync(user)">
+                                        Salvar senha
+                                    </button>
+                                    <button type="button" class="users-button" @onclick="CloseReset">
+                                        Cancelar
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    }
+</RadzenCard>
+
+@code {
+    private static readonly UserRole[] Roles =
+    [
+        UserRole.Administrator,
+        UserRole.Analyst,
+        UserRole.PublicViewer,
+    ];
+
+    private IReadOnlyList<UserListItem> _users = [];
+    private string _name = string.Empty;
+    private string _email = string.Empty;
+    private string _password = string.Empty;
+    private UserRole _role = UserRole.Analyst;
+    private Guid? _resetUserId;
+    private string _resetPassword = string.Empty;
+    private bool _busy;
+    private string? _message;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _users = await UserQueries.ListAsync();
+    }
+
+    private async Task CreateAsync()
+    {
+        _busy = true;
+        _error = null;
+        _message = null;
+
+        try
+        {
+            var result = await RegisterUser.HandleAsync(new RegisterUserCommand(_name, _email, _password, _role));
+
+            if (result.IsFailure)
+            {
+                _error = result.Error.Message;
+                return;
+            }
+
+            _message = "Usuario criado.";
+            _name = string.Empty;
+            _email = string.Empty;
+            _password = string.Empty;
+            _role = UserRole.Analyst;
+
+            await LoadAsync();
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private Task ChangeRoleAsync(UserListItem user, ChangeEventArgs args)
+    {
+        var role = Enum.TryParse<UserRole>(args.Value?.ToString(), out var parsed) ? parsed : user.Role;
+
+        return UpdateAsync(new UpdateUserCommand(user.Id.Value, role, user.IsActive));
+    }
+
+    private Task ToggleActiveAsync(UserListItem user)
+        => UpdateAsync(new UpdateUserCommand(user.Id.Value, user.Role, user.IsActive is false));
+
+    private async Task UpdateAsync(UpdateUserCommand command)
+    {
+        _error = null;
+        _message = null;
+
+        var result = await UpdateUser.HandleAsync(command);
+
+        if (result.IsFailure)
+        {
+            _error = result.Error.Message;
+            await LoadAsync();
+            return;
+        }
+
+        _message = "Usuario atualizado.";
+        await LoadAsync();
+
+        if (command.UserId == Authentication.CurrentUser?.Id)
+        {
+            await Authentication.RefreshAsync();
+        }
+    }
+
+    private void OpenReset(Guid userId)
+    {
+        _resetUserId = userId;
+        _resetPassword = string.Empty;
+        _error = null;
+    }
+
+    private void CloseReset()
+    {
+        _resetUserId = null;
+        _resetPassword = string.Empty;
+    }
+
+    private async Task ResetAsync(UserListItem user)
+    {
+        _error = null;
+        _message = null;
+
+        var result = await ResetPassword.HandleAsync(new ResetUserPasswordCommand(user.Id.Value, _resetPassword));
+
+        if (result.IsFailure)
+        {
+            _error = result.Error.Message;
+            return;
+        }
+
+        _message = $"Senha de {user.Name} redefinida.";
+        CloseReset();
+    }
+}

@@ -1,0 +1,28 @@
+@using GISORA.Presentation.Shared.Security
+@inject GisoraAuthenticationStateProvider Authentication
+@inject NavigationManager Navigation
+
+@if (Authentication.CurrentUser is not null)
+{
+    <section class="access-denied" role="alert">
+        <h1 class="access-denied__title">Acesso negado</h1>
+        <p class="access-denied__text">
+            O perfil <strong>@RoleLabels.For(Authentication.CurrentUser.Role)</strong> nao tem permissao para esta area.
+        </p>
+        <a class="access-denied__link" href="">Voltar ao painel</a>
+    </section>
+}
+
+@code {
+    protected override void OnInitialized()
+    {
+        if (Authentication.CurrentUser is not null)
+        {
+            return;
+        }
+
+        var returnUrl = Navigation.ToBaseRelativePath(Navigation.Uri);
+
+        Navigation.NavigateTo($"login?returnUrl={Uri.EscapeDataString(returnUrl)}");
+    }
+}

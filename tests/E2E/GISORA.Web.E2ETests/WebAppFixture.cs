@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text;
+using System.Text.Json;
 
 using Microsoft.Playwright;
 
@@ -8,10 +9,14 @@ namespace GISORA.Web.E2ETests;
 public sealed class WebAppFixture : IAsyncLifetime
 {
     private const int StartupTimeoutSeconds = 180;
+    private const string SessionCookieName = "gisora_session";
 
     private readonly StringBuilder _hostLog = new();
+    private readonly Dictionary<string, string> _identityStorage = [];
+
     private Process? _host;
     private IPlaywright _playwright = null!;
+    private Cookie? _sessionCookie;
 
     public string BaseUrl { get; } = $"http://127.0.0.1:{Random.Shared.Next(5300, 5900)}";
 
@@ -24,6 +29,8 @@ public sealed class WebAppFixture : IAsyncLifetime
 
         _playwright = await Playwright.CreateAsync();
         Browser = await _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Headless = true });
+
+        await BootstrapSessionAsync();
     }
 
     public async Task DisposeAsync()
@@ -46,11 +53,88 @@ public sealed class WebAppFixture : IAsyncLifetime
 
     public async Task<IPage> NewPageAsync()
     {
+        var context = await CreateContextAsync();
+
+        return await OpenPageAsync(context);
+    }
+
+    public async Task<IPage> NewAnonymousPageAsync()
+    {
         var context = await Browser.NewContextAsync();
+
+        return await OpenPageAsync(context);
+    }
+
+    private static async Task<IPage> OpenPageAsync(IBrowserContext context)
+    {
         var page = await context.NewPageAsync();
         page.SetDefaultTimeout(30_000);
 
         return page;
+    }
+
+    private async Task<IBrowserContext> CreateContextAsync()
+    {
+        var context = await Browser.NewContextAsync();
+
+        if (_identityStorage.Count > 0)
+        {
+            var script = $$"""
+                (() => {
+                    const data = {{JsonSerializer.Serialize(_identityStorage)}};
+                    for (const [key, value] of Object.entries(data)) {
+                        window.localStorage.setItem(key, value);
+                    }
+                })();
+                """;
+
+            await context.AddInitScriptAsync(script);
+        }
+
+        if (_sessionCookie is not null)
+        {
+            await context.AddCookiesAsync([_sessionCookie]);
+        }
+
+        return context;
+    }
+
+    private async Task BootstrapSessionAsync()
+    {
+        var context = await Browser.NewContextAsync();
+        var page = await OpenPageAsync(context);
+
+        await page.GotoAsync($"{BaseUrl}/login");
+        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Usar credenciais do administrador" }).ClickAsync();
+        await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Entrar" }).ClickAsync();
+        await page.WaitForURLAsync(
+            url => url.Contains("/login") is false,
+            new PageWaitForURLOptions { Timeout = 30_000 });
+
+        var cookies = await context.CookiesAsync();
+        var session = cookies.First(cookie => cookie.Name == SessionCookieName);
+
+        _sessionCookie = new Cookie
+        {
+            Name = session.Name,
+            Value = session.Value,
+            Url = BaseUrl,
+            SameSite = SameSiteAttribute.Lax,
+        };
+
+        var keys = await page.EvaluateAsync<string[]>("() => Object.keys(localStorage)");
+
+        foreach (var key in keys.Where(key => key.StartsWith("gisora:identity", StringComparison.Ordinal)))
+        {
+            var value = await page.EvaluateAsync<string?>("key => localStorage.getItem(key)", key);
+
+            if (value is not null)
+            {
+                _identityStorage[key] = value;
+            }
+        }
+
+        await context.CloseAsync();
     }
 
     private void StartHost()

@@ -1,4 +1,6 @@
 @page "/properties"
+@attribute [Authorize(Roles = IdentityRoles.Management)]
+@using GISORA.Application.Identity
 @inject IPropertyQueries Queries
 @inject NavigationManager Navigation
 @using GISORA.Domain.Properties

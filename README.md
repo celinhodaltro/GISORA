@@ -70,16 +70,20 @@ Aplicacao web publicada em https://celinhodaltro.github.io/GISORA/ a cada merge 
 
 | Rota | Funcao |
 | --- | --- |
-| `/` | Visao geral com contadores reais |
+| `/login` | Entrada com e-mail e senha e contas demonstrativas |
+| `/` | Visao geral com o mapa em tela cheia e contadores reais |
 | `/properties` | Listagem de imoveis com busca |
 | `/properties/new` | Cadastro de imovel |
 | `/map` | Imoveis com geometria no mapa |
+| `/cadastro/{modulo}` | Cadastro unificado no mapa |
 | `/streets` | Logradouros |
 | `/territory` | Municipio, distrito, bairro e setor |
+| `/users` | Usuarios e perfis (administrador) |
+| `/data` | Dados e backup (administrador) |
 
 O motor geografico (Leaflet, Turf.js, Proj4js) esta integrado. O cadastro funciona no dispositivo; nao ha backend. Veja [roadmap](docs/roadmap.md) para o que falta.
 
-Aviso: enquanto nao houver autenticacao e API, a aplicacao opera em modo demonstracao e nao deve receber dado pessoal real (ADR 0007).
+Autenticacao e perfis sao demonstrativos: usuarios no `localStorage`, senha com hash PBKDF2 e sessao em JWT no cookie `gisora_session`. O token e assinado no cliente, entao nao ha seguranca real (ADR 0009). A aplicacao nao deve receber dado pessoal real.
 
 ## Documentacao
 

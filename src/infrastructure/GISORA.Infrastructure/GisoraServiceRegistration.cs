@@ -2,6 +2,8 @@ using GISORA.Application.Cemetery;
 using GISORA.Application.Cemetery.Commands;
 using GISORA.Application.Common;
 using GISORA.Application.Geospatial;
+using GISORA.Application.Identity;
+using GISORA.Application.Identity.Commands;
 using GISORA.Application.Properties;
 using GISORA.Application.Properties.Commands;
 using GISORA.Application.Properties.Queries;
@@ -17,6 +19,7 @@ using GISORA.Application.Territory.Queries;
 using GISORA.Application.UrbanPlanning;
 using GISORA.Application.UrbanPlanning.Commands;
 using GISORA.Domain.Cemetery;
+using GISORA.Domain.Identity;
 using GISORA.Domain.Properties;
 using GISORA.Domain.PublicFacilities;
 using GISORA.Domain.Roads;
@@ -24,6 +27,7 @@ using GISORA.Domain.Rural;
 using GISORA.Domain.Territory;
 using GISORA.Domain.UrbanPlanning;
 using GISORA.Infrastructure.Geospatial;
+using GISORA.Infrastructure.Identity;
 using GISORA.Infrastructure.Integrations;
 using GISORA.Infrastructure.Persistence;
 using GISORA.Infrastructure.Persistence.Demo;
@@ -90,6 +94,19 @@ public static class GisoraServiceRegistration
         services.AddScoped<IRegulationQueries, LocalStorageRegulationQueries>();
         services.AddScoped<CreateZoneHandler>();
         services.AddScoped<CreateRestrictionHandler>();
+
+        services.AddScoped<IPasswordHasher, Pbkdf2PasswordHasher>();
+        services.AddScoped<IAccessTokenCodec, JwtAccessTokenCodec>();
+        services.AddScoped<ISessionStore, CookieSessionStore>();
+        services.AddScoped<IUserRepository, LocalStorageUserRepository>();
+        services.AddScoped<IUserQueries, LocalStorageUserQueries>();
+        services.AddScoped<SignInHandler>();
+        services.AddScoped<SignOutHandler>();
+        services.AddScoped<RestoreSessionHandler>();
+        services.AddScoped<RegisterUserHandler>();
+        services.AddScoped<UpdateUserHandler>();
+        services.AddScoped<ResetUserPasswordHandler>();
+        services.AddScoped<EnsureIdentityUsersHandler>();
 
         services.AddScoped<IDemoDataSeeder, DemoDataSeeder>();
 

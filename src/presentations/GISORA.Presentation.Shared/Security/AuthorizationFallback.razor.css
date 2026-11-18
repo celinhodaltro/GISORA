@@ -1,0 +1,28 @@
+.access-denied {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    max-width: 32rem;
+    padding: 1.25rem;
+    border: 1px solid var(--gisora-warning-border, #f0c36d);
+    border-radius: var(--gisora-radius-md, 10px);
+    background: var(--gisora-warning-bg, #fff8e5);
+}
+
+.access-denied__title {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.access-denied__text {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--gisora-ink-soft, #3b4b5a);
+}
+
+.access-denied__link {
+    align-self: flex-start;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--gisora-blue-700, #1351b4);
+}
