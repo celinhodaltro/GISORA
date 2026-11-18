@@ -1,4 +1,6 @@
 @page "/streets"
+@attribute [Authorize(Roles = IdentityRoles.Management)]
+@using GISORA.Application.Identity
 @using GISORA.Application.Roads
 @using GISORA.Application.Roads.Commands
 @using GISORA.Domain.Roads

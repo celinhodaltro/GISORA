@@ -66,14 +66,14 @@ Nao iniciada. Depende de leiaute oficial verificado.
 
 Nao iniciada.
 
-- Autenticacao, autorizacao e auditoria (#51).
+- Autenticacao centralizada, autorizacao no servidor e auditoria (#107).
 - Documentacao continua (#50).
 - Performance de listagem e leitura geografica por extensao.
 - Matriz de rastreabilidade requisito -> issue -> teste.
 
 ## Dividas conhecidas
 
-- Sem autenticacao real: modo demonstracao enquanto nao houver API (ADR 0007).
+- Autenticacao demonstrativa: JWT assinado no cliente e usuarios no `localStorage` (ADR 0009).
 - Mapa carrega todos os imoveis com geometria; exige consulta por extensao no backend.
 - Desenho suporta apenas poligono simples pela interface; buracos exigem importacao.
 - `localStorage` limitado a cerca de 5 MB e sem transacao.

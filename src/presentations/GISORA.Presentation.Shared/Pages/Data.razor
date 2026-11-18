@@ -1,4 +1,6 @@
 @page "/data"
+@attribute [Authorize(Roles = IdentityRoles.Administrator)]
+@using GISORA.Application.Identity
 @using System.Text.Json
 @using GISORA.Application.Common
 @using GISORA.Application.Geospatial

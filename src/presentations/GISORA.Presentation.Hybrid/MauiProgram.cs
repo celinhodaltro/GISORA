@@ -1,6 +1,7 @@
 using GISORA.Infrastructure;
 using GISORA.Infrastructure.Integrations;
 using GISORA.Presentation.Shared.Layout;
+using GISORA.Presentation.Shared.Security;
 
 using Radzen;
 
@@ -23,6 +24,7 @@ public static class MauiProgram
         builder.Services.AddRadzenComponents();
         builder.Services.AddGisoraCore();
         builder.Services.AddCibIntegration("Demo");
+        builder.Services.AddGisoraSecurity();
         builder.Services.AddScoped<MunicipalityState>();
 
 #if DEBUG

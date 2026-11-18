@@ -1,4 +1,6 @@
 @page "/territory"
+@attribute [Authorize(Roles = IdentityRoles.Management)]
+@using GISORA.Application.Identity
 @using GISORA.Application.Territory
 @using GISORA.Application.Territory.Commands
 @using GISORA.Domain.Territory

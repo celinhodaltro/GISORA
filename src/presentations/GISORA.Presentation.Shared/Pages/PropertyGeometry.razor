@@ -1,4 +1,6 @@
 @page "/properties/{PropertyId:guid}/geometry"
+@attribute [Authorize(Roles = IdentityRoles.Management)]
+@using GISORA.Application.Identity
 @using GISORA.Application.Geospatial
 @using GISORA.Domain.Geospatial
 @using GISORA.Application.Properties

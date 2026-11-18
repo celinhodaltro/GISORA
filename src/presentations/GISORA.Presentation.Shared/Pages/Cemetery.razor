@@ -1,4 +1,6 @@
 @page "/cemetery"
+@attribute [Authorize(Roles = IdentityRoles.Management)]
+@using GISORA.Application.Identity
 @using GISORA.Application.Cemetery
 @using GISORA.Application.Cemetery.Commands
 @using GISORA.Application.Geospatial

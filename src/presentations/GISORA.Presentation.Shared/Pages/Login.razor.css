@@ -1,0 +1,188 @@
+.login {
+    display: grid;
+    place-items: center;
+    min-height: 100dvh;
+    padding: 2rem 1rem;
+    background:
+        radial-gradient(circle at 15% 20%, rgba(19, 81, 180, 0.12), transparent 45%),
+        radial-gradient(circle at 85% 80%, rgba(31, 122, 92, 0.12), transparent 40%),
+        var(--gisora-canvas, #f4f6f9);
+}
+
+.login__panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1.4rem;
+    width: min(28rem, 100%);
+    padding: 1.75rem;
+    border: 1px solid var(--gisora-border, #dde4ec);
+    border-radius: var(--gisora-radius-lg, 14px);
+    background: var(--gisora-surface, #ffffff);
+    box-shadow: 0 18px 40px rgba(18, 33, 47, 0.14);
+}
+
+.login__header {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+}
+
+.login__mark {
+    width: 3rem;
+    height: 3rem;
+    object-fit: contain;
+}
+
+.login__title {
+    margin: 0;
+    font-size: 1.15rem;
+    color: var(--gisora-ink, #12212f);
+}
+
+.login__description {
+    margin: 0.2rem 0 0;
+    font-size: 0.8rem;
+    color: var(--gisora-muted, #5a6b7b);
+}
+
+.login__form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.login__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--gisora-ink-soft, #3b4b5a);
+}
+
+.login__field input {
+    height: 2.5rem;
+    padding: 0 0.75rem;
+    border: 1px solid var(--gisora-border-strong, #c5d0dc);
+    border-radius: var(--gisora-radius-sm, 6px);
+    font-family: inherit;
+    font-size: 0.88rem;
+    font-weight: 400;
+    color: var(--gisora-ink, #12212f);
+    background: #ffffff;
+}
+
+.login__field input:focus {
+    outline: 2px solid var(--gisora-blue-600, #2f6fd0);
+    outline-offset: 1px;
+    border-color: var(--gisora-blue-600, #2f6fd0);
+}
+
+.login__submit {
+    height: 2.6rem;
+    margin-top: 0.2rem;
+    border: none;
+    border-radius: var(--gisora-radius-sm, 6px);
+    background: var(--gisora-blue-700, #1351b4);
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.login__submit:hover {
+    background: var(--gisora-blue-800, #123e73);
+}
+
+.login__submit:disabled {
+    opacity: 0.65;
+    cursor: progress;
+}
+
+.login__error {
+    margin: 0;
+    padding: 0.5rem 0.7rem;
+    border: 1px solid #e5b4b4;
+    border-radius: var(--gisora-radius-sm, 6px);
+    background: #fdf1f1;
+    color: #8a1f1f;
+    font-size: 0.78rem;
+}
+
+.login__demo {
+    padding-top: 1.1rem;
+    border-top: 1px dashed var(--gisora-border, #dde4ec);
+}
+
+.login__demo-title {
+    margin: 0 0 0.4rem;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gisora-muted, #5a6b7b);
+}
+
+.login__demo-text {
+    margin: 0 0 0.6rem;
+    font-size: 0.74rem;
+    line-height: 1.5;
+    color: var(--gisora-muted, #5a6b7b);
+}
+
+.login__demo-text code {
+    font-family: var(--gisora-font-mono, monospace);
+    color: var(--gisora-ink, #12212f);
+}
+
+.login__accounts {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    margin: 0 0 0.6rem;
+    padding: 0;
+    list-style: none;
+    font-size: 0.76rem;
+}
+
+.login__accounts li {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    color: var(--gisora-ink-soft, #3b4b5a);
+}
+
+.login__accounts span {
+    color: var(--gisora-muted, #5a6b7b);
+    font-family: var(--gisora-font-mono, monospace);
+    font-size: 0.72rem;
+}
+
+.login__demo-fill {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--gisora-border-strong, #c5d0dc);
+    border-radius: var(--gisora-radius-sm, 6px);
+    background: var(--gisora-blue-50, #f3f7fd);
+    color: var(--gisora-blue-700, #1351b4);
+    font-family: inherit;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.login__demo-fill:hover {
+    border-color: var(--gisora-blue-700, #1351b4);
+}
+
+@media (max-width: 30rem) {
+    .login__panel {
+        padding: 1.25rem;
+    }
+
+    .login__accounts li {
+        flex-direction: column;
+        gap: 0.1rem;
+    }
+}

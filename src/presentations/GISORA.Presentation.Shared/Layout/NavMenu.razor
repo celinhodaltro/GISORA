@@ -1,4 +1,10 @@
 @namespace GISORA.Presentation.Shared.Layout
+@using GISORA.Application.Identity
+@using GISORA.Domain.Identity
+@using GISORA.Presentation.Shared.Security
+@inject GisoraAuthenticationStateProvider Authentication
+@inject NavigationManager Navigation
+@implements IDisposable
 
 <nav id="app-nav" class="app-nav @(Collapsed ? "app-nav--collapsed" : null) @(MobileOpen ? "app-nav--open" : null)"
      aria-label="Navegacao principal">
@@ -11,34 +17,51 @@
             <span class="app-nav__label">Visao geral</span>
         </NavLink>
 
-        <NavLink class="app-nav__link" href="data" title="Dados e backup" @onclick="Navigate">
-            <span class="app-nav__icon" aria-hidden="true"><RadzenIcon Icon="database" /></span>
-            <span class="app-nav__label">Dados e backup</span>
-        </NavLink>
+        @if (Can(AccessRight.ManageData))
+        {
+            <NavLink class="app-nav__link" href="data" title="Dados e backup" @onclick="Navigate">
+                <span class="app-nav__icon" aria-hidden="true"><RadzenIcon Icon="database" /></span>
+                <span class="app-nav__label">Dados e backup</span>
+            </NavLink>
+        }
+
+        @if (Can(AccessRight.ManageUsers))
+        {
+            <NavLink class="app-nav__link" href="users" title="Usuarios e perfis" @onclick="Navigate">
+                <span class="app-nav__icon" aria-hidden="true"><RadzenIcon Icon="manage_accounts" /></span>
+                <span class="app-nav__label">Usuarios e perfis</span>
+            </NavLink>
+        }
     </div>
 
-    <div class="app-nav__group">
-        <span class="app-nav__group-title">Cadastro territorial</span>
+    @if (Can(AccessRight.EditCadastral))
+    {
+        <div class="app-nav__group">
+            <span class="app-nav__group-title">Cadastro territorial</span>
 
-        <NavLink class="app-nav__link" href="cadastro" title="Quadras, imoveis, equipamentos e rurais no mapa" @onclick="Navigate">
-            <span class="app-nav__icon" aria-hidden="true"><RadzenIcon Icon="edit_location_alt" /></span>
-            <span class="app-nav__label">Cadastro no mapa</span>
-        </NavLink>
-    </div>
+            <NavLink class="app-nav__link" href="cadastro" title="Quadras, imoveis, equipamentos e rurais no mapa" @onclick="Navigate">
+                <span class="app-nav__icon" aria-hidden="true"><RadzenIcon Icon="edit_location_alt" /></span>
+                <span class="app-nav__label">Cadastro no mapa</span>
+            </NavLink>
+        </div>
+    }
 
-    <div class="app-nav__group">
-        <span class="app-nav__group-title">Territorio</span>
+    @if (Can(AccessRight.ManageTerritory))
+    {
+        <div class="app-nav__group">
+            <span class="app-nav__group-title">Territorio</span>
 
-        <NavLink class="app-nav__link" href="territory" title="Territorio" @onclick="Navigate">
-            <span class="app-nav__icon" aria-hidden="true"><RadzenIcon Icon="account_tree" /></span>
-            <span class="app-nav__label">Territorio</span>
-        </NavLink>
+            <NavLink class="app-nav__link" href="territory" title="Territorio" @onclick="Navigate">
+                <span class="app-nav__icon" aria-hidden="true"><RadzenIcon Icon="account_tree" /></span>
+                <span class="app-nav__label">Territorio</span>
+            </NavLink>
 
-        <NavLink class="app-nav__link" href="streets" title="Logradouros" @onclick="Navigate">
-            <span class="app-nav__icon" aria-hidden="true"><RadzenIcon Icon="signpost" /></span>
-            <span class="app-nav__label">Logradouros</span>
-        </NavLink>
-    </div>
+            <NavLink class="app-nav__link" href="streets" title="Logradouros" @onclick="Navigate">
+                <span class="app-nav__icon" aria-hidden="true"><RadzenIcon Icon="signpost" /></span>
+                <span class="app-nav__label">Logradouros</span>
+            </NavLink>
+        </div>
+    }
 
     <div class="app-nav__group">
         <span class="app-nav__group-title">Geoprocessamento</span>
@@ -48,10 +71,13 @@
             <span class="app-nav__label">Mapa</span>
         </NavLink>
 
-        <NavLink class="app-nav__link" href="planning" title="Zoneamento" @onclick="Navigate">
-            <span class="app-nav__icon" aria-hidden="true"><RadzenIcon Icon="map" /></span>
-            <span class="app-nav__label">Zoneamento</span>
-        </NavLink>
+        @if (Can(AccessRight.ManageTerritory))
+        {
+            <NavLink class="app-nav__link" href="planning" title="Zoneamento" @onclick="Navigate">
+                <span class="app-nav__icon" aria-hidden="true"><RadzenIcon Icon="map" /></span>
+                <span class="app-nav__label">Zoneamento</span>
+            </NavLink>
+        }
 
         <NavLink class="app-nav__link" href="cib" title="Consulta CIB" @onclick="Navigate">
             <span class="app-nav__icon" aria-hidden="true"><RadzenIcon Icon="travel_explore" /></span>
@@ -59,13 +85,38 @@
         </NavLink>
     </div>
 
-    <div class="app-nav__footer">
-        <RadzenIcon Icon="storage" />
-        <span>Dados neste dispositivo</span>
-    </div>
+    @if (User is not null)
+    {
+        <div class="app-nav__account">
+            <span class="app-nav__avatar" aria-hidden="true">@Initials</span>
+
+            <span class="app-nav__account-text">
+                <strong>@User.Name</strong>
+                <small>@RoleLabels.For(User.Role)</small>
+            </span>
+
+            <button type="button"
+                    class="app-nav__signout"
+                    aria-label="Sair"
+                    title="Sair"
+                    @onclick="SignOutAsync">
+                <RadzenIcon Icon="logout" />
+            </button>
+        </div>
+    }
 </nav>
 
 @code {
+    private SessionUser? User => Authentication.CurrentUser;
+
+    private string Initials => User is null
+        ? string.Empty
+        : string.Concat(
+            User.Name
+                .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                .Take(2)
+                .Select(part => char.ToUpperInvariant(part[0])));
+
     [Parameter]
     public bool Collapsed { get; set; }
 
@@ -75,5 +126,20 @@
     [Parameter]
     public EventCallback OnNavigate { get; set; }
 
+    protected override void OnInitialized() => Authentication.Changed += OnAuthenticationChanged;
+
+    public void Dispose() => Authentication.Changed -= OnAuthenticationChanged;
+
     private Task Navigate() => OnNavigate.InvokeAsync();
+
+    private bool Can(AccessRight permission) => User?.HasPermission(permission) ?? false;
+
+    private void OnAuthenticationChanged() => _ = InvokeAsync(StateHasChanged);
+
+    private async Task SignOutAsync()
+    {
+        await Authentication.SignOutAsync();
+        await OnNavigate.InvokeAsync();
+        Navigation.NavigateTo("login", replace: true);
+    }
 }

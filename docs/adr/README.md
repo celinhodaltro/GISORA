@@ -33,3 +33,4 @@ O que fica mais facil, o que fica mais dificil, o que passa a ser obrigatorio.
 | [0006](0006-ui-radzen.md) | Radzen como design system | Aceito |
 | [0007](0007-authentication-authorization.md) | Autenticacao e autorizacao | Aceito |
 | [0008](0008-unified-map-cadastro.md) | Interface de cadastro unificada em mapa | Aceito |
+| [0009](0009-sessao-local-jwt-cookie.md) | Sessao local com JWT em cookie | Aceito |

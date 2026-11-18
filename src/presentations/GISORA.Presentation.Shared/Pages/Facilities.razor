@@ -1,4 +1,6 @@
 @page "/facilities"
+@attribute [Authorize(Roles = IdentityRoles.Management)]
+@using GISORA.Application.Identity
 @using GISORA.Application.PublicFacilities
 @using GISORA.Application.PublicFacilities.Commands
 @using GISORA.Domain.PublicFacilities

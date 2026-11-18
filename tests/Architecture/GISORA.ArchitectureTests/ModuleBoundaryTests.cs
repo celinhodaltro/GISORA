@@ -12,6 +12,7 @@ public class ModuleBoundaryTests
         "Rural",
         "UrbanPlanning",
         "Integration",
+        "Identity",
     ];
 
 

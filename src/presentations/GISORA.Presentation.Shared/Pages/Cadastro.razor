@@ -1,5 +1,7 @@
 @page "/cadastro"
 @page "/cadastro/{ModuleSlug}"
+@attribute [Authorize(Roles = IdentityRoles.Management)]
+@using GISORA.Application.Identity
 @using System.Text.Json.Nodes
 @using GISORA.Application.Common
 @using GISORA.Application.Geospatial

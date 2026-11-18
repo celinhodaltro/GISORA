@@ -1,4 +1,6 @@
 @page "/properties/new"
+@attribute [Authorize(Roles = IdentityRoles.Management)]
+@using GISORA.Application.Identity
 @using GISORA.Application.Properties.Commands
 @using GISORA.Application.Roads
 @using GISORA.Application.Territory

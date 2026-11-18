@@ -176,6 +176,6 @@ Domain, Application e os contratos publicos dos modulos permanecem.
 ## O que ainda nao existe
 
 - API ASP.NET Core, EF Core e PostGIS.
-- Autenticacao real: modo demonstracao ate a issue #51 (ver ADR 0007).
+- Autenticacao real: modo demonstracao com JWT local ate a issue #107 (ver ADR 0007 e ADR 0009).
 - Host mobile, portal publico e exportacao tributaria.
 - Sincronizacao entre abas e entre dispositivos.

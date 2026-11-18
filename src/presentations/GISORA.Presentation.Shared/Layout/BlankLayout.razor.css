@@ -1,0 +1,6 @@
+.blank-layout {
+    display: grid;
+    min-height: 100dvh;
+    overflow-y: auto;
+    background: var(--gisora-canvas, #f4f6f9);
+}

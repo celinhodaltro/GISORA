@@ -1,0 +1,174 @@
+.users-panel {
+    margin-bottom: 1rem;
+}
+
+.users-panel__title {
+    margin: 0 0 0.9rem;
+    font-size: 0.95rem;
+}
+
+.users-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    gap: 0.75rem;
+    align-items: end;
+}
+
+.users-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    font-size: 0.74rem;
+    font-weight: 600;
+    color: var(--gisora-ink-soft, #3b4b5a);
+}
+
+.users-field input,
+.users-field select,
+.users-table__select {
+    height: 2.3rem;
+    padding: 0 0.6rem;
+    border: 1px solid var(--gisora-border-strong, #c5d0dc);
+    border-radius: var(--gisora-radius-sm, 6px);
+    background: #ffffff;
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 400;
+    color: var(--gisora-ink, #12212f);
+}
+
+.users-field input:focus,
+.users-field select:focus,
+.users-table__select:focus {
+    outline: 2px solid var(--gisora-blue-600, #2f6fd0);
+    outline-offset: 1px;
+}
+
+.users-button {
+    height: 2.3rem;
+    padding: 0 0.8rem;
+    border: 1px solid var(--gisora-border-strong, #c5d0dc);
+    border-radius: var(--gisora-radius-sm, 6px);
+    background: #ffffff;
+    color: var(--gisora-ink-soft, #3b4b5a);
+    font-family: inherit;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.users-button:hover {
+    border-color: var(--gisora-blue-700, #1351b4);
+    color: var(--gisora-blue-700, #1351b4);
+}
+
+.users-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.users-button--primary {
+    border-color: var(--gisora-blue-700, #1351b4);
+    background: var(--gisora-blue-700, #1351b4);
+    color: #ffffff;
+}
+
+.users-button--primary:hover {
+    background: var(--gisora-blue-800, #123e73);
+    color: #ffffff;
+}
+
+.users-message {
+    margin: 0.75rem 0 0;
+    color: var(--gisora-green-700, #17603f);
+    font-size: 0.8rem;
+}
+
+.users-error {
+    margin: 0.75rem 0 0;
+    color: var(--gisora-danger, #b3261e);
+    font-size: 0.8rem;
+}
+
+.users-empty {
+    margin: 0;
+    color: var(--gisora-muted, #5a6b7b);
+    font-size: 0.82rem;
+}
+
+.users-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+
+.users-table th {
+    padding: 0.5rem 0.6rem;
+    border-bottom: 1px solid var(--gisora-border, #dde4ec);
+    text-align: left;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gisora-muted, #5a6b7b);
+}
+
+.users-table td {
+    padding: 0.55rem 0.6rem;
+    border-bottom: 1px solid var(--gisora-border, #dde4ec);
+    vertical-align: middle;
+    color: var(--gisora-ink-soft, #3b4b5a);
+}
+
+.users-table__email {
+    font-family: var(--gisora-font-mono, monospace);
+    font-size: 0.76rem;
+}
+
+.users-table__select {
+    height: 2rem;
+}
+
+.users-table__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.users-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+
+.users-status--active {
+    background: var(--gisora-green-50, #eaf4ef);
+    color: var(--gisora-green-700, #17603f);
+}
+
+.users-status--inactive {
+    background: #f3f5f8;
+    color: var(--gisora-muted, #5a6b7b);
+}
+
+.users-reset {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    align-items: end;
+    padding: 0.6rem;
+    border: 1px dashed var(--gisora-border-strong, #c5d0dc);
+    border-radius: var(--gisora-radius-sm, 6px);
+    background: var(--gisora-blue-50, #f3f7fd);
+}
+
+@media (max-width: 48rem) {
+    .users-table {
+        display: block;
+        overflow-x: auto;
+    }
+}

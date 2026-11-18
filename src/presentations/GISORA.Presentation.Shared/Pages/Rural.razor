@@ -1,4 +1,6 @@
 @page "/rural"
+@attribute [Authorize(Roles = IdentityRoles.Management)]
+@using GISORA.Application.Identity
 @using GISORA.Application.Geospatial
 @using GISORA.Domain.Geospatial
 @using GISORA.Application.Rural
